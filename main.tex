@@ -6,7 +6,7 @@
 % time. See www.overleaf.com/learn for more info. Enjoy!
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\documentclass{article}
+\documentclass[a4paper,UKenglish,cleveref, autoref, thm-restate]{lipics-v2021}
 %\usepackage{semantic}
 %\usepackage[margin=0.6in]{geometry}
 %% Some recommended packages.
@@ -18,8 +18,8 @@
 \usepackage[cal=boondoxo]{mathalfa}
 \DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
 \usepackage{amsmath}
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{observation}[theorem]{Observation}
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{observation}[theorem]{Observation}
 \usepackage{color}
 \usepackage{xspace}
 \input{macros}
@@ -35,169 +35,142 @@
 % Using the geometry package with a small
 % page size to create the article graphic
 
-\title{Quantum Abstract Machine}  
+\bibliographystyle{plainurl}
 
+\title{The Quantum Abstract Machine}  
+
+%\titlerunning{Dummy short title} %TODO optional, please use if title is longer than one line
+
+\author{Liyi Li and Le Chang and Mingwei Zhu and Rance Cleaveland}{ }{}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
+
+%\author{Joan R. Public\footnote{Optional footnote, e.g. to mark corresponding author}}{Department of Informatics, Dummy College, [optional: Address], Country}{joanrpublic@dummycollege.org}{[orcid]}{[funding]}
+
+\authorrunning{L. Li and L. Chang and M. Zhu and R. Cleaveland} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+
+\Copyright{L. Li and L. Chang and M. Zhu and R. Cleaveland} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+
+\ccsdesc[100]{} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm 
+
+\keywords{Quantum Computation, Abstract Machine} %TODO mandatory; please add comma-separated list of keywords
+
+\category{} %optional, e.g. invited paper
+
+%\relatedversion{} %optional, e.g. full version hosted on arXiv, HAL, or other respository/website
+%\relatedversiondetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93]{Classification (e.g. Full Version, Extended Version, Previous Version}{URL to related version} %linktext and cite are optional
+
+%\supplement{}%optional, e.g. related research data, source code, ... hosted on a repository like zenodo, figshare, GitHub, ...
+%\supplementdetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93, subcategory={Description, Subcategory}, swhid={Software Heritage Identifier}]{General Classification (e.g. Software, Dataset, Model, ...)}{URL to related version} %linktext, cite, and subcategory are optional
+
+%\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
+
+%\acknowledgements{I want to thank \dots}%optional
+
+%\nolinenumbers %uncomment to disable line numbering
+
+
+
+%Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\EventEditors{Liyi Li and Le Chang and Mingwei Zhu and Rance Cleaveland}
+\EventNoEds{2}
+\EventLongTitle{34th International Conference on Concurrency Theory (Concur 2023)}
+\EventShortTitle{Concur 2023}
+\EventAcronym{Concur}
+\EventYear{2023}
+\EventDate{September 18 -- 23, 2023}
+\EventLocation{Antwerp, Belgium}
+\EventLogo{}
+\SeriesVolume{34}
+\ArticleNo{23}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 \maketitle
 
+\begin{abstract}
+Quantum Abstract Machine
+\end{abstract}
+
+\input{qam-macros.tex}
+
+\section{Introduction} \label{sec:introduction}
+
+\begin{itemize}
+    \item Importance of quantum computing and communication
+    \item Need at present to be a quantum-mechanics expert to understand quantum computing
+    \item This work is intended to give an operational account of quantum interaction in a process-algebraic style, inspired by the Chemical Abstract Machine
+\end{itemize}
+
+Quantum computers offer unique capabilities that can be used to
+program substantially faster algorithms compared to those written for
+classical computers. For example, Grover's search algorithm \cite{grover1996,grover1997}
+can query unstructured data in sub-linear time (compared to linear
+time on a classical computer), and Shor's algorithm \cite{shors} can factorize a
+number in polynomial time (compared to sub-exponential time for the
+best known classical algorithm).
+Additionally, quantum computing provides a secured communication system that can transmit
+information without the possibility of eavesdropping.
+For example, quantum teleportation can safely communicate a qubit information between two parties.
+
+It is more and more essential to build a network based on the combination of quantum computing
+and the current classical network facilities to provide extra secured information transformation.
+Several classical quantum hybrid network protocols are proposed \cite{10.1145/3387514.3405853,https://doi.org/10.48550/arxiv.2205.08479,8068178,e24101488}.
+These protocols represent the first step for developing reliable classical quantum hybrid network (CQHN).
+It is necessary to develop a CQHN protocol framework that allow
+researchers to create efficient and correct CQHN protocols. 
+Many previous frameworks \cite{10.1145/1040305.1040318,9165801} were a quantum imitation of classical process algebra, by incorporating classical process algebra framework with quantum circuit operations.
+For example, CQP \cite{10.1145/1040305.1040318} instantiated CSP \cite{Hoare:1985:CSP:3921} with a quantum circuit language.
+
+There are two major issues associated with the previous frameworks.
+First, the beauty of process algebra is to define a mathematical model that captures the essence of
+multi-threaded program semantics; so that program executions are easily viewed as 
+automata transitions -- usually associated with automata based model checking mechanisms.
+Incorporating quantum circuit languages significantly complicates the program semantics of the previous frameworks. Thus, the associated verification framework is unnecessarily complicated.
+For example, defining a simple quantum teleportation in CQP has even more complicated structure than the original circuit describing quantum teleportation.
+Second, quantum circuit semantics is unintuitive, and incorporating quantum semantics with process algebra makes the system even more unintuitive.
+Eventually, programmers, who might have a brief idea about quantum computation, need to use a given protocol framework to define CQHN network protocols. If they spent most of the time working out how the unintuitive framework works, why will they use the framework?
+Unfortunately, previous CQHN frameworks had unintuitive program semantics because they basically put quantum circuit languages together with multi-threaded process algebra together with no chemistry. 
+
+In this paper, we introduce quantum abstract machine (QAM), permitting the definition of CQHN protocols based on classical chemical abstract machine. The key aspect in QAM's design identifies a set of properties enough to describe quantum network protocols without including quantum program operational semantics in the system.
+QAM leverages the fact that quantum network protocols are all based on multi-parties of quantum teleportation.
+Instead of defining the operational semantics for describing quantum teleportation, such as creating entanglement and qubit measurmwent, we obverse the mathmetical properties involving in the procedure and define them as conceptual mathemtical terms in our system.
+We identify a list of contributions:
+
+\begin{itemize}
+    \item Design quantum abstract machine suitable for defining CQHN protocols, which can be easily interpreted as automata.
+    \item Design a trace refinement framework based on the QAM language, which is useful for verifying if two protocols are equivalent. 
+    \item We utilize QAM to define QPASS and QCAST network protocols \cite{10.1145/3387514.3405853} in a simple automata structure, and we use the trace refinement framework to verify that the QPASS protocol is an instance of the QCAST protocol. 
+\end{itemize}
+
+\input{background}
+
+\section{The Quantum Abstract Machine:  Syntax and Semantics} \label{sec:qam}
+
+\input{semantics}
+
+\section{Behavioral Refinement and Equivalence in the Quantum Abstract Machine} \label{sec:refinement}
+
+\begin{itemize}
+    \item Bisimulation?  Prob. bisimulation?
+    \item Simulation?
+    \item Trace equivalence / trace containment
+\end{itemize}
+
+\section{Case Study} \label{sec:case-study}
+
+\begin{itemize}
+    \item Show refinement between QCAST / QPASS
+\end{itemize}
+
+\section{Related Work} \label{sec:related-work}
+
+\begin{itemize}
+    \item Single-threaded quantum programming languages
+    \item CQP (?) -- the language that is CSP + circuits
+\end{itemize}
+
+\section{Conclusions and Directions for Future Work} \label{sec:conclusions}
+
 We are proposing a quantum $\Pi$-calculus that can describe the quantum network protocols using long-distance entanglement. 
 
-\newcommand{\qsend}[3]{#1\texttt{.}#2\texttt{!<}#3\texttt{>}}
-\newcommand{\qrev}[2]{#1\texttt{?(}#2\texttt{)}}
-\newcommand{\qact}[2]{#1.#2}
-
-\newcommand{\qchan}[3]{#1\texttt{[}#2\texttt{]}.#3}
-\newcommand{\qchana}[3]{#1\texttt{[}#2\texttt{]}\,@\,#3}
-
-\newcommand{\parp}[2]{#1\,\texttt{@}\,#2}
-
-\newcommand{\parl}[2]{#1\,\texttt{|}\,#2}
-
-\newcommand{\parll}[2]{#1\,\texttt{||}\,#2}
-
-% \newcommand{\alchan}[2]{#1\,\triangleleft\,#2}
-
-% \newcommand{\chansol}[1]{\texttt{\{|}#1\texttt{|\}}}
-
-\newcommand{\mcomm}[2]{\texttt{[}#1\texttt{]}#2}
-
-\newcommand{\Ss}{\mathbb{S}}
-\newcommand{\Rs}{\mathbb{R}}
-\newcommand{\Ps}{\mathbb{P}}
-\newcommand{\Path}[1]{<#1> }
-\newcommand{\Cfg}[3]{\langle #1\texttt{,}#2\texttt{,}#3 \rangle}
-\newcommand{\Seta}[2]{#1\texttt{@}#2}
-\newcommand{\PSet}[1]{\texttt{\{}#1\texttt{\}}}
-
-\newcommand{\qcell}[1]{\langle #1 \rangle}
-\newcommand{\Cella}[3]{\langle #1 \rangle^{#2}_{#3}}
-\newcommand{\Cellb}[3]{\langle #1 \, \;...\rangle^{#2}_{#3}}
-
-\begin{figure}[h]
-{\small
-  \[\begin{array}{llcl} 
-      \texttt{Variables} & x,y \\
-      \texttt{Probability} & p\\
-      \texttt{Messages} & m\\
-    \texttt{Channels} & c\\
-      \texttt{Config} & \mathcal{L} & = & \Ss \qcell{\Rs}\\
-      \texttt{Sets} & \Ss & ::= & (\langle A (\texttt{|} P )^?\rangle^{n}_{c})^* \\
-      \texttt{Relations} & \Rs & ::= & [c \times c \times p] \\
-      \texttt{Actions} & A & ::= & \emptyset \mid \qsend{p}{c}{m} \mid \qrev{c}{x} \\
-    %   \text{Process} & P & ::= & \parp{A}{P} \\
-      \text{Process} & P,Q & ::= & 0 \mid A.P \\
-    %   \text{Adjacent Predicate} & S & \triangleq & A \times A \to \texttt{Bool} \\
-    \end{array}
-  \]
-}
-\caption{Quantum Pi Syntax}
-  \label{fig:q-pi-syntax}
-\end{figure}
-
-\begin{figure}[h]
-{\small
-  \begin{mathpar}
-   
-   \inferrule[GenChan]{}
-       {\Cellb{\qsend{p}{c}{m}}{i}{a}\Cellb{}{j}{b} \qcell{\{(a,b,p')\}\cup R})
-        \longrightarrow (\Cellb{}{i-}{a}\Cellb{\qsend{(p\cdot p')}{c}{m}}{j-}{b},\{(a,b)\}\cup R)}
-
-
-   \inferrule[GenQubit]{}
-       {\Cellb{}{n}{a}\longrightarrow \Cellb{}{n+}{a}}
-      
-  \inferrule[Communication]{}
-      { \qsend{p}{c}{m}\texttt{|} \qrev{c}{x}.P \xrightarrow{p.c.m}P[m/x]}
-    
-
-
-  \end{mathpar}
-}
-\caption{Quantum Pi Semantics}
-  \label{fig:q-pi-semantics}
-\end{figure}
-
-\begin{figure}[h]
-{\small
-\centering
-\begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
-\node[main] (1) {a}; 
-\node[main] (2) [right of=1] {$r_1$};
-\node[main] (3) [right of=2] {$r_4$};
-\node[main] (4) [right of=3] {b};
-\node[main] (5) [above right=0.5cm and 1.5cm of=1] {$r_2$};
-\node[main] (6) [right of=5] {$r_3$};
-\draw[-] (1) --  (2);
-\draw[-] (2) --  (3);
-\draw[-] (3) --  (4);
-\draw[-] (1) --  (5);
-\draw[-] (5) --  (6);
-\draw[-] (6) --  (3);
-\end{tikzpicture} 
-
-
-
-  \begin{mathpar}
-   \mathcal{L} =  \texttt{S} \qcell{\texttt{R}} \\
-   = \Cella{\qsend{1}{c}{m}|0}{10}{a}\Cella{0}{10}{r_1}\Cella{0}{10}{r_2}\Cella{0}{10}{r_3}\Cella{0}{10}{r_4}\Cella{\qrev{c}{m}.0}{10}{b} \\
-   \qcell{(a,r_1,0.5), (a,r_2,0.5), (r_1, r_4, 0.5), (r_2, r_3, 0.5), (r_3,r_4, 0.5), (b,r_4,0.5)} \\
-  \end{mathpar}
-
-
-\begin{tikzpicture}[node distance={1.5cm}, thick, main/.style = {}] 
-\node[main] (1) {S$\langle$\{(a,r_1,0.5), (a,r_2,0.5)\}$\cup$R$\rangle$}; 
-\node[main] (2) [below left=2cm and 15cm of=1] {$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_1}$... $\langle\{(r_1,r_4)\}\cup$R$\rangle$}; 
-\node[main] (3) [below right=2cm and 15cm of=1] {\text{\ \ \ \ \ \ }$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_2}$..., $\qcell{\{(r_2,r_3)\}\cup\text{R}}$}; 
-\node[main] (4) [below of=2] {$\Cella{0}{8}{r_1}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_4}$... $\langle\{(r_4,b)\}\cup$R$\rangle$};
-\node[main] (5) [below of=3] {\text{\ \ \ \ \ \ }$\Cella{0}{8}{r_2}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_3}$..., $\qcell{\{(r_3,r_4)\}\cup\text{R}}$};
-\node[main] (6) [below of=4] {$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.125}{c}{m}|\qrev{c}{m}.0}{9}{b}$... $\qcell{\text{R}}$};
-\node[main] (7) [below of=5] {\text{\ \ \ \ \ \ \ \ \;}$\Cella{0}{8}{r_3}$ $\Cella{\qsend{0.125}{c}{m}|0}{9}{r_4}$..., $\qcell{\{(r_4,b)\}\cup\text{R}}$};
-\node[main] (8) [below of=6] {$\Cella{0}{9}{b}$... $\qcell{\text{R}}$};
-\node[main] (9) [below of=7] {\text{\ \ \ \ \ \ \ \ }$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.0625}{c}{m}|\qrev{c}{m}.0}{9}{b}$..., $\qcell{\text{R}}$};
-\node[main] (10) [below of=9] {\text{\ \ \ \ \ \ }$\Cella{0}{n}{b}$... $\qcell{\text{R}}$};
-\draw[->] (1) -- node[midway, above left] {} (2); 
-\draw[->] (1) -- node[midway, above right] {} (3); 
-\draw[->] (2) -- node[midway, right] {} (4); 
-\draw[->] (4) -- node[midway, right] {} (6);
-\draw[->] (6) -- node[midway, right] {$0.125.c.m$} (8); 
-\draw[->] (3) -- node[midway, right] {} (5); 
-\draw[->] (5) -- node[midway, right] {} (7); 
-\draw[->] (7) -- node[midway, right] {} (9);
-\draw[->] (9) -- node[midway, right] {$0.0625.c.m$}  (10); 
-
-\end{tikzpicture} 
-
-
-% \begin{forest}
-% for tree={circle,draw, l sep=20pt}
-% [(S,\{(a,r_1), (a,r_2)\}\cup R) 
-%     [(\Cella{0}{n}{a}\Cella{\qsend{c}{m}|0}{n}{r_1}\texttt{...}, \{(r_1,r_4)\}\cup R), edge label={node[midway,left]{(a,r_1)}} 
-%       [(\Cella{0}{n}{r_1}\Cella{\qsend{c}{m}|0}{n}{r_4}\texttt{...}, \{(r_1,r_4)\}\cup R),edge label={node[midway,left] {(r_1,r_4)}} ] 
-%       [1] 
-%       [3]
-%     ]
-%     [2
-%       [3] 
-%       [2] 
-%       [5]
-%   ] 
-% ]
-% \end{forest}
-   
-   
-   
-   
-    % (\Cella{\qsend{c}{m}.0}{n}{a}\Cella{0}{n}{r_1}\Cella{\qrev{c}{m}.0}{n}{b},\{(a,r_1,true), (b,r_1,true)\}\cup R) \\
-    % \xrightarrow{(a,r_1,true), (b_r_1,true)} \\ (\Cella{0}{n-}{a}\Cella{0}{n--}{r_1}\Cella{\qsend{c}{m}\texttt{|}\qrev{c}{m}.0}{n-}{b},\{(a,r_1,false),(b,r_1,false)\}\cup R) \\
-    % \xrightarrow{} \\
-    % (\Cella{0}{n}{a}\Cella{0}{n}{r_1}\Cella{0}{n}{b},\{(a,r_1,true),(b,r_1,true)\}\cup R)
-        
-
-
-}
-\caption{Quantum Pi Example}
-  \label{fig:q-pi-example}
-\end{figure}
 
 % \Cref{fig:q-pi-syntax} provides the syntax of the language. Every channel is a list of qubits,
 % written as $\parl{\parl{q_0}{...}}{q_n}$. We also have a predicate $S$ determining the adjacency of two channel qubits, i.e., two qubits are adjacent with each other if they are close to each other in distance.
@@ -205,6 +178,7 @@ We are proposing a quantum $\Pi$-calculus that can describe the quantum network 
 % \Cref{fig:q-pi-semantics} provides the reduction rules.
 % Rule \rulelab{SCon1} to \rulelab{SCon3} are congruence rules such that the channel building operations commute with other operations.
 % Rule \rulelab{Com} sends a quantum message from the left process to the right via a channel held by process $T$, while rule \rulelab{Chan} builds a long distance channel via $n$ qubits. For these two rules to happen, we need to check if all the qubits are adjacent with each other and the lifetime, checked by predicate $\texttt{time}$, of each qubit is not expired. Rule \rulelab{Com} is a probabilistic rule, such that the function \texttt{rate} produces a probability that the arrow will exist. The probability depends on the channel length.
+\bibliography{reference}
 
 \end{document}
 

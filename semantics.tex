@@ -1,0 +1,163 @@
+\begin{figure}[h]
+{\small
+  \[\begin{array}{llcl} 
+      \texttt{Variables} & x,y \\
+      \texttt{Probability} & p\\
+      \texttt{Messages} & m\\
+    \texttt{Channels} & c\\
+    \texttt{Time Stamps} & t\\
+      \texttt{Actions} & A & ::= & \emptyset \mid \qsend{p}{c}{m} \mid \qrev{c}{x} \\
+      \text{Process} & P,Q & ::= & 0 \mid A.P \\
+      \texttt{Sets} & \Ss & ::= & (\langle A (\texttt{|} P )^?\rangle^{n}_{c})^* \\
+      \texttt{Relations} & \Rs & ::= & [c \times c \times p] \\
+      \texttt{Relation Functions} & \Fs & ::= & t \to \Rs\\
+      \texttt{Program Configuration} & \Ls & ::= & \Ss \qcell{\Rs}\\
+      \texttt{Configuration} & \Cs & ::= & \qcell{\Ls}_{p}\qcell{\Fs}_{f}\qcell{t}_{t}
+    \end{array}
+  \]
+}
+\caption{Quantum Pi Syntax}
+  \label{fig:q-pi-syntax}
+\end{figure}
+
+\begin{figure}[h]
+{\small
+  \begin{mathpar}
+   
+   \inferrule[GenChan]{}
+       {\Cellb{\qsend{p}{c}{m}}{i}{a}\Cellb{}{j}{b} \qcell{\{(a,b,p')\}\cup R})
+        \longrightarrow (\Cellb{}{i-}{a}\Cellb{\qsend{(p\cdot p')}{c}{m}}{j-}{b},\{(a,b)\}\cup R)}
+
+
+   \inferrule[GenQubit]{}
+       {\Cellb{}{n}{a}\longrightarrow \Cellb{}{n+}{a}}
+      
+  \inferrule[Communication]{}
+      { \qsend{p}{c}{m}\texttt{|} \qrev{c}{x}.P \xrightarrow{p.c.m}P[m/x]}
+    
+  \inferrule[RelationUp]{}
+      { \qcell{\Ss \qcell{\Rs}}_{p}\qcell{\Fs}_{f}\qcell{t}_{t} \longrightarrow \qcell{\Ss \qcell{\Fs(t)}}_{p}\qcell{\Fs}_{f}\qcell{t}_{t}}
+
+  \inferrule[TimeUp]{}
+      {\qcell{t}_{t} \longrightarrow \qcell{t+}_{t}}
+
+  \end{mathpar}
+}
+\caption{Quantum Pi Semantics}
+  \label{fig:q-pi-semantics}
+\end{figure}
+
+The program syntax of Quantum Abstract Machine (QAM) is based on Pi-calculus given in \Cref{fig:q-pi-syntax}. 
+An action is either a message send ($\qsend{p}{c}{m}$) or receipt ($\qrev{c}{x}$) operation,
+with $c$ being a channel name and $m$ is a message. $p$ is the likelihood of the send operation.
+A process consists with a chain of actions ($A.P$) that ends at a terminated process ($0$).
+All of the processes happen inside a cell structure $\qcell{}$.
+
+
+\begin{figure}[t]
+{\small
+\begin{center}
+\begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
+\node[main] (1) {a}; 
+\node[main] (2) [right of=1] {$r_1$};
+\node[main] (3) [right of=2] {$r_4$};
+\node[main] (4) [right of=3] {b};
+\node[main] (5) [above right=0.5cm and 1.5cm of 1] {$r_2$};
+\node[main] (6) [right of=5] {$r_3$};
+\draw[-] (1) --  (2);
+\draw[-] (2) --  (3);
+\draw[-] (3) --  (4);
+\draw[-] (1) --  (5);
+\draw[-] (5) --  (6);
+\draw[-] (6) --  (3);
+\end{tikzpicture}
+\end{center}
+}
+\caption{QPass Example Path Connectivity}
+  \label{fig:q-pi-example}
+\end{figure}
+ 
+\begin{figure}[t]
+{\small
+{\hspace*{-10em}
+\begin{tikzpicture}[node distance={1.5cm}, thick, main/.style = {}] 
+\node[main] (1) {S$\langle\{(a,r_1,0.5), (a,r_2,0.5)\}\cup$R$\rangle$}; 
+\node[main] (2) [below left=0.5cm and 0.35cm of 1] {$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_1}$... $\langle\{(r_1,r_4)\}\cup$R$\rangle$}; 
+\node[main] (3) [below right=0.5cm and 0.35cm of 1] {\text{\ \ \ \ \ \ }$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_2}$..., $\qcell{\{(r_2,r_3)\}\cup\text{R}}$}; 
+\node[main] (4) [below of=2] {$\Cella{0}{8}{r_1}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_4}$... $\langle\{(r_4,b)\}\cup$R$\rangle$};
+\node[main] (5) [below of=3] {\text{\ \ \ \ \ \ }$\Cella{0}{8}{r_2}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_3}$..., $\qcell{\{(r_3,r_4)\}\cup\text{R}}$};
+\node[main] (6) [below of=4] {$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.125}{c}{m}|\qrev{c}{m}.0}{9}{b}$... $\qcell{\text{R}}$};
+\node[main] (7) [below of=5] {\text{\ \ \ \ \ \ \ \ \;}$\Cella{0}{8}{r_3}$ $\Cella{\qsend{0.125}{c}{m}|0}{9}{r_4}$..., $\qcell{\{(r_4,b)\}\cup\text{R}}$};
+\node[main] (8) [below of=6] {$\Cella{0}{9}{b}$... $\qcell{\text{R}}$};
+\node[main] (9) [below of=7] {\text{\ \ \ \ \ \ \ \ }$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.0625}{c}{m}|\qrev{c}{m}.0}{9}{b}$..., $\qcell{\text{R}}$};
+\node[main] (10) [below of=9] {\text{\ \ \ \ \ \ }$\Cella{0}{n}{b}$... $\qcell{\text{R}}$};
+\draw[->] (1) -- node[midway, above left] {} (2); 
+\draw[->] (1) -- node[midway, above right] {} (3); 
+\draw[->] (2) -- node[midway, right] {} (4); 
+\draw[->] (4) -- node[midway, right] {} (6);
+\draw[->] (6) -- node[midway, right] {$0.125.c.m$} (8); 
+\draw[->] (3) -- node[midway, right] {} (5); 
+\draw[->] (5) -- node[midway, right] {} (7); 
+\draw[->] (7) -- node[midway, right] {} (9);
+\draw[->] (9) -- node[midway, right] {$0.0625.c.m$}  (10); 
+\end{tikzpicture} 
+}
+{\footnotesize
+$\hspace*{-7em}\texttt{S} \qcell{\texttt{R}} \equiv 
+\Cella{\qsend{1}{c}{m}|0}{10}{a}\Cella{0}{10}{r_1}\Cella{0}{10}{r_2}\Cella{0}{10}{r_3}\Cella{0}{10}{r_4}\Cella{\qrev{c}{m}.0}{10}{b} \qcell{(a,r_1,0.5), (a,r_2,0.5), (r_1, r_4, 0.5), (r_2, r_3, 0.5), (r_3,r_4, 0.5), (b,r_4,0.5)} 
+$
+}
+}
+\caption{Quantum Machine Transitions for \Cref{fig:q-pi-example}}
+  \label{fig:q-pi-example1}
+\end{figure} 
+
+QAM cells represent distinct components that involve in the communication. The most common cells are the process cells, 
+defined as $\Ss$ in \Cref{fig:q-pi-syntax}, each of which might contain a single process $P$, 
+or a parallel process $A\texttt{|}P$; 
+meaning that the action $A$ is ready to communicate with the process $P$.
+If a cell only contains a singleton process,
+it means that the cell is not ready for communication and the actions in the process will be transmitted to other cells.
+Essentially, process cells represent distinct computer locations that contain processes.
+There are two flags associated with a process cell: $n$ represents the number of available qubits in a cell, 
+and $c$ is the name of the computer location.
+Another cell structure in a program configuration ($\Ls$) is a relation cell $\qcell{\Rs}$,
+which contains relations defining the connectivity of computer locations.
+Each relation triple defines an adjacent pair of two locations, i.e., 
+a computer can send a message to another location only if the two locations are adjacent.
+There is also a probability value defining the probability of the successful rate of the communication between the two locations.
+
+A program configuration defines the instantaneous behaviors of executing a process with a fixed relation $\Rs$.
+\Cref{fig:q-pi-semantics} defines the semantics of QAM.
+Rules \rulelab{GenChan}, \rulelab{GenQubit}, and \rulelab{Communication} define the transition semantics for a program configuration.
+Rule \rulelab{GenChan} suggests that an action $\qsend{p}{c}{m}$ is transmitted from one cell $\qcell{}_a$ to another $\qcell{}_b$,
+if there is a triple relation $(a,b,p')$ in the relation cell. 
+In this procedure, the action accumulates the probability value $p\cdot p'$.
+In addition, each transmission requires the consumption of two qubits: each cell consumes one qubits.
+Rule \rulelab{Communication} defines the behavior of a parallel process inside a program cell.
+This is the only non-internal communication in the system. It represents that a message $c.m$
+is eventually consumed by a cell representing a computer location, with the probability of $p$.
+Rule \rulelab{GenQubit} generates a new qubit in a location to help transmit messages from one location to another.
+An example machine is given in \Cref{fig:q-pi-example} and \Cref{fig:q-pi-example1}.
+The protocol of the definition follows the QPASS model \cite{10.1145/3387514.3405853}. 
+The example contains six distinct computer locations and we want to send messages from location $a$ to $b$.
+Locations $r_1$, $r_2$, $r_3$, and $r_4$ are intermediate routers. 
+\Cref{fig:q-pi-example} represents the connectivity of different computers. 
+\Cref{fig:q-pi-example1} provides the transition computation tree of two possible ways of sending a message from $a$ to $b$.
+The key is that the message $c.m$ is transmitted via different paths here, 
+and in the left path, the success probability is $0.125$, while the right path provides a success probability rate of $0.0625$.
+According to the QPASS model, we then select the left path as the main path for executing the message transmission.
+
+On top of the program configuration, we have the whole configuration defined as $\Cs$ in \Cref{fig:q-pi-syntax}. 
+While the program configuration contains cells for instantaneous communication,
+the configuration $\Cs$ defines additional two cells $\qcell{\Fs}_{f}$ and $\qcell{t}_{t}$ for long term effects.
+$\qcell{t}_{t}$ stores a global clock time $t$ representing periods of time. When $t$ is updated to $t+1$, the time passes a long enough period so that the relation $\Rs$ in the relation cell might not be a good representation of the connectivity of the system anymore.
+Thus, we update the relation cell data by $\Fs(t)$ in rule \rulelab{RelationUp} in \Cref{fig:q-pi-semantics}.
+In quantum computation, the success rate of transmitting data between two locations can change dramatically overtime.
+In the recent development \cite{https://doi.org/10.48550/arxiv.2205.06300}, 
+some protocols admit an experimental procedure to determine the success rates for connectivity pairs in the network for a time, and use the experimental rates to represent the probability values for pairs in a given of time.
+The update of the relation by the function application $\Fs(t)$ represents the update of the success rates overtime in a protocol.
+Rule \rulelab{TimeUp} represents the update of clocks overtime.
+
+
+
