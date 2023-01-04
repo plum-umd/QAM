@@ -1,18 +1,62 @@
-\begin{figure}[h]
+\section{The Quantum Abstract Machine:  Syntax and Semantics} \label{sec:qam}
+
+Essentially, quantum network protocols describe communication procedures 
+among different quantum computers via the connections through classical network devices. 
+In quantum teleportation (\Cref{sec:background}), there are two main procedures: 
+1) a quantum message is transformed from Alice to Bob, 
+and 2) a quantum entangled channel is built between Alice and Bob and causes Alice and Bob a qubit each to transform the message.
+In a practical quantum network protocol, such as QCast and QPass \cite{10.1145/3387514.3405853}, 
+there is another procedure, operated by classical computers, to determine how an optimized quantum channel is established to send a message from Alice to Bob.
+If Alice and Bob is close enough to establish a direct entangled channel, the situation is the same as quantum teleportation;
+otherwise, there is a complicated entangled qubit group that connects Alice and Bob as well as all the intermediate router stations,
+so that the message can be sent from Alice to Bob. During the process, $n$ intermediate router stations cause $2n$ additional channels to establish the channel.
+
+\begin{figure}[t]
+{\small
+\begin{center}
+\begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
+\node[main] (1) {$a$}; 
+\node[main] (2) [right of=1] {$r_1$};
+\node[main] (3) [right of=2] {$r_4$};
+\node[main] (4) [right of=3] {$b$};
+\node[main] (5) [above right=0.5cm and 1.5cm of 1] {$r_2$};
+\node[main] (6) [right of=5] {$r_3$};
+\draw[-] (1) --  (2);
+\draw[-] (2) --  (3);
+\draw[-] (3) --  (4);
+\draw[-] (1) --  (5);
+\draw[-] (5) --  (6);
+\draw[-] (6) --  (3);
+\end{tikzpicture}
+\end{center}
+}
+\caption{QPass Example Path Connectivity}
+  \label{fig:q-pi-example}
+\end{figure}
+
+We model these quantum network protocols via an abstract machine framework that represents the above procedures.
+We use a cell structure $\qcell{}$ to represent a conceptual device involving in the protocol communication.
+For example, $\qcell{P}^{n}_{c}$ is a device named $c$ with $n$ qubit recourse and its program content is $P$.
+In the section, we introduce the quantum abstract machine (QAM) syntax and semantics, following by the trace refinement definition for QAM processes. We use quantum teleportation, QCast and QPass as running examples.
+QPass is a hybrid classical quantum network protocol. It contains a static classically generated graph describing the connectivity of different parties involved in a communication.
+In \Cref{fig:q-pi-example}, a message is sent from node $a$ to $b$, and nodes $r_1$ to $r_4$ are intermediate routers.
+A message is sent via either the path $a$, $r_1$, $r_4$, and $b$, or $a$, $r_2$, $r_3$, $r_4$ and $b$.
+
+\begin{figure}[t]
 {\small
   \[\begin{array}{llcl} 
       \texttt{Variables} & x,y \\
       \texttt{Probability} & p\\
       \texttt{Messages} & m\\
     \texttt{Channels} & c\\
-    \texttt{Time Stamps} & t\\
+    \texttt{Time Stamps} & \tau\\
       \texttt{Actions} & A & ::= & \emptyset \mid \qsend{p}{c}{m} \mid \qrev{c}{x} \\
       \text{Process} & P,Q & ::= & 0 \mid A.P \\
       \texttt{Sets} & \Ss & ::= & (\langle A (\texttt{|} P )^?\rangle^{n}_{c})^* \\
       \texttt{Relations} & \Rs & ::= & [c \times c \times p] \\
-      \texttt{Relation Functions} & \Fs & ::= & t \to \Rs\\
-      \texttt{Program Configuration} & \Ls & ::= & \Ss \qcell{\Rs}\\
-      \texttt{Configuration} & \Cs & ::= & \qcell{\Ls}_{p}\qcell{\Fs}_{f}\qcell{t}_{t}
+      \texttt{Relation Functions} & \Fs & ::= & \tau \to \Rs\\
+      \texttt{Program Configuration} & \Ls & ::= & \Ss \qcell{\Rs}_r\\
+      \texttt{Configuration} & \Cs & ::= & \qcell{\Ls}_{p}\qcell{\Fs}_{f}\qcell{\tau}_{t}
     \end{array}
   \]
 }
@@ -20,7 +64,47 @@
   \label{fig:q-pi-syntax}
 \end{figure}
 
-\begin{figure}[h]
+
+\subsection{Syntax} \label{sec:qamsyntax}
+
+As shown in \Cref{fig:q-pi-syntax}, the execution of a QAM program relies on the concept of 
+a configuration that describes conceptual computer components for QAM program interactions.
+A configuration can possibly contain many cell structures $\qcell{\Theta}_{\eta}$, where $\Theta$ is the content of $\eta$ is the name.
+For example, $\qcell{\Ls}_{p}$ is a program execution cell with name $p$, and program execution configuration as its content $\Ls$,
+Cell $\qcell{\Fs}_{f}$ holds a function $\Fs$ representing the dynamically updated network node connectivity with respect to time, and $\qcell{\tau}_{t}$ is a global time cell representing periods of time for updating the connectivity graph.
+
+Program executions represent multiple communications of quantum messages through different nodes in a network.
+We assume that a single message communication always happens presently within a global time period so that during a message communication, the global clock remains the same.
+A program execution configuration acts as the content $\Ls$ of the program execution cell $\qcell{\Ls}_{p}$ with the syntax $\Ss \qcell{\Rs}_r$, where cell $\qcell{\Rs}_r$ stores the node connectivity at a time, $\Ss$ is a set of cells representing different nodes.
+The content $\Rs$ in a relation cell contains relations defining the connectivity of computer locations.
+Each relation triple defines an adjacent pair of two locations, i.e., 
+a computer can send a message to another location only if the two locations are adjacent.
+There is also a probability value defining the probability of the successful rate of the communication between the two locations.
+
+In a node cell, $c$ represents the node name and $n$ represents the number of qubit resources in the node.
+$A (\texttt{|} P )^?$ is a Pi-calculus lite process language representing the communication program content in the node.
+$A$ represents a message action that is about to send and receive from the node. $P$ represents a possible local process for the node to execute after it receives a message.
+An action is either a message send ($\qsend{p}{c}{m}$) or receipt ($\qrev{c}{x}$) operation,
+with $c$ being a channel name and $m$ is a message. $p$ is the likelihood of the send operation.
+A local process consists with a chain of actions ($A.P$) that ends at a terminated process ($0$).
+If a node cell only contains a singleton process,
+it means that the cell is not ready for communication and the actions in the process will be transmitted to other cells.
+
+{\small
+\[
+\begin{array}{l}
+\texttt{S} \qcell{\texttt{R}}_r \equiv 
+\Cella{\qsend{1}{c}{m}|0}{10}{a}\Cella{0}{10}{r_1}\Cella{0}{10}{r_2}\Cella{0}{10}{r_3}\Cella{0}{10}{r_4}\Cella{\qrev{c}{m}.0}{10}{b} 
+\\\qquad\qquad
+\qcell{(a,r_1,0.5), (a,r_2,0.5), (r_1, r_4, 0.5), (r_2, r_3, 0.5), (r_3,r_4, 0.5), (b,r_4,0.5)} 
+\end{array}
+\]
+}
+
+As an example of the QAM syntax, the above program execution configuration defines the program to send a message from location $a$ to $b$.
+The first line corresponds to node cells $\texttt{S}$, containing the target and destination nodes $a$ and $b$ as well as intermediate routers $r_1$ to $r_4$; while the second line corresponds to relation cell $\qcell{\texttt{R}}_r$ capturing the connectivity in \Cref{fig:q-pi-example}.
+
+\begin{figure}[t]
 {\small
   \begin{mathpar}
    
@@ -47,36 +131,7 @@
   \label{fig:q-pi-semantics}
 \end{figure}
 
-The program syntax of Quantum Abstract Machine (QAM) is based on Pi-calculus given in \Cref{fig:q-pi-syntax}. 
-An action is either a message send ($\qsend{p}{c}{m}$) or receipt ($\qrev{c}{x}$) operation,
-with $c$ being a channel name and $m$ is a message. $p$ is the likelihood of the send operation.
-A process consists with a chain of actions ($A.P$) that ends at a terminated process ($0$).
-All of the processes happen inside a cell structure $\qcell{}$.
 
-
-\begin{figure}[t]
-{\small
-\begin{center}
-\begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
-\node[main] (1) {a}; 
-\node[main] (2) [right of=1] {$r_1$};
-\node[main] (3) [right of=2] {$r_4$};
-\node[main] (4) [right of=3] {b};
-\node[main] (5) [above right=0.5cm and 1.5cm of 1] {$r_2$};
-\node[main] (6) [right of=5] {$r_3$};
-\draw[-] (1) --  (2);
-\draw[-] (2) --  (3);
-\draw[-] (3) --  (4);
-\draw[-] (1) --  (5);
-\draw[-] (5) --  (6);
-\draw[-] (6) --  (3);
-\end{tikzpicture}
-\end{center}
-}
-\caption{QPass Example Path Connectivity}
-  \label{fig:q-pi-example}
-\end{figure}
- 
 \begin{figure}[t]
 {\small
 {\hspace*{-10em}
@@ -102,30 +157,12 @@ All of the processes happen inside a cell structure $\qcell{}$.
 \draw[->] (9) -- node[midway, right] {$0.0625.c.m$}  (10); 
 \end{tikzpicture} 
 }
-{\footnotesize
-$\hspace*{-7em}\texttt{S} \qcell{\texttt{R}} \equiv 
-\Cella{\qsend{1}{c}{m}|0}{10}{a}\Cella{0}{10}{r_1}\Cella{0}{10}{r_2}\Cella{0}{10}{r_3}\Cella{0}{10}{r_4}\Cella{\qrev{c}{m}.0}{10}{b} \qcell{(a,r_1,0.5), (a,r_2,0.5), (r_1, r_4, 0.5), (r_2, r_3, 0.5), (r_3,r_4, 0.5), (b,r_4,0.5)} 
-$
-}
 }
 \caption{Quantum Machine Transitions for \Cref{fig:q-pi-example}}
   \label{fig:q-pi-example1}
 \end{figure} 
 
-QAM cells represent distinct components that involve in the communication. The most common cells are the process cells, 
-defined as $\Ss$ in \Cref{fig:q-pi-syntax}, each of which might contain a single process $P$, 
-or a parallel process $A\texttt{|}P$; 
-meaning that the action $A$ is ready to communicate with the process $P$.
-If a cell only contains a singleton process,
-it means that the cell is not ready for communication and the actions in the process will be transmitted to other cells.
-Essentially, process cells represent distinct computer locations that contain processes.
-There are two flags associated with a process cell: $n$ represents the number of available qubits in a cell, 
-and $c$ is the name of the computer location.
-Another cell structure in a program configuration ($\Ls$) is a relation cell $\qcell{\Rs}$,
-which contains relations defining the connectivity of computer locations.
-Each relation triple defines an adjacent pair of two locations, i.e., 
-a computer can send a message to another location only if the two locations are adjacent.
-There is also a probability value defining the probability of the successful rate of the communication between the two locations.
+\subsection{Semantics} \label{sec:qamsemantics}
 
 A program configuration defines the instantaneous behaviors of executing a process with a fixed relation $\Rs$.
 \Cref{fig:q-pi-semantics} defines the semantics of QAM.
