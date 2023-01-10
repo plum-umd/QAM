@@ -1,0 +1,56 @@
+\section{Behavioral Refinement and Equivalence} \label{sec:refinement}
+
+We define the QAM equivalence relation, we utilize the trace refinement relation.
+The essential idea is that two transition systems are equivalent if the same sequences of actions can be performed
+from their respective initial states.
+Based on the QAM language defined in \Cref{sec:qam}, we define a labeled transition system as the following.
+
+\begin{definition}\label{def:labeledsystem}\rm[QAM Labeled Transition System]
+A \emph{QAM labeled transition system (LTS)} is a triple $\Sigma=(\Cs,A,S)$ where
+\begin{itemize}
+\item $\Cs$ is a set of configuration defined in \Cref{fig:q-pi-syntax}.
+\item $A$ is a set of labels, whose elements have the form $p.c.m$ defined in \Cref{fig:q-pi-syntax}.
+\item $S$ is a set of transition rules reflecting the QAM semantics in \Cref{sec:qamsemantics}.
+\end{itemize}
+\end{definition}
+
+We can also define an initial configuration $C$ for a LTS $\Sigma=(\Cs,A,S)$ to restrict $\Sigma$ to begin at $C$, written as $(\Sigma,C)$.
+In a LTS $(\Sigma,C)$, a trace is defined as a sequence of labels by evaluating an initial configuration $C$ by only collecting non-empty labels in sequence defined in \Cref{sec:qamsemantics}. The definition of a trace refinement relation is typically defined on a set of traces, referring to all possible traces by evaluating $C$ as the initial state, with the definition as follows.
+
+\begin{definition}\label{def:traces}\rm[QAM Traces]
+Given a LTS $(\Sigma,C)$ with $\Sigma=(\Cs,A,S)$, the set of \emph{traces} for a configuration $C\in \Cs$, written as $traces(\Sigma,C)$,
+is the minimal set satisfying:
+
+\begin{itemize}
+\item $\epsilon\in traces(\Sigma,C)$, i.e., the empty trace is a member of $traces(\Sigma,C)$,
+\item if there is a configuration $C'$, such that $C\longrightarrow C'$, $traces(\Sigma,C)=traces(\Sigma,C')$,
+\item if there is a configuration $C'$, such that $C\xrightarrow{p.c.m}C'$ and $\sigma\in traces(\Sigma,C')$,
+then the concatenation of $(p.c.m)$ and $\sigma$ is in $traces(\Sigma,C)$, written as $(p.c.m)\sigma \in traces(\Sigma,C)$.
+\end{itemize}
+\end{definition}
+
+In defining a trace refinement relation, we are comparing two labeled transition systems $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$ with the action set to be the same in the two LTS by the definition below.
+
+\begin{definition}\label{def:traceeq}\rm[QAM Trace Refinement]
+Given two labeled transition systems $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$, we say that $(\Sigma_1,C_1)$ trace refines $(\Sigma_2,C_2)$, written as $(\Sigma_1,C_1) \sqsubseteq (\Sigma_2,C_2)$, iff $traces(\Sigma_1,C_1)\subseteq traces(\Sigma_2,C_2)$
+
+\end{definition}
+
+It is tricky to utilize the above definition to prove inductive properties for quantum abstract machines. To do so, we need to incorporate
+two labeled systems with the traces definition in \Cref{def:traces}.
+Mainly, we equate a configuration $C_a$ in $(\Sigma_1,C_1)$ with a configuration $C_b$ in $(\Sigma_2,C_2)$ by a configuration equivalence relation $=_C$, written as $C_a =_C C_b$. The inductive version of the trace refinement definition is given as follows.
+
+\begin{definition}\label{def:traceeq1}\rm[QAM Trace Refinement]
+Given two labeled transition systems $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$, and $C_1 =_C C_2$, we say that $(\Sigma_1,C_1)$ trace refines $(\Sigma_2,C_2)$, written as $(\Sigma_1,C_1) \sqsubseteq (\Sigma_2,C_2)$, iff
+
+\begin{itemize}
+\item $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$ cannot make a move,
+\item there is a configuration $C'_1$, such that $C_1\longrightarrow C'_1$, and $(\Sigma_1,C'_1) \sqsubseteq (\Sigma_2,C_2)$,
+\item there is a configuration $C'_2$, such that $C_2\longrightarrow C'_2$, then $(\Sigma_1,C_1) \sqsubseteq (\Sigma_2,C'_2)$,
+\item there are configurations $C'_1$ and $C'_2$, such that $C_1\xrightarrow{p.c.m}C'_1$ and $C_2\xrightarrow{p.c.m}C'_2$ and $C_1' =_C C'_2$ and $(\Sigma_1,C'_1) \sqsubseteq (\Sigma_2,C'_2)$.
+\end{itemize}
+\end{definition}
+
+We utilize \Cref{def:traceeq1} to show that the QPass protocol is a special instance of QCast, by showing that if we treat the statically generated connectivity graph in QCast, then every QPass trace is an instance of a QCast trace. The detail descriptions of viewing QPass and QCast as two labeled transition systems as well as the theorem are given in \Cref{sec:case-study}.
+
+
