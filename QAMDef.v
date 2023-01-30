@@ -24,9 +24,11 @@ Inductive PCell : Type :=
 |SingleP (p: process) (n: nat) (c: channel)
 |MultiP (p: process) (n: nat) (c: channel) (plst: PCell).  
 
+Inductive threshold : Type := SendP (p: process) (t: prob).
+
 Inductive config : Type :=
 | PRConfig : PCell -> relation -> config
-| Config : PCell -> relation -> relation_update -> config.
+| Config : PCell -> relation -> relation_update -> list threshold -> config.
 
 Notation "p1 | p2" := (TParal p1 p2) (at level 50).
 
