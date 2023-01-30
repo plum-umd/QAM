@@ -49,14 +49,16 @@ A message is sent via either the path $a$, $r_1$, $r_4$, and $b$, or $a$, $r_2$,
       \texttt{Probability} & p\\
       \texttt{Messages} & m\\
     \texttt{Channels} & c\\
-    \texttt{Time Stamps} & \tau\\
-      \texttt{Actions} & A & ::= & \emptyset \mid \qsend{p}{c}{m} \mid \qrev{c}{x} \\
-      \text{Process} & P,Q & ::= & 0 \mid A.P \\
-      \texttt{Sets} & \Ss & ::= & (\langle A (\texttt{|} P )^?\rangle^{n}_{c})^* \\
-      \texttt{Relations} & \Rs & ::= & [c \times c \times p] \\
-      \texttt{Relation Functions} & \Fs & ::= & \tau \to \Rs\\
-      \texttt{Program Configuration} & \Ls & ::= & \Ss \qcell{\Rs}_r\\
-      \texttt{Configuration} & \Cs & ::= & \qcell{\Ls}_{p}\qcell{\Fs}_{f}\qcell{\tau}_{t}
+    \texttt{Global Time} & t\\
+    \texttt{Actions} & a & ::= & c \times m\\
+      \texttt{Singleton Process} & A & ::= & \emptyset \mid \qsend{p}{c}{m} \mid \qrev{c}{x} \\
+      \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
+      \texttt{Process Cell} & \varphi & ::= & \pcell{P}{n}{c} \\
+      \texttt{Relations} & R & ::= & [c \times c \times p] \\
+      \texttt{Relation Functions} & \Fs & ::= & t \to R\\
+    \texttt{Action Probabilities} & \rho & ::=& a \to p\\
+      \texttt{Program Configuration} & \Phi & ::= & \varphi^* \qcell{R}_{\textsf{r}}\qcell{a}_{\textsf{comm}}\\
+      \texttt{Configuration} & C & ::= & \Phi\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}}\qcell{\rho}_{\textsf{at}}\qcell{p}_{\textsf{s}}
     \end{array}
   \]
 }
@@ -109,21 +111,34 @@ The first line corresponds to node cells $\texttt{S}$, containing the target and
   \begin{mathpar}
    
    \inferrule[GenChan]{}
-       {\Cellb{\qsend{p}{c}{m}}{i}{a}\Cellb{}{j}{b} \qcell{\{(a,b,p')\}\cup R})
-        \longrightarrow (\Cellb{}{i-}{a}\Cellb{\qsend{(p\cdot p')}{c}{m}}{j-}{b},\{(a,b)\}\cup R)}
+       {\Cellb{\qsend{p}{c}{m}}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p')\}\cup R})
+        \longrightarrow (\Cellb{}{i-}{a}\Cella{\qsend{(p\cdot p')}{c}{m}\texttt{|}P}{j-}{b},\{(a,b)\}\cup R)}
 
 
    \inferrule[GenQubit]{}
-       {\Cellb{}{n}{a}\longrightarrow \Cellb{}{n+}{a}}
+       {\Cella{P}{n}{a}\longrightarrow \Cella{P}{n+}{a}}
+
+   \inferrule[MoreTries]{}
+       {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
       
+   \inferrule[NoTries]{}
+       {\comp{P} \longrightarrow 0}
+
   \inferrule[Communication]{}
-      { \qsend{p}{c}{m}\texttt{|} \qrev{c}{x}.P \xrightarrow{p.c.m}P[m/x]}
+      { \qcell{\qsend{p}{c}{m}\texttt{|} \qrev{c}{x}.P}^n_c\qcell{\emptyset}_{\textsf{comm}}
+           \longrightarrow  
+         \qcell{P[m/x]}^n_c\qcell{(p.c.m)}_{\textsf{comm}}}
     
+  \inferrule[topup]{}
+      { \qcell{(p.c.m)}_{\textsf{comm}}\qcell{\rho}_{\textsf{at}}\qcell{p'}_{\textsf{s}} \xrightarrow{c.m} 
+        \qcell{\emptyset}_{\textsf{comm}}\qcell{\rho[c.m\mapsto \rho(c.m)\odot p]}_{\textsf{at}}\qcell{p'}_{\textsf{s}}}\;\;\texttt{when}\;\rho(c.m)\odot p<p'
+
   \inferrule[RelationUp]{}
-      { \qcell{\Ss \qcell{\Rs}}_{p}\qcell{\Fs}_{f}\qcell{t}_{t} \longrightarrow \qcell{\Ss \qcell{\Fs(t)}}_{p}\qcell{\Fs}_{f}\qcell{t}_{t}}
+      { \qcell{R}_{\textsf{r}}\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}} \longrightarrow
+            \qcell{\Fs(t)}_{\textsf{r}}\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}}}
 
   \inferrule[TimeUp]{}
-      {\qcell{t}_{t} \longrightarrow \qcell{t+}_{t}}
+      {\qcell{t}_{\textsf{gt}} \longrightarrow \qcell{t+}_{\textsf{gt}}}
 
   \end{mathpar}
 }
