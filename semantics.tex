@@ -67,9 +67,9 @@ In the next two sections, we introduce the modeling of quantum network protocols
     \texttt{Channels} & c\\
     \texttt{Global Time} & t\\
     \texttt{Actions} & a & ::= & c \times m\\
-      \texttt{Singleton Process} & A & ::= & \emptyset \mid \qsend{p}{c}{m} \mid \qrev{c}{x} \\
+      \texttt{Singleton Process} & A & ::= & \emptyset  \mid \qsenda{c}{m} \mid \qsend{p}{c}{m}^t \mid \qrev{c}{x} \\
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
-      \texttt{Process Cell} & \varphi & ::= & \pcell{P}{n}{c} \\
+      \texttt{Process Cell} & \varphi & ::= & \pcell{P}{n,t}{c} \\
       \texttt{Relations} & R & ::= & [c \times c \times p] \\
       \texttt{Relation Functions} & \Fs & ::= & t \to R\\
     \texttt{Action Probabilities} & \rho & ::=& a \to p\\
@@ -125,13 +125,17 @@ The first line corresponds to node cells $\texttt{S}$, containing the target and
 {\small
   \begin{mathpar}
    
+   \inferrule[GenChanT]{}
+       {\Cellb{\qsenda{c}{m}}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}_{\textsf{rel}}\qcell{t}_{\textsf{gt}}
+        \longrightarrow \Cellb{}{i-}{a}\Cella{\qsend{p}{c}{m}^t\texttt{|}P}{j-}{b}\qcell{\{(a,b,p)\}\cup R}_{\textsf{rel}} \qcell{t}_{\textsf{gt}} }
+
    \inferrule[GenChan]{}
-       {\Cellb{\qsend{p}{c}{m}}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p')\}\cup R})
-        \longrightarrow (\Cellb{}{i-}{a}\Cella{\qsend{(p\cdot p')}{c}{m}\texttt{|}P}{j-}{b},\{(a,b)\}\cup R)}
+       {\Cellb{\qsend{p}{c}{m}^t}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}_{\textsf{rel}}
+        \longrightarrow \Cellb{}{i-}{a}\Cella{\qsend{p}{c}{m}^t\texttt{|}P}{j-}{b}\qcell{\{(a,b,p)\}\cup R}_{\textsf{rel}} }
 
 
    \inferrule[GenQubit]{}
-       {\Cella{P}{n}{a}\qcell{t}_{\textsf{gt}}\longrightarrow \Cella{P}{n+}{a}\qcell{t}_{\textsf{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta
+       {\Cella{P}{n,t'}{a}\qcell{t}_{\textsf{gt}}\longrightarrow \Cella{P}{n+,t}{a}\qcell{t}_{\textsf{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta\wedge t' < t
 
    \inferrule[MoreTries]{}
        {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
@@ -140,13 +144,13 @@ The first line corresponds to node cells $\texttt{S}$, containing the target and
        {\comp{P} \longrightarrow 0}
 
   \inferrule[Communication]{}
-      { \qcell{\qsend{p}{c}{m}\texttt{|} \qrev{c}{x}.P}^n_c\qcell{\emptyset}_{\textsf{comm}}
+      { \qcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}^n_c\qcell{\emptyset}_{\textsf{comm}}
            \longrightarrow  
-         \qcell{P[m/x]}^n_c\qcell{(p.c.m)}_{\textsf{comm}}}
+         \qcell{P[m/x]}^n_c\qcell{\qsend{p}{c}{m}^t}_{\textsf{comm}}}
     
   \inferrule[topup]{}
-      { \qcell{(p.c.m)}_{\textsf{comm}}\qcell{\rho}_{\textsf{at}}\qcell{t}_{\textsf{gt}} \xrightarrow{c.m} 
-        \qcell{\emptyset}_{\textsf{comm}}\qcell{\rho[c.m\mapsto \rho(c.m)\odot p]}_{\textsf{at}}\qcell{t}_{\textsf{gt}}}\;\;\texttt{when}\;\rho(c.m)\odot p<\mu
+      { \qcell{\qsend{p}{c}{m}^{t'}}_{\textsf{comm}}\qcell{\rho}_{\textsf{at}}\qcell{t}_{\textsf{gt}} \xrightarrow{c.m} 
+        \qcell{\emptyset}_{\textsf{comm}}\qcell{\rho[c.m\mapsto \rho(c.m)\odot p]}_{\textsf{at}}\qcell{t+}_{\textsf{gt}}}\;\;\texttt{when}\;\rho(c.m)\odot p<\mu\wedge t - t' < \nu
 
   \inferrule[RelationUp]{}
       { \qcell{R}_{\textsf{r}}\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}} \longrightarrow
@@ -154,7 +158,7 @@ The first line corresponds to node cells $\texttt{S}$, containing the target and
 
   \end{mathpar}
 }
-\caption{Quantum Pi Semantics. $\beta$ and $\mu$ are globally defined for the qubit generation period and the message threshold probability.}
+\caption{Quantum Pi Semantics. $\beta$, $\mu$, and $\nu$ are globally defined for the qubit generation period, the message threshold probability, and message sending finished threshold. $\Cella{P}{n}{a}$ refers to that the $t$ in $\Cella{P}{n,t}{a}$ is omitted in the rule.}
   \label{fig:q-pi-semantics}
 \end{figure}
 
