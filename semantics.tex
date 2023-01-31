@@ -1,32 +1,27 @@
 \section{The Quantum Abstract Machine:  Syntax and Semantics} \label{sec:qam}
 
-Essentially, quantum network protocols describe communication procedures 
-among different quantum computers via the connections through classical network devices. 
-In quantum teleportation (\Cref{sec:background}), there are two main procedures: 
-1) a quantum message is transformed from Alice to Bob, 
-and 2) a quantum entangled channel is built between Alice and Bob and causes Alice and Bob a qubit each to transform the message.
-In a practical quantum network protocol, such as QCast and QPass \cite{10.1145/3387514.3405853}, 
-there is another procedure, operated by classical computers, to determine how an optimized quantum channel is established to send a message from Alice to Bob.
-If Alice and Bob is close enough to establish a direct entangled channel, the situation is the same as quantum teleportation;
-otherwise, there is a complicated entangled qubit group that connects Alice and Bob as well as all the intermediate router stations,
-so that the message can be sent from Alice to Bob. During the process, $n$ intermediate router stations cause $2n$ additional channels to establish the channel.
+This section describes QAM's syntax and semantics through the QPass example \cite{10.1145/3387514.3405853}.
 
 \begin{figure}[t]
 {\small
 \begin{center}
 \begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
-\node[main] (1) {$a$}; 
+\node[main] (1) {\cn{Ann}}; 
 \node[main] (2) [right of=1] {$r_1$};
 \node[main] (3) [right of=2] {$r_4$};
-\node[main] (4) [right of=3] {$b$};
+\node[main] (4) [right of=3] {\cn{Bob}};
 \node[main] (5) [above right=0.5cm and 1.5cm of 1] {$r_2$};
 \node[main] (6) [right of=5] {$r_3$};
+\node[main] (7) [below of=1] {\cn{Cat}};
+\node[main] (8) [below of=3] {\cn{Dan}};
 \draw[-] (1) --  (2);
 \draw[-] (2) --  (3);
 \draw[-] (3) --  (4);
 \draw[-] (1) --  (5);
 \draw[-] (5) --  (6);
 \draw[-] (6) --  (3);
+\draw[-] (7) --  (2);
+\draw[-] (2) --  (8);
 \end{tikzpicture}
 \end{center}
 }
@@ -34,13 +29,34 @@ so that the message can be sent from Alice to Bob. During the process, $n$ inter
   \label{fig:q-pi-example}
 \end{figure}
 
-We model these quantum network protocols via an abstract machine framework that represents the above procedures.
-We use a cell structure $\qcell{}$ to represent a conceptual device involving in the protocol communication.
-For example, $\qcell{P}^{n}_{c}$ is a device named $c$ with $n$ qubit recourse and its program content is $P$.
-In the section, we introduce the quantum abstract machine (QAM) syntax and semantics, following by the trace refinement definition for QAM processes. We use quantum teleportation, QCast and QPass as running examples.
-QPass is a hybrid classical quantum network protocol. It contains a static classically generated graph describing the connectivity of different parties involved in a communication.
-In \Cref{fig:q-pi-example}, a message is sent from node $a$ to $b$, and nodes $r_1$ to $r_4$ are intermediate routers.
-A message is sent via either the path $a$, $r_1$, $r_4$, and $b$, or $a$, $r_2$, $r_3$, $r_4$ and $b$.
+\subsection{Capturing the Quantum Network Behaviors} \label{sec:qamexample}
+
+As we mentioned in \Cref{sec:background}, all quantum network protocols are based on the physical procedures of quantum teleportation and quantum swap operations and their physical phenomena and mathematical semantics have been well studied.
+On the other hand, building an evaluation framework for quantum network protocols does not require us to implement the complete physical procedure of individual operations; 
+instead, we intend to capture the operational behaviors that affect the evaluation factors,
+including the successful rates and probabilities of sending messages and the required resources.
+In fact, both quantum teleportation and swap can be summarized as a procedure to communicate a qubit between two parties with the cost of two qubits.
+
+Here, we investigate the modeling of message transmission in QAM by the QPass protocol \cite{10.1145/3387514.3405853}.
+\Cref{fig:q-pi-example} shows an example connectivity diagram such that party $\cn{Ann}$ and $\cn{Cat}$ send messages to $\cn{Bob}$ and $\cn{Dan}$, via the middle routers $r_1$ to $r_4$. There are two paths for \cn{Ann} to send to \cn{Bob} ($r_2 - r_4$ and $r_1 - r_4$), while there is only one path to send message from \cn{Cat} to \cn{Dan} ($r_1$). 
+
+In QAM, sending a message $a$ is viewed as a sequence of transmissions of ownership of $a$ from a node to is adjacent node.
+For example, assume that we want to send message $a$ from \cn{Cat} to \cn{Dan}, so it locates at $a$ at first.
+Then, $a$ is transmitted from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan}, each of which costs $a$'s sender node two qubits.
+There is also a probability reduction in guaranteeing that $a$ to be delivered to \cn{Dan}:
+the more ownership transmissions, the lower probability that $a$ is delivered.
+For example, the successful rate of the transmission from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan} might be user-defined probability values $p$ and $p'$, so the successful rate to send a message from \cn{Cat} to \cn{Dan} is $p * p'$.
+For simplicity, in the example in \Cref{fig:q-pi-example}, we assume that each station transmission reduces the successful rate by $50\%$,
+i.e., if a message is transmitted from $a$ to $r_1$, it has $50\%$ chance that the message is lost.
+
+In QAM, sending a message can be viewed as a sequence of transitions as $\to^{*}\xrightarrow{a}$,
+where we might first execute several internal communication ($\to^{*}$, referring to $\tau$ transitions in classical process algebra),
+with a final external communication $\xrightarrow{a}$, meaning that two parties are communicated through a message $a$.
+When running a QAM program, there might be different ways where it can transit, which forms different sequences of transmissions that represent different possible ways of communication. It is also possible that some sequences only contain the internal communication part without the final external communication, which represents failure tries that there are some bottlenecks preventing the communication moving forward, because we want to allow different parties send messages via the same network at the same time period; however, this might cause message transition bottlenecks due to limited resources in different nodes.
+
+Since quantum qubit information has lifetime, it might cause a message $a$ to lost completely if we simply queue a message at a bottleneck location until enough resources are available. Most quantum network protocols have the mechanism to bypass the message sending to another route. For example, assume that \cn{Ann} and \cn{Cat}'s messages are transmitted to $r_1$ at the same time, and $r_1$ only has two qubit resource and decide to send \cn{Cat}'s message first. Thus, \cn{Ann}'s message is queued and it is classified as a failure try that does not have an ending external communication. To successfully send both messages, we need \cn{Ann}'s message to be bypassed through the $r_2 - r_4$ route, so that the bottleneck in node $r_1$ is resolved and both messages can be delivered on time.
+
+In the next two sections, we introduce the modeling of quantum network protocols via QAM formally.
 
 \begin{figure}[t]
 {\small
@@ -57,8 +73,7 @@ A message is sent via either the path $a$, $r_1$, $r_4$, and $b$, or $a$, $r_2$,
       \texttt{Relations} & R & ::= & [c \times c \times p] \\
       \texttt{Relation Functions} & \Fs & ::= & t \to R\\
     \texttt{Action Probabilities} & \rho & ::=& a \to p\\
-      \texttt{Program Configuration} & \Phi & ::= & \varphi^* \qcell{R}_{\textsf{r}}\qcell{a}_{\textsf{comm}}\\
-      \texttt{Configuration} & C & ::= & \Phi\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}}\qcell{\rho}_{\textsf{at}}\qcell{p}_{\textsf{s}}
+      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}_{\textsf{rel}}\qcell{a}_{\textsf{comm}}\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}}\qcell{\rho}_{\textsf{at}}
     \end{array}
   \]
 }
@@ -116,7 +131,7 @@ The first line corresponds to node cells $\texttt{S}$, containing the target and
 
 
    \inferrule[GenQubit]{}
-       {\Cella{P}{n}{a}\longrightarrow \Cella{P}{n+}{a}}
+       {\Cella{P}{n}{a}\qcell{t}_{\textsf{gt}}\longrightarrow \Cella{P}{n+}{a}\qcell{t}_{\textsf{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta
 
    \inferrule[MoreTries]{}
        {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
@@ -130,19 +145,16 @@ The first line corresponds to node cells $\texttt{S}$, containing the target and
          \qcell{P[m/x]}^n_c\qcell{(p.c.m)}_{\textsf{comm}}}
     
   \inferrule[topup]{}
-      { \qcell{(p.c.m)}_{\textsf{comm}}\qcell{\rho}_{\textsf{at}}\qcell{p'}_{\textsf{s}} \xrightarrow{c.m} 
-        \qcell{\emptyset}_{\textsf{comm}}\qcell{\rho[c.m\mapsto \rho(c.m)\odot p]}_{\textsf{at}}\qcell{p'}_{\textsf{s}}}\;\;\texttt{when}\;\rho(c.m)\odot p<p'
+      { \qcell{(p.c.m)}_{\textsf{comm}}\qcell{\rho}_{\textsf{at}}\qcell{t}_{\textsf{gt}} \xrightarrow{c.m} 
+        \qcell{\emptyset}_{\textsf{comm}}\qcell{\rho[c.m\mapsto \rho(c.m)\odot p]}_{\textsf{at}}\qcell{t}_{\textsf{gt}}}\;\;\texttt{when}\;\rho(c.m)\odot p<\mu
 
   \inferrule[RelationUp]{}
       { \qcell{R}_{\textsf{r}}\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}} \longrightarrow
             \qcell{\Fs(t)}_{\textsf{r}}\qcell{\Fs}_{\textsf{fun}}\qcell{t}_{\textsf{gt}}}
 
-  \inferrule[TimeUp]{}
-      {\qcell{t}_{\textsf{gt}} \longrightarrow \qcell{t+}_{\textsf{gt}}}
-
   \end{mathpar}
 }
-\caption{Quantum Pi Semantics}
+\caption{Quantum Pi Semantics. $\beta$ and $\mu$ are globally defined for the qubit generation period and the message threshold probability.}
   \label{fig:q-pi-semantics}
 \end{figure}
 
