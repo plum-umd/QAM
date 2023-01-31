@@ -40,12 +40,13 @@ In fact, both quantum teleportation and swap can be summarized as a procedure to
 Here, we investigate the modeling of message transmission in QAM by the QPass protocol \cite{10.1145/3387514.3405853}.
 \Cref{fig:q-pi-example} shows an example connectivity diagram such that party $\cn{Ann}$ and $\cn{Cat}$ send messages to $\cn{Bob}$ and $\cn{Dan}$, via the middle routers $r_1$ to $r_4$. There are two paths for \cn{Ann} to send to \cn{Bob} ($r_2 - r_4$ and $r_1 - r_4$), while there is only one path to send message from \cn{Cat} to \cn{Dan} ($r_1$). 
 
-In QAM, sending a message $a$ is viewed as a sequence of transmissions of ownership of $a$ from a node to is adjacent node.
-For example, assume that we want to send message $a$ from \cn{Cat} to \cn{Dan}, so it locates at $a$ at first.
-Then, $a$ is transmitted from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan}, each of which costs $a$'s sender node two qubits.
+In QAM, sending a message $a$ is viewed as a sequence of transmissions of $a$'s ownership from a node to its adjacent node.
+For example, assume that we want to send message $a$ from \cn{Cat} to \cn{Dan}.
+We transmit $a$ from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan}, 
+each of which costs the two participated nodes one qubit each.
 There is also a probability reduction in guaranteeing that $a$ to be delivered to \cn{Dan}:
 the more ownership transmissions, the lower probability that $a$ is delivered.
-For example, the successful rate of the transmission from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan} might be user-defined probability values $p$ and $p'$, so the successful rate to send a message from \cn{Cat} to \cn{Dan} is $p * p'$.
+For example, the successful rate of the transmission from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan} might be user defined probability values $p$ and $p'$, so the successful rate to send a message from \cn{Cat} to \cn{Dan} is $p * p'$.
 For simplicity, in the example in \Cref{fig:q-pi-example}, we assume that each station transmission reduces the successful rate by $50\%$,
 i.e., if a message is transmitted from $a$ to $r_1$, it has $50\%$ chance that the message is lost.
 
@@ -54,7 +55,7 @@ where we might first execute several internal communication ($\to^{*}$, referrin
 with a final external communication $\xrightarrow{a}$, meaning that two parties are communicated through a message $a$.
 When running a QAM program, there might be different ways where it can transit, which forms different sequences of transmissions that represent different possible ways of communication. It is also possible that some sequences only contain the internal communication part without the final external communication, which represents failure tries that there are some bottlenecks preventing the communication moving forward, because we want to allow different parties send messages via the same network at the same time period; however, this might cause message transition bottlenecks due to limited resources in different nodes.
 
-Since quantum qubit information has lifetime, it might cause a message $a$ to lost completely if we simply queue a message at a bottleneck location until enough resources are available. Most quantum network protocols have the mechanism to bypass the message sending to another route. For example, assume that \cn{Ann} and \cn{Cat}'s messages are transmitted to $r_1$ at the same time, and $r_1$ only has two qubit resource and decide to send \cn{Cat}'s message first. Thus, \cn{Ann}'s message is queued and it is classified as a failure try that does not have an ending external communication. To successfully send both messages, we need \cn{Ann}'s message to be bypassed through the $r_2 - r_4$ route, so that the bottleneck in node $r_1$ is resolved and both messages can be delivered on time.
+Since quantum qubit information has lifetime, it might cause a message $a$ to lost completely if we simply queue a message at a bottleneck location until enough resources are available. Most quantum network protocols have the mechanism to bypass the message sending to another route. For example, assume that \cn{Ann} and \cn{Cat}'s messages are transmitted to $r_1$ at the same time, and $r_1$ only has a qubit resource and decide to send \cn{Cat}'s message first. Thus, \cn{Ann}'s message is queued because $r_1$ has no more resource. Then, after the life time of the \cn{Ann}'s message ends, the message sending sequence is classified as a failure try that does not have an ending external communication. To successfully send both messages, we need \cn{Ann}'s message to be bypassed through the $r_2 - r_4$ route, so that the bottleneck in node $r_1$ is resolved and both messages can be delivered on time.
 
 In the next two sections, we introduce the modeling of quantum network protocols via QAM formally.
 
