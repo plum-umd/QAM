@@ -62,19 +62,22 @@ In the next two sections, we introduce the modeling of quantum network protocols
 \begin{figure}[t]
 {\small
   \[\begin{array}{llcl} 
-      \texttt{Variables} & x,y \\
-      \texttt{Probability} & p\\
-      \texttt{Messages} & m\\
-    \texttt{Channels} & c\\
-    \texttt{Global Time} & t\\
-    \texttt{Actions} & a & ::= & c \times m\\
-      \texttt{Singleton Process} & A & ::= & \emptyset  \mid \qsenda{c}{m} \mid \qsend{p}{c}{m}^t \mid \qrev{c}{x} \\
+      \texttt{Variable} & x,y \\
+      \texttt{Probability} & p &\in &\mathbb{R}\\
+      \texttt{Message} & m &\in& \mathbb{M}\\
+    \texttt{Channel} & c &\in& \mathbb{C}\\
+    \texttt{Time Stamp} & t &\in& \mathbb{T}\\
+    \texttt{Label} & a &\in& \mathbb{C} \times \mathbb{M}\\
+      \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^t \mid \qrev{c}{x} \\
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
-      \texttt{Process Cell} & \varphi & ::= & \pcell{P}{n,t}{c} \\
-      \texttt{Relations} & R & ::= & [c \times c \times p] \\
-      \texttt{Relation Functions} & \Fs & ::= & t \to R\\
-    \texttt{Action Probabilities} & \rho & ::=& a \to p\\
-      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}_{\cn{rel}}\qcell{a}_{\cn{comm}}\qcell{\Fs}_{\cn{fun}}\qcell{t}_{\cn{gt}}\qcell{\rho}_{\cn{at}}
+      \texttt{Relations} & R & \in & \mathbb{C} \times \mathbb{C} \times \mathbb{R} \\
+      \texttt{Process Cell} & \varphi & ::= & \pcell{P}{n}{c} \\
+      \texttt{Function Cell Content} & \Fs \\
+      \texttt{Function Update} & \mu & ::= & \Fs \times \mathbb{R} \times \mathbb{C} \times \mathbb{M} \times \mathbb{T} \times \mathbb{T} \to \cn{bool}\\
+      \texttt{Function Predicate} & \rho & ::= & \Fs \times \mathbb{R} \times \mathbb{C} \times \mathbb{M} \times \mathbb{T} \times \mathbb{T} \to \cn{bool}\\
+      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}_{\cn{rel}} \qcell{t}_{\cn{gt}} 
+                                           \qcell{\mu,\rho}_{\cn{pred}}\qcell{\Fs}_{\cn{add}} \\
+      \texttt{System} & S & ::= & (\mathbb{M},\mathbb{C},\mathbb{T},\mu,\rho,\Fs,C)
     \end{array}
   \]
 }
@@ -144,18 +147,16 @@ The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
 \begin{figure}[t]
 {\small
   \begin{mathpar}
-   
-   \inferrule[GenChanT]{}
-       {\Cellb{\qsenda{c}{m}}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}_{\cn{rel}}\qcell{t}_{\cn{gt}}
-        \longrightarrow \Cellb{}{i-}{a}\Cella{\qsend{p}{c}{m}^t\texttt{|}P}{j-}{b}\qcell{\{(a,b,p)\}\cup R}_{\cn{rel}} \qcell{t}_{\cn{gt}} }
 
    \inferrule[GenChan]{}
-       {\Cellb{\qsend{p}{c}{m}^t}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}_{\cn{rel}}
-        \longrightarrow \Cellb{}{i-}{a}\Cella{\qsend{p}{c}{m}^t\texttt{|}P}{j-}{b}\qcell{\{(a,b,p)\}\cup R}_{\cn{rel}} }
+       {\Cellb{\qsend{p}{c}{m}^t}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}_{\cn{rel}}\qcell{t'}_{\cn{gt}}
+        \longrightarrow \Cellb{}{i-}{a}\Cella{\qsend{p}{c}{m}^{t}\texttt{|}P}{j-}{b}
+              \qcell{\{(a,b,p)\}\cup R}_{\cn{rel}}\qcell{t'+}_{\cn{gt}} }
 
-
+\ignore{
    \inferrule[GenQubit]{}
        {\Cella{P}{n,t'}{a}\qcell{t}_{\cn{gt}}\longrightarrow \Cella{P}{n+,t}{a}\qcell{t}_{\cn{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta\wedge t' < t
+}
 
    \inferrule[MoreTries]{}
        {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
@@ -164,17 +165,11 @@ The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
        {\comp{P} \longrightarrow 0}
 
   \inferrule[Communication]{}
-      { \qcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}^n_c\qcell{\emptyset}_{\cn{comm}}
-           \longrightarrow  
-         \qcell{P[m/x]}^n_c\qcell{\qsend{p}{c}{m}^t}_{\cn{comm}}}
-    
-  \inferrule[topup]{}
-      { \qcell{\qsend{p}{c}{m}^{t'}}_{\cn{comm}}\qcell{\rho}_{\cn{at}}\qcell{t}_{\cn{gt}} \xrightarrow{c.m} 
-        \qcell{\emptyset}_{\cn{comm}}\qcell{\rho[c.m\mapsto \rho(c.m)\odot p]}_{\cn{at}}\qcell{t+}_{\cn{gt}}}\;\;\texttt{when}\;\rho(c.m)\odot p<\mu\wedge t - t' < \nu
-
-  \inferrule[RelationUp]{}
-      { \qcell{R}_{\cn{r}}\qcell{\Fs}_{\cn{fun}}\qcell{t}_{\cn{gt}} \longrightarrow
-            \qcell{\Fs(t)}_{\cn{r}}\qcell{\Fs}_{\cn{fun}}\qcell{t}_{\cn{gt}}}
+      { \qcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}^n_c\qcell{t'}_{\cn{gt}}\qcell{\rho}_{\cn{pred}}\qcell{\Fs}_{\cn{add}}
+           \xrightarrow{c.m}  
+         \qcell{P[m/x]}^n_c\qcell{t'+}_{\cn{gt}}
+          \qcell{\mu,\rho}_{\cn{pred}}\qcell{\mu(\Fs,p,c.m,t,t')}_{\cn{add}} \\\texttt{when}\;\rho(\Fs,p,c.m,t,t')}
+                   
 
   \end{mathpar}
 }
@@ -214,6 +209,19 @@ The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
 \end{figure} 
 
 \subsection{Semantics} \label{sec:qamsemantics}
+
+Tha QAM semantics is given based on the chemistry abstract machine framework in \Cref{fig:q-pi-semantics}.
+Inside each process cell, process programs might transit to different states, such as the \rulelab{MoreTries} and \rulelab{NoTries} rules for $!P$ operations. Different cells can also interact with each other, and each QAM semantic rule only mentions the necessary cells involving in an interaction.
+Transitions in a QAM rule can have either no labels, meaning that the transitions are internal; 
+or a label $c.m$, referring to the message being communicated from two different parties.
+
+There are four main tasks of the QAM semantics.
+First, the semantics captures the path selection for communicating of a message between two distant parties via transmissions of the message through adjacent intermediate routers. During the procedure, QAM records the needed resource for each transmission step.
+Rule \rulelab{GenChanT} and \rulelab{GenChan} describe the transmission procedure.
+The former describes that when a message is firstly sent from node $a$, we look at the global time cell $\cn{gt}$ and attach the message the current time label $t$. In addition, we also attach the probability value $p$ as the probability reduction when transmitting from node $a$ to $b$; thus, the final message living in node $b$ is $\qsend{p}{c}{m}^t$.
+During the process, we only 
+
+
 
 The QAM semantics is given as a process algebra style labeled transition system listed in \Cref{fig:q-pi-semantics}.
 Each transition label has either an empty label or a communication action on label $p.c.m$, where $p$ is the probability the action $c.m$ happens and $c$ is the channel name and $m$ is the actual message potentially being quantum.
