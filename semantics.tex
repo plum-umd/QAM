@@ -72,12 +72,11 @@ In the next two sections, we introduce the modeling of quantum network protocols
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
       \texttt{Relations} & R & \in & \mathbb{C} \times \mathbb{C} \times \mathbb{R} \\
       \texttt{Process Cell} & \varphi & ::= & \pcell{P}{n}{c} \\
-      \texttt{Function Cell Content} & \Fs \\
-      \texttt{Function Update} & \mu & ::= & \Fs \times \mathbb{R} \times \mathbb{C} \times \mathbb{M} \times \mathbb{T} \times \mathbb{T} \to \cn{bool}\\
-      \texttt{Function Predicate} & \rho & ::= & \Fs \times \mathbb{R} \times \mathbb{C} \times \mathbb{M} \times \mathbb{T} \times \mathbb{T} \to \cn{bool}\\
-      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}_{\cn{rel}} \qcell{t}_{\cn{gt}} 
-                                           \qcell{\mu,\rho}_{\cn{pred}}\qcell{\Fs}_{\cn{add}} \\
-      \texttt{System} & S & ::= & (\mathbb{M},\mathbb{C},\mathbb{T},\mu,\rho,\Fs,C)
+      \texttt{Objects} & \Os \\
+      \texttt{Content Cell} & \psi & ::= & \qcell{\Os}{c} \\
+      \texttt{Communication Predicate} & \rho & ::= & \overline{\Os} \to \cn{bool}\\
+      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}{\cn{rel}} \qcell{t}{\cn{gt}}\qcell{\cn{bool}}{\cn{pred}} \psi^* \\
+      \texttt{Meta Function} & \Cs & ::= & \leta{x}{\psi}{\Cs}\mid\leta{\rho}{\Fs(\overline{Os})}{\Cs} \mid C\\
     \end{array}
   \]
 }
@@ -90,9 +89,9 @@ In the next two sections, we introduce the modeling of quantum network protocols
 
 To model the above procedures, we model QAM via the concept of chemistry abstract machine \cite{BERRY1992217}.
 A program execution behaviors are captured by a configuration $C$, which is defined in \Cref{fig:q-pi-syntax}.
-Each cell structure $\qcell{}$ in a configuration $C$ represents a conceptual device involved in the executions.
+Each cell structure $\ccell{}$ in a configuration $C$ represents a conceptual device involved in the executions.
 
-A configuration might contain one or more process cells $\qcell{P}^{n,t}_{c}$, representing the execution process of a local node,
+A configuration might contain one or more process cells $\pcell{P}{n}{c}$, representing the execution process of a local node,
 such as the $\cn{Ann}$ and $r_1$ nodes in \Cref{fig:q-pi-example}.
 In a process cell, $c$ is the name of the cell, $n$ is the current qubit resource in the node,
 and the time flag $t$ refers to the last time period when extra resources are arrived.
@@ -116,11 +115,11 @@ Process $!P$ is a replication operation, which will be explained shortly below.
 
 One or more process cells can be represented as variable $\varphi$.
 There are other supporting cells in the system:
-1) $\qcell{R}_{\cn{rel}}$ is a relation cell defining the probability value to send out one message from a node to;
-2) $\qcell{a}_{\cn{comm}}$ stores the action that is just communicated in a system and is waiting to be popped up to the top level;
-3) $\qcell{\Fs}_{\cn{fun}}$ stores a function to produce relation cell content in a given time $t$;
-4) $\qcell{t}_{\cn{gt}}$ is the global time cell storing the global time clock;
-and 5) $\qcell{\rho}_{\cn{at}}$ stores the current assured probability for sending a message $a$ to its destination.
+1) $\qcell{R}{\cn{rel}}$ is a relation cell defining the probability value to send out one message from a node to;
+2) $\qcell{a}{\cn{comm}}$ stores the action that is just communicated in a system and is waiting to be popped up to the top level;
+3) $\qcell{\Fs}{\cn{fun}}$ stores a function to produce relation cell content in a given time $t$;
+4) $\qcell{t}{\cn{gt}}$ is the global time cell storing the global time clock;
+and 5) $\qcell{\rho}{\cn{at}}$ stores the current assured probability for sending a message $a$ to its destination.
 When sending message $a$ from \cn{Cat} to \cn{Dan}, its success rate is $25\%$, assuming that each transmission has $50\%$ success rate. 
 Users might want to guarantee a higher success rate $p$ by sending multiple copies of the message.
 In QAM, they can set a global threshold to be $p$, and every time message $a$ is delivered, 
@@ -132,11 +131,11 @@ We use the replication $!P$ to allow users to generate multiple copies of a mess
 \[
 \Cella{\qsend{1}{c}{m}}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
 \Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
-\qcell{\emptyset}_{\cn{rel}}
-\qcell{\emptyset}_{\cn{comm}}
-\qcell{\texttt{fun}\;t\to\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}_{\cn{fun}}
-\qcell{0}_{\cn{gt}}
-\qcell{\texttt{fun}\;a\to 0}_{\cn{at}}
+\qcell{\emptyset}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{fun}\;t\to\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{fun}}
+\qcell{0}{\cn{gt}}
+\qcell{\texttt{fun}\;a\to 0}{\cn{at}}
 \]
 }
 
@@ -149,13 +148,13 @@ The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
   \begin{mathpar}
 
    \inferrule[GenChan]{}
-       {\Cellb{\qsend{p}{c}{m}^t}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}_{\cn{rel}}\qcell{t'}_{\cn{gt}}
+       {\Cellb{\qsend{p}{c}{m}^t}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}{\cn{rel}}\qcell{t'}{\cn{gt}}
         \longrightarrow \Cellb{}{i-}{a}\Cella{\qsend{p}{c}{m}^{t}\texttt{|}P}{j-}{b}
-              \qcell{\{(a,b,p)\}\cup R}_{\cn{rel}}\qcell{t'+}_{\cn{gt}} }
+              \qcell{\{(a,b,p)\}\cup R}{\cn{rel}}\qcell{t'+}{\cn{gt}} }
 
 \ignore{
    \inferrule[GenQubit]{}
-       {\Cella{P}{n,t'}{a}\qcell{t}_{\cn{gt}}\longrightarrow \Cella{P}{n+,t}{a}\qcell{t}_{\cn{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta\wedge t' < t
+       {\Cella{P}{n,t'}{a}\qcell{t}{\cn{gt}}\longrightarrow \Cella{P}{n+,t}{a}\qcell{t}{\cn{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta\wedge t' < t
 }
 
    \inferrule[MoreTries]{}
@@ -165,10 +164,10 @@ The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
        {\comp{P} \longrightarrow 0}
 
   \inferrule[Communication]{}
-      { \qcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}^n_c\qcell{t'}_{\cn{gt}}\qcell{\rho}_{\cn{pred}}\qcell{\Fs}_{\cn{add}}
+      { \pcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\qcell{\rho}{\cn{pred}}\qcell{\Fs}{\cn{add}}
            \xrightarrow{c.m}  
-         \qcell{P[m/x]}^n_c\qcell{t'+}_{\cn{gt}}
-          \qcell{\mu,\rho}_{\cn{pred}}\qcell{\mu(\Fs,p,c.m,t,t')}_{\cn{add}} \\\texttt{when}\;\rho(\Fs,p,c.m,t,t')}
+         \pcell{P[m/x]}{n}{c}\qcell{t'+}{\cn{gt}}
+          \qcell{\mu,\rho}{\cn{pred}}\qcell{\mu(\Fs,p,c.m,t,t')}{\cn{add}} \\\texttt{when}\;\rho(\Fs,p,c.m,t,t')}
                    
 
   \end{mathpar}
@@ -184,14 +183,14 @@ The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
 \begin{tikzpicture}[align=center,node distance=1.5cm and -1cm, thick] 
 \node (1) {S$\langle\{(a,r_1,0.5), (a,r_2,0.5)\}\cup$R$\rangle$}; 
 \node (2) [below left= of 1] {$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_1}$... $\langle\{(r_1,r_4)\}\cup$R$\rangle$}; 
-\node (3) [below right= of 1] {\text{\ \ \ \ \ \ }$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_2}$..., $\qcell{\{(r_2,r_3)\}\cup\text{R}}$}; 
+\node (3) [below right= of 1] {\text{\ \ \ \ \ \ }$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_2}$..., $\ccell{\{(r_2,r_3)\}\cup\text{R}}$}; 
 \node (4) [below of=2] {$\Cella{0}{8}{r_1}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_4}$... $\langle\{(r_4,b)\}\cup$R$\rangle$};
-\node (5) [below of=3] {\text{\ \ \ \ \ \ }$\Cella{0}{8}{r_2}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_3}$..., $\qcell{\{(r_3,r_4)\}\cup\text{R}}$};
-\node (6) [below of=4] {$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.125}{c}{m}|\qrev{c}{m}.0}{9}{b}$... $\qcell{\text{R}}$};
-\node (7) [below of=5] {\text{\ \ \ \ \ \ \ \ \;}$\Cella{0}{8}{r_3}$ $\Cella{\qsend{0.125}{c}{m}|0}{9}{r_4}$..., $\qcell{\{(r_4,b)\}\cup\text{R}}$};
-\node (8) [below of=6] {$\Cella{0}{9}{b}$... $\qcell{\text{R}}$};
-\node (9) [below of=7] {\text{\ \ \ \ \ \ \ \ }$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.0625}{c}{m}|\qrev{c}{m}.0}{9}{b}$..., $\qcell{\text{R}}$};
-\node (10) [below of=9] {\text{\ \ \ \ \ \ }$\Cella{0}{n}{b}$... $\qcell{\text{R}}$};
+\node (5) [below of=3] {\text{\ \ \ \ \ \ }$\Cella{0}{8}{r_2}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_3}$..., $\ccell{\{(r_3,r_4)\}\cup\text{R}}$};
+\node (6) [below of=4] {$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.125}{c}{m}|\qrev{c}{m}.0}{9}{b}$... $\ccell{\text{R}}$};
+\node (7) [below of=5] {\text{\ \ \ \ \ \ \ \ \;}$\Cella{0}{8}{r_3}$ $\Cella{\qsend{0.125}{c}{m}|0}{9}{r_4}$..., $\ccell{\{(r_4,b)\}\cup\text{R}}$};
+\node (8) [below of=6] {$\Cella{0}{9}{b}$... $\ccell{\text{R}}$};
+\node (9) [below of=7] {\text{\ \ \ \ \ \ \ \ }$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.0625}{c}{m}|\qrev{c}{m}.0}{9}{b}$..., $\ccell{\text{R}}$};
+\node (10) [below of=9] {\text{\ \ \ \ \ \ }$\Cella{0}{n}{b}$... $\ccell{\text{R}}$};
 \draw[->] (1) -- node[midway, above left] {} (2); 
 \draw[->] (1) -- node[midway, above right] {} (3); 
 \draw[->] (2) -- node[midway, right] {} (4); 
@@ -228,17 +227,17 @@ Each transition label has either an empty label or a communication action on lab
 Rule \rulelab{RelationUp} describes the global transitions where program execution connectivity graph is updated once upon a time,
 while rule \rulelab{TimeUp} updates the global clock of the configuration.
 In QAM, the semantic rules only need to mention the cells that are involved in a transition.
-For example, in rule \rulelab{TimeUp}, we do not mention the cells $\qcell{\Ls}_{p}$ and $\qcell{\Fs}_{f}$ because they have no changes during the transition.
+For example, in rule \rulelab{TimeUp}, we do not mention the cells $\qcell{\Ls}{p}$ and $\qcell{\Fs}{f}$ because they have no changes during the transition.
 
 Rules \rulelab{GenChan}, \rulelab{GenQubit}, and \rulelab{Communication} describe the transitions happened in a program configuration.
 Rule \rulelab{GenChan} represents the procedure that a message is transmitted from one location to another via a quantum channel. During the procedure, the probability for the message being successfully sent is reduced and the two locations also consume two qubits.
-Here, an action $\qsend{p}{c}{m}$ is transmitted from one location, defined by the cell $\qcell{}_a$, to another location $\qcell{}_b$, if there is a triple relation $(a,b,p')$ in the relation cell. 
+Here, an action $\qsend{p}{c}{m}$ is transmitted from one location, defined by the cell $\qcell{}{a}$, to another location $\qcell{}{b}$, if there is a triple relation $(a,b,p')$ in the relation cell. 
 The $p'$ value represents the reduced probability factor to communicate the message between the two locations, i.e.,
 the probability value $p$ in action $\qsend{p}{c}{m}$ is accumulated to become $p\cdot p'$.
 Each transmission requires the consumption of two qubits: each cell consumes one qubits.
 This is why $a$ and $b$'s result cells ($\Cellb{}{i-}{a}$ and $\Cellb{}{j-}{b}$) have the qubit value $i$ and $j$ being reduced, respectively.
 Here, the $...$ in cell $\Cellb{}{i-}{a}$ represents that we only care about the left hand side action in a process cell regarding the rest of the content.
-In the example transition in \Cref{fig:q-pi-example1} that starts from the configuration $\texttt{S} \qcell{\texttt{R}}_r$ above,
+In the example transition in \Cref{fig:q-pi-example1} that starts from the configuration $\texttt{S} \qcell{\texttt{R}}{r}$ above,
 the transitions from the top to the left and right are both applied a \rulelab{GenChan} rule.
 On the left hand side, the action $c!<m>$ is transmitted from cell $a$ to cell $r_1$, and the probability value is reduced to $0.5$.
 Rule \rulelab{GenQubit} generates a new qubit in a location to help transmit messages from one location to another.
