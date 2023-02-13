@@ -63,20 +63,20 @@ In the next two sections, we introduce the modeling of quantum network protocols
 {\small
   \[\begin{array}{llcl} 
       \texttt{Variable} & x,y \\
-      \texttt{Probability} & p &\in &\mathbb{R}\\
+      \texttt{Probability} & p &\in &\Rs\\
       \texttt{Message} & m &\in& \mathbb{M}\\
-    \texttt{Channel} & c &\in& \mathbb{C}\\
+    \texttt{Channel} & c &\in& \Ls\\
     \texttt{Time Stamp} & t &\in& \mathbb{T}\\
-    \texttt{Label} & a &\in& \mathbb{C} \times \mathbb{M}\\
+    \texttt{Label} & a &\in& \Ls \times \mathbb{M}\\
       \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^t \mid \qrev{c}{x} \\
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
-      \texttt{Relations} & R & \in & \mathbb{C} \times \mathbb{C} \times \mathbb{R} \\
-      \texttt{Process Cell} & \varphi & ::= & \pcell{P}{n}{c} \\
+      \texttt{Relations} & R & \in & \Ls \times \Ls \times \Rs \\
       \texttt{Objects} & \Os \\
-      \texttt{Content Cell} & \psi & ::= & \qcell{\Os}{c} \\
-      \texttt{Communication Predicate} & \rho & ::= & \overline{\Os} \to \cn{bool}\\
-      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}{\cn{rel}} \qcell{t}{\cn{gt}}\qcell{\cn{bool}}{\cn{pred}} \psi^* \\
-      \texttt{Meta Function} & \Cs & ::= & \leta{x}{\psi}{\Cs}\mid\leta{\rho}{\Fs(\overline{Os})}{\Cs} \mid C\\
+      \texttt{Custom Cell} & \varphi,\psi & ::= & \pcell{P}{n}{c} \mid \qcell{\Os}{c}\\
+      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}{\cn{rel}} \qcell{t}{\cn{gt}}
+                             \pcell{A}{t}{\cn{comm}} \qcell{\cn{bool}}{\cn{pred}} \psi^* \\
+      \texttt{Rules} & \rules & ::= & C \longrightarrow C \\
+      \texttt{Meta Function} & \Cs & ::= & \decl{\rules}{\Cs} \mid C\\
     \end{array}
   \]
 }
@@ -163,12 +163,15 @@ The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
    \inferrule[NoTries]{}
        {\comp{P} \longrightarrow 0}
 
-  \inferrule[Communication]{}
-      { \pcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\qcell{\rho}{\cn{pred}}\qcell{\Fs}{\cn{add}}
-           \xrightarrow{c.m}  
-         \pcell{P[m/x]}{n}{c}\qcell{t'+}{\cn{gt}}
-          \qcell{\mu,\rho}{\cn{pred}}\qcell{\mu(\Fs,p,c.m,t,t')}{\cn{add}} \\\texttt{when}\;\rho(\Fs,p,c.m,t,t')}
-                   
+  \inferrule[PreCom]{}
+      { \pcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\pcell{\emptyset}{\_}{\cn{comm}}
+           \longrightarrow
+         \pcell{P[m/x]}{n}{c}\qcell{t'+}{\cn{gt}}\pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}}
+                  
+  \inferrule[Com]{}
+      { \qcell{\qsend{p}{c}{m}^t}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}}
+           \xrightarrow{p.c.m}  
+         \qcell{\emptyset}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}} } 
 
   \end{mathpar}
 }
