@@ -87,61 +87,52 @@ In the next two sections, we introduce the modeling of quantum network protocols
 
 \subsection{Syntax} \label{sec:qamsyntax}
 
-To model the above procedures, we model QAM via the concept of chemistry abstract machine \cite{BERRY1992217}.
-A program execution behaviors are captured by a configuration $C$, which is defined in \Cref{fig:q-pi-syntax}.
-Each cell structure $\ccell{}$ in a configuration $C$ represents a conceptual device involved in the executions.
+QAM describes multiparty communication behaviors,
+whose syntax is similarity to the chemistry abstract machine \cite{BERRY1992217} and $\Pi$-calculus.
+The message label that is used to communicate different parties has the form $c.m$, 
+where $c$ refers to a communication channel, and $m$ is a message, possibly a quantum state.
+Each single process action can be a message sending $\qsend{p}{c}{m}^t$, meaning that a message $m$ is sent through the channel $c$ with the success probability rate $p$ initialized at the time stamp $t$, and a message receipt $\qrev{c}{x}$, referring to that a message is received through the channel $c$ and represented as variable $x$.
 
-A configuration might contain one or more process cells $\pcell{P}{n}{c}$, representing the execution process of a local node,
-such as the $\cn{Ann}$ and $r_1$ nodes in \Cref{fig:q-pi-example}.
-In a process cell, $c$ is the name of the cell, $n$ is the current qubit resource in the node,
-and the time flag $t$ refers to the last time period when extra resources are arrived.
-An analogy for $t$ is like the latest recorded time for a gas station to charge gas.
-Process $P$ is the program actions that node $c$ can perform, which is represented by $\Pi$-calculus.
-Each action in a process $P$ is either a quantum message sending $\qsenda{c}{m}$ or receiving $\qrev{c}{x}$,
-where $c$ is a channel name, $m$ is a message, and $x$ is a binding variable 
-meaning that once a message is received we can substitute all later occurrence of $x$ with the message.
-There is a shadow version of message sending $\qsend{p}{c}{m}^t$,
-defining the message behavior during the procedure in the middle of transmitting it to the final destination node.
-Here, $p$ represents the likelihood that the message can be preserved and $t$ represents the message's generation time,
-which records the time when the message is just sent from the original user defined node.
-When the message is delivered, QAM compares the message generation time with the current global time
-and determines if the quantum message is queued too long in some places such that it is no longer cohered.
+To describe the behaviors of a network system, every QAM system comes with a configuration $C$
+containing two different kinds of cells --- process and content cells.
+A configuration might contain one or more process cells $\pcell{P}{n}{c}$, representing the execution maltreated process of a local node with name $c$, such as the $\cn{Ann}$ and $r_1$ nodes in \Cref{fig:q-pi-example},
+and $n$ is the available qubit resource in the node.
+A multi-threaded process $P$ is the program actions that node $c$ can perform, which has similar syntax as $\Pi$-calculus.
+Each process might contain multiple threads competing for executions, which are separated by a parallel operation $\cn{|}$.
+Each single thread is a sequence of singleton actions that ends at the unit process $0$,
+and $\comp{P}$ is a replication process that repeatedly executes the process $P$, 
+which is used for resending messages, explained in \Cref{sec:qamsemantics}.
 
-Process $A.P$ means that we execute action $A$ first following by $P$.
-A process can also be a parallel composition $\parl{P}{Q}$. There are two behaviors associated with it.
-First, if one of $P$ and $Q$ has sending and receiving operations as the top actions, 
-such as $P=\qsenda{c}{m}.P'$ and $Q=\qrev{c}{x}.Q'$, $\parl{P}{Q}$ acts as a traditional $\Pi$-calculus parallel composition that communicates between these two nodes. If $P$ and $Q$ are two sending operations, they are competing to be sent out to other nodes for communication, and the node holding $\parl{P}{Q}$ can be classified as a router node, such as the $r_1$ to $r_4$ nodes in \Cref{fig:q-pi-example}.
-Process $!P$ is a replication operation, which will be explained shortly below.
+In QAM, a parallel process of a message sending and receipt, $\parl{\qact{\qsend{p}{c}{m}^t}{P}}{\qact{\qrev{c}{x}}{Q}}$,
+causes the process to transit to $\parl{P}{Q[m/x]}$, which is similar to the $\Pi$-calculus semantics.
+On the other hand, a parallel of two message sending, $\parl{\qact{\qsend{p}{c}{m}^t}{P}}{\qsend{p'}{c'}{m'}^{t'}{P'}}$,
+refers to that the two operations are competing to convey the message outside of the node, possibly to other destinations.
 
-One or more process cells can be represented as variable $\varphi$.
-There are other supporting cells in the system:
-1) $\qcell{R}{\cn{rel}}$ is a relation cell defining the probability value to send out one message from a node to;
-2) $\qcell{a}{\cn{comm}}$ stores the action that is just communicated in a system and is waiting to be popped up to the top level;
-3) $\qcell{\Fs}{\cn{fun}}$ stores a function to produce relation cell content in a given time $t$;
-4) $\qcell{t}{\cn{gt}}$ is the global time cell storing the global time clock;
-and 5) $\qcell{\rho}{\cn{at}}$ stores the current assured probability for sending a message $a$ to its destination.
-When sending message $a$ from \cn{Cat} to \cn{Dan}, its success rate is $25\%$, assuming that each transmission has $50\%$ success rate. 
-Users might want to guarantee a higher success rate $p$ by sending multiple copies of the message.
-In QAM, they can set a global threshold to be $p$, and every time message $a$ is delivered, 
-the system updates the current rate in the $\cn{at}$ cell (the content is $\rho(a)$).
-After the current rate $\rho(a)$ is higher than $p$, the system stops the continuation of re-sending $a$.
-We use the replication $!P$ to allow users to generate multiple copies of a message sending operation. 
+The content cells act as control units for storing environment information for executing a QAM system.
+Users are able to define their own content cell by instantiating object types $\Os$ to different user-defined types.
+In QAM, we require at least four kinds of content cells: 
+1) $\qcell{R}{\cn{rel}}$ is a relation cell defining the probability value to send out one message from a node to the other;
+2) $\qcell{t}{\cn{gt}}$ is a global clock cell storing the global time stamp;
+3) $\pcell{A}{t}{\cn{comm}}$ is a communication cell storing the message about to communicate at time $t$;
+and 4) $\qcell{\cn{bool}}{\cn{pred}}$ is a predicate cell 
+determining if a message communication can happen ($\texttt{true}$ in the cell) or not ($\texttt{false}$ in the cell).
 
 {\footnotesize
 \[
-\Cella{\qsend{1}{c}{m}}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
+\Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
 \Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{rel}}
+\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
 \qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{fun}\;t\to\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{fun}}
+\qcell{\texttt{true}}{\cn{pred}}
 \qcell{0}{\cn{gt}}
 \qcell{\texttt{fun}\;a\to 0}{\cn{at}}
 \]
 }
 
-As an example of the QAM syntax, the above configuration defines the initial program state for sending a message $c.m$ from $\cn{Cat}$ to $\cn{Dan}$ via the router $r_1$, as shown in \Cref{fig:q-pi-example}. Initially, the relation cell is empty, and it is updated by the function stored in the $\cn{fun}$ cell by applying the function to the global time, which is initialized as $0$ in the \cn{gt} cell;
-while all message has initial probability value $0$, because no messages have been delivered yet.
-The $\texttt{fun}\;x\to ...$ operation introduces a function definition.
+As an example of the QAM syntax, the above configuration defines the initial program state for sending a message $c.m$ from $\cn{Cat}$ to $\cn{Dan}$ via the router $r_1$, as part of the communication in \Cref{fig:q-pi-example}. Initially, the relation cell stores the connectivity between \cn{Cat}, \cn{Dan}, and $r_1$, with the success rates. 
+The global time is initialized as $0$ in the \cn{gt} cell, and the predicate cell has a fixed value $\texttt{true}$, meaning that no extra condition is applied to each communication.
+The message ($\qsend{1}{c}{m}^0$) sent from \cn{Cat} has an initial probability value $1$ and the time stamp $0$, referring to the time that the message is guaranteed to send out.
+Node $r_0$ acts as a intermediate router so that it only contains the unit process $0$, and \cn{Dan} is waiting on receiving a message ($\qrev{c}{m}.0$). 
 
 \begin{figure}[t]
 {\small
