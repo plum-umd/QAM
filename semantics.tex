@@ -55,7 +55,7 @@ where we might first execute several internal communication ($\to^{*}$, referrin
 with a final external communication $\xrightarrow{a}$, meaning that two parties are communicated through a message $a$.
 When running a QAM program, there might be different ways where it can transit, which forms different sequences of transmissions that represent different possible ways of communication. It is also possible that some sequences only contain the internal communication part without the final external communication, which represents failure tries that there are some bottlenecks preventing the communication moving forward, because we want to allow different parties send messages via the same network at the same time period; however, this might cause message transition bottlenecks due to limited resources in different nodes.
 
-Since quantum qubit information has lifetime, it might cause a message $a$ to lost completely if we simply queue a message at a bottleneck location until enough resources are available. Most quantum network protocols have the mechanism to bypass the message sending to another route. For example, assume that \cn{Ann} and \cn{Cat}'s messages are transmitted to $r_1$ at the same time, and $r_1$ only has a qubit resource and decide to send \cn{Cat}'s message first. Thus, \cn{Ann}'s message is queued because $r_1$ has no more resource. Then, after the life time of the \cn{Ann}'s message ends, the message sending sequence is classified as a failure try that does not have an ending external communication. To successfully send both messages, we need \cn{Ann}'s message to be bypassed through the $r_2 - r_4$ route, so that the bottleneck in node $r_1$ is resolved and both messages can be delivered on time.
+Since quantum qubit information has lifetime, it might cause a message $a$ to lost completely if we simply queue a message at a bottleneck location until enough resources are available. Most quantum network protocols have the mechanism to bypass the message sending to another route. For example, assume that \cn{Ann} and \cn{Cat}'s messages are transmitted to $r_1$ at the same time, and $r_1$ only has a qubit resource and decide to send \cn{Cat}'s message first. Thus, \cn{Ann}'s message is queued because $r_1$ has no more resource. Then, after the life time of the \cn{Ann}'s message ends, the message sending sequence is classified as a failure try that does not have an ending external communication. To successfully send both messages, we need \cn{Ann}'s message to be bypassed through the $r_2 - r_4$ route, so the bottleneck in node $r_1$ is resolved and both messages can be delivered on time.
 
 In the next two sections, we introduce the modeling of quantum network protocols via QAM formally.
 
@@ -117,22 +117,24 @@ In QAM, we require at least four kinds of content cells:
 and 4) $\qcell{\cn{bool}}{\cn{pred}}$ is a predicate cell 
 determining if a message communication can happen ($\texttt{true}$ in the cell) or not ($\texttt{false}$ in the cell).
 
+Defining protocol systems might require the extension of semantic rule set to include specific behaviors.
+We provide a meta level rule declaration operation ($\decl{\rules}{\Cs}$), allowing users to declare a new rule $\rules$ used in the system $\Cs$. 
+
 {\footnotesize
 \[
 \Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
 \Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
 \qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
+\pcell{\emptyset}{0}{\cn{comm}}
 \qcell{\texttt{true}}{\cn{pred}}
 \qcell{0}{\cn{gt}}
-\qcell{\texttt{fun}\;a\to 0}{\cn{at}}
 \]
 }
 
 As an example of the QAM syntax, the above configuration defines the initial program state for sending a message $c.m$ from $\cn{Cat}$ to $\cn{Dan}$ via the router $r_1$, as part of the communication in \Cref{fig:q-pi-example}. Initially, the relation cell stores the connectivity between \cn{Cat}, \cn{Dan}, and $r_1$, with the success rates. 
 The global time is initialized as $0$ in the \cn{gt} cell, and the predicate cell has a fixed value $\texttt{true}$, meaning that no extra condition is applied to each communication.
 The message ($\qsend{1}{c}{m}^0$) sent from \cn{Cat} has an initial probability value $1$ and the time stamp $0$, referring to the time that the message is guaranteed to send out.
-Node $r_0$ acts as a intermediate router so that it only contains the unit process $0$, and \cn{Dan} is waiting on receiving a message ($\qrev{c}{m}.0$). 
+Node $r_0$ acts as a intermediate router, so it only contains the unit process $0$, and \cn{Dan} is waiting on receiving a message ($\qrev{c}{m}.0$). 
 
 \begin{figure}[t]
 {\small
@@ -155,14 +157,14 @@ Node $r_0$ acts as a intermediate router so that it only contains the unit proce
        {\comp{P} \longrightarrow 0}
 
   \inferrule[PreCom]{}
-      { \pcell{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\pcell{\emptyset}{\_}{\cn{comm}}
+      { \Cellb{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\pcell{\emptyset}{\_}{\cn{comm}}
            \longrightarrow
-         \pcell{P[m/x]}{n}{c}\qcell{t'+}{\cn{gt}}\pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}}
+         \Cellb{P[m/x]}{n}{c}\qcell{t'+}{\cn{gt}}\pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}}
                   
   \inferrule[Com]{}
-      { \qcell{\qsend{p}{c}{m}^t}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}}
+      { \pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}}
            \xrightarrow{p.c.m}  
-         \qcell{\emptyset}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}} } 
+         \pcell{\emptyset}{t'}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}} } 
 
   \end{mathpar}
 }
@@ -170,7 +172,7 @@ Node $r_0$ acts as a intermediate router so that it only contains the unit proce
   \label{fig:q-pi-semantics}
 \end{figure}
 
-
+\ignore{
 \begin{figure}[t]
 {\small
 {\hspace*{-2em}
@@ -200,54 +202,143 @@ Node $r_0$ acts as a intermediate router so that it only contains the unit proce
 \caption{Quantum Machine Transitions for \Cref{fig:q-pi-example}}
   \label{fig:q-pi-example1}
 \end{figure} 
+}
 
 \subsection{Semantics} \label{sec:qamsemantics}
 
-Tha QAM semantics is given based on the chemistry abstract machine framework in \Cref{fig:q-pi-semantics}.
-Inside each process cell, process programs might transit to different states, such as the \rulelab{MoreTries} and \rulelab{NoTries} rules for $!P$ operations. Different cells can also interact with each other, and each QAM semantic rule only mentions the necessary cells involving in an interaction.
-Transitions in a QAM rule can have either no labels, meaning that the transitions are internal; 
-or a label $c.m$, referring to the message being communicated from two different parties.
+The QAM semantics is given in terms of the definition of a QAM system,
+which is a structure $(\Ms,\Ls,\Ts,C,\overline{\rules})$,
+where $\Ms$ is a set of messages;
+$\Ls$ is a set of channels containing at least $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$;
+$\Ts$ is a set of time stamps that forms a linear order ($<$) with $0$ being the minimum;
+$C$ is the configuration containing different cells that represent the nodes with processes and environment for the system, at least containing cell $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$, mentioned in \Cref{sec:qamsyntax};
+and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{GenChan}, \rulelab{MoreTries}, \rulelab{NoTries}, \rulelab{PreCom}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
 
-There are four main tasks of the QAM semantics.
-First, the semantics captures the path selection for communicating of a message between two distant parties via transmissions of the message through adjacent intermediate routers. During the procedure, QAM records the needed resource for each transmission step.
-Rule \rulelab{GenChanT} and \rulelab{GenChan} describe the transmission procedure.
-The former describes that when a message is firstly sent from node $a$, we look at the global time cell $\cn{gt}$ and attach the message the current time label $t$. In addition, we also attach the probability value $p$ as the probability reduction when transmitting from node $a$ to $b$; thus, the final message living in node $b$ is $\qsend{p}{c}{m}^t$.
-During the process, we only 
+QAM is flexible enough to define most quantum network/security protocols 
+through the ability to extend rules by the rule declaration operation in \Cref{fig:q-pi-syntax}.
+Every rule set must contain the five rules listed in \Cref{fig:q-pi-semantics},
+because they represent the universally sound facts about multiparty quantum communication. 
+We first discuss these five rules through the example configuration at the end of \Cref{sec:qamsyntax}. 
+
+Rule \rulelab{GenChan} definition the message transformation behavior of conveying a message from a node to another that might be an intermediate router node, with the consumption of a qubit in each of the parties and a slot time change happening in the global clock.
+The $...$ operation in cell $a$ refers to that there might 
+be other paralleled processes associated in the process cell, but we disregard them.
+For example, the message $\qsend{1}{c}{m}^0$ in cell \cn{Cat} can be conveyed to the $r_1$ cell with the new probability $0.5$, meaning that only $50\%$ change this communication is guaranteed.
+This can happen because there is a defined relation tuple $(\cn{Cat},r_1,0.5)$ in the relation cell $\cn{rel}$. During the process, the qubit resources in $\cn{Cat}$ and $r_1$ both reduce one, and the global clock is updated. 
+The transited cell structure is as follows:
+
+{\footnotesize
+\[
+\begin{array}{l}
+\longrightarrow\;\;
+\Cella{0}{9}{\cn{Cat}}\Cella{\qsend{0.5}{c}{m}^0}{9}{r_1}
+\Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
+\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
+\pcell{\emptyset}{0}{\cn{comm}}
+\qcell{\texttt{true}}{\cn{pred}}
+\qcell{1}{\cn{gt}}
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
+\Cella{\parl{\qsend{0.25}{c}{m}^0}{\qrev{c}{m}.0}}{9}{\cn{Dan}} 
+\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
+\pcell{\emptyset}{0}{\cn{comm}}
+\qcell{\texttt{true}}{\cn{pred}}
+\qcell{2}{\cn{gt}}
+\end{array}
+\]
+}
+
+It is worth noting that we associate the parallel process $\cn{|}$ with identity, associativity, and commutativity equational rules, 
+such that $\parl{P}{0}=P$, $\parl{(\parl{P}{Q})}{Q'}=\parl{P}{(\parl{Q}{Q'})}$, and $\parl{P}{Q}=\parl{Q}{P}$.
+In the above case, $\qsend{0.5}{c}{m}^0$ can be viewed as $\parl{\qsend{0.5}{c}{m}^0}{0}$.
+
+Rules \rulelab{PreCom} and \rulelab{Com} define the behavior when a message is delivered to its destination.
+Rule \rulelab{PreCom} is applicable if the sending operation is already in its destination cell, and being paralleled with a same-channel message receipt process $\qrev{c}{x}.P$. After applying the rule, the message is processed as $P[m/x]$, and we also move the message $\qsend{p}{c}{m}^t$ to the communication cell $\cn{comm}$ with the current time stamp $t'$, so further user-defined rules can be applied on the message. We will see an example shortly below to highlight some of these additional rules.
+Rule \rulelab{Com} processes the delivered message $\qsend{p}{c}{m}^t$ by removing it from the $\cn{comm}$ cell if the predicate cell $\cn{pred}$ is $\texttt{true}$. The processing refers to making the message a transition label $p.c.m$ appearing in the transition,
+so the message delivery is publicized. Other than applying rule \rulelab{Com}, all other rule applications are considered to be internal communications. 
+We show an example transition of consecutively applying rules \rulelab{PreCom} and \rulelab{Com} below, based on the above configuration after the two \rulelab{GenChan} rule applications.
+In the first rule application, the message is moved to the \cn{comm} cell with the current global time $2$,
+and the second rule application removes the message from the cell with a publicized transition label $0.25.c,m$. 
+
+
+{\footnotesize
+\[
+\begin{array}{l}
+\longrightarrow\;\;
+\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
+\Cella{0}{9}{\cn{Dan}} 
+\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
+\pcell{\qsend{0.25}{c}{m}^0}{2}{\cn{comm}}
+\qcell{\texttt{true}}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+\\[0.2em]
+\xrightarrow{0.25.c,m} \;\;
+\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
+\Cella{0}{9}{\cn{Dan}} 
+\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
+\pcell{\emptyset}{2}{\cn{comm}}
+\qcell{\texttt{true}}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+\end{array}
+\]
+}
+
+Rules \rulelab{MoreTries} and \rulelab{NoTries} define the behaviors of the replication $\comp{P}$.
+The former suggests that a process can be replicated as many as we want, while the latter one refers to that a replication process can non-deterministically terminates.
+In quantum communication, message deliveries are always associated with a success rate,
+which indicates that users might be interested in repeatedly sending a message until some success rate assurance is guaranteed.
+We will see an example success rate guarantee mechanism by using the replication operations with additional user-defined rules in \Cref{sec:case-study}.
+
+\noindent\textbf{Extension of Rules.}
+The rule set $\overline{\rules}$ is extendable by the user-defined rules, 
+such that if a user declares the statement $\decl{\rules_1}{...\; \decl{\rules_n}{C_0}}$
+in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{GenChan},\rulelab{MoreTries},\rulelab{NoTries}, \rulelab{PreCom},\rulelab{Com}\}$.
+
+Permitting user-defined rules allows the definitions of different protocol guarantees in QAM,
+which are useful in evaluating different performance merits of different protocols,
+while rules in \Cref{fig:q-pi-semantics} establish the semantic basis of quantum network communication.
+Here, we discuss how to guarantee the on-time message delivery in the QPass/QCast protocols,
+which is a property that these protocols tried to guarantee but was not established formally in the previous work \cite{10.1145/3387514.3405853}.
+
+The key observation in quantum network is that qubit messages have short life circles,
+so the above quantum protocols developed complicated algorithms to guarantee the high delivery rates for quantum messages.
+If a message is not delivered in time, its quantum state is cohered and information loses.
+
+{\footnotesize
+\[
+\begin{array}{l}
+\decl{\pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\qcell{b}{\cn{pred}}\qcell{f}{\cn{tp}} 
+     \longrightarrow \pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\qcell{f(t,t')}{\cn{pred}}\qcell{f}{\cn{tp}}}{}
+\\[0.2em]
+\Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
+\Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
+\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
+\pcell{\emptyset}{0}{\cn{comm}}
+\qcell{\texttt{true}}{\cn{pred}}
+\qcell{0}{\cn{gt}}
+\qcell{\lambda\;(t,t')\,.\,t'-t<5}{\cn{tp}}
+\end{array}
+\]
+}
+
+To guarantee the property, we add a new cell $\cn{tp}$ and declare a new rule above (let's call it \rulelab{TP}).
+Every time when a message is in the \cn{comm} cell, we apply the function $f$ in the new content cell \cn{tp} to the two time stamps $t$ and $t'$, and check if the message starting time $t$ and its delivery time $t'$ is within a threshold.
+In the configuration, $\lambda\;(t,t')\,.\,t'-t<5$ is the lambda abstraction definition for $f$, as it takes two time stamps and checks if $t'-t$ is less than the threshold $5$.
+
+After we declare rule \rulelab{TP} and new configuration, we essentially set up a new QAM system $(\Ms,\Ls,\Ts,C',\overline{\rules'})$,
+where $C'$ is the new declared configuration and the rule set $\overline{\rules'}$ contains the five rules in \Cref{fig:q-pi-semantics} as well as rule \rulelab{TP}.
+In the execution example above, after applying rule \rulelab{PreComm}, the \cn{comm} cell becomes $\pcell{\qsend{0.25}{c}{m}^0}{2}{\cn{comm}}$ with the starting time stamp $0$ and the delivery time stamp $2$.
+By applying rule \rulelab{TP}, the expression $2-0 < 5$ results in \texttt{true}, which grants the message transition for the following \rulelab{Com} rule application. 
+However, if we set the threshold to be $2$, such as having the function $\lambda\;(t,t')\,.\,t'-t<2$ in the \cn{tp} cell of the above configuration, the expression $2-0 < 2$ results in \texttt{false}, which means that the following \rulelab{Com} rule is not applicable.
+The system might be stuck because there is no rule to empty the \cn{comm} cell, which can be classified as a failure due to the violation of the delivery time guarantee. 
 
 
 
-The QAM semantics is given as a process algebra style labeled transition system listed in \Cref{fig:q-pi-semantics}.
-Each transition label has either an empty label or a communication action on label $p.c.m$, where $p$ is the probability the action $c.m$ happens and $c$ is the channel name and $m$ is the actual message potentially being quantum.
-Rule \rulelab{RelationUp} describes the global transitions where program execution connectivity graph is updated once upon a time,
-while rule \rulelab{TimeUp} updates the global clock of the configuration.
-In QAM, the semantic rules only need to mention the cells that are involved in a transition.
-For example, in rule \rulelab{TimeUp}, we do not mention the cells $\qcell{\Ls}{p}$ and $\qcell{\Fs}{f}$ because they have no changes during the transition.
 
-Rules \rulelab{GenChan}, \rulelab{GenQubit}, and \rulelab{Communication} describe the transitions happened in a program configuration.
-Rule \rulelab{GenChan} represents the procedure that a message is transmitted from one location to another via a quantum channel. During the procedure, the probability for the message being successfully sent is reduced and the two locations also consume two qubits.
-Here, an action $\qsend{p}{c}{m}$ is transmitted from one location, defined by the cell $\qcell{}{a}$, to another location $\qcell{}{b}$, if there is a triple relation $(a,b,p')$ in the relation cell. 
-The $p'$ value represents the reduced probability factor to communicate the message between the two locations, i.e.,
-the probability value $p$ in action $\qsend{p}{c}{m}$ is accumulated to become $p\cdot p'$.
-Each transmission requires the consumption of two qubits: each cell consumes one qubits.
-This is why $a$ and $b$'s result cells ($\Cellb{}{i-}{a}$ and $\Cellb{}{j-}{b}$) have the qubit value $i$ and $j$ being reduced, respectively.
-Here, the $...$ in cell $\Cellb{}{i-}{a}$ represents that we only care about the left hand side action in a process cell regarding the rest of the content.
-In the example transition in \Cref{fig:q-pi-example1} that starts from the configuration $\texttt{S} \qcell{\texttt{R}}{r}$ above,
-the transitions from the top to the left and right are both applied a \rulelab{GenChan} rule.
-On the left hand side, the action $c!<m>$ is transmitted from cell $a$ to cell $r_1$, and the probability value is reduced to $0.5$.
-Rule \rulelab{GenQubit} generates a new qubit in a location to help transmit messages from one location to another.
 
-Rule \rulelab{Communication} defines the behavior of consuming a message by a local process in a node cell.
-In the parallel composition $\qsend{p}{c}{m}\texttt{|} \qrev{c}{x}.P$, action $\qsend{p}{c}{m}$ is waiting to be consumed on channel $c$, 
-$\qrev{c}{x}$ is a receipt binding of channel $c$, and $P$ is the following process to consume the action.
-After the transition, the waiting action is removed, and the remaining process $P$ is executed by substituting variable $x$ with the massage $m$. The transition is a non-empty one and the parallel composition communicates on the action $p.c.m$.
 
-An example machine is given in \Cref{fig:q-pi-example} and \Cref{fig:q-pi-example1}.
-The protocol of the definition follows the QPASS model \cite{10.1145/3387514.3405853}. 
-The example contains six distinct computer locations and we want to send messages from location $a$ to $b$.
-Locations $r_1$, $r_2$, $r_3$, and $r_4$ are intermediate routers. 
-\Cref{fig:q-pi-example} represents the connectivity of different computers. 
-\Cref{fig:q-pi-example1} provides the transition computation tree of two possible ways of sending a message from $a$ to $b$.
-At the end of each path in the computation tree in \Cref{fig:q-pi-example1}, the left hand path communicates an action $0.125.c.m$, while the right hand path communicates an action $0.0625.c.m$; thus, the left hand path is selected according to the QPass model because it has a higher successful rate to send out the message.
+
 
 
 
