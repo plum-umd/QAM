@@ -71,10 +71,11 @@ In the next two sections, we introduce the modeling of quantum network protocols
       \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^t \mid \qrev{c}{x} \\
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
       \texttt{Relations} & R & \in & \Ls \times \Ls \times \Rs \\
+      \texttt{Predicate Action} & \alpha & ::= & \qsend{p}{c}{m}^t \mid (c,c,\qsend{p}{c}{m}^t) \\
       \texttt{Objects} & \Os \\
       \texttt{Custom Cell} & \varphi,\psi & ::= & \pcell{P}{n}{c} \mid \qcell{\Os}{c}\\
       \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}{\cn{rel}} \qcell{t}{\cn{gt}}
-                             \pcell{A}{t}{\cn{comm}} \qcell{\cn{bool}}{\cn{pred}} \psi^* \\
+                             \pcell{\alpha}{t}{\cn{comm}} \pcell{\cn{bool}}{t}{\cn{pred}} \psi^* \\
       \texttt{Rules} & \rules & ::= & C \longrightarrow C \\
       \texttt{Meta Function} & \Cs & ::= & \decl{\rules}{\Cs} \mid C\\
     \end{array}
@@ -141,9 +142,11 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
   \begin{mathpar}
 
    \inferrule[GenChan]{}
-       {\Cellb{\qsend{p}{c}{m}^t}{i}{a}\Cella{P}{j}{b} \qcell{\{(a,b,p)\}\cup R}{\cn{rel}}\qcell{t'}{\cn{gt}}
-        \longrightarrow \Cellb{}{i-}{a}\Cella{\qsend{p}{c}{m}^{t}\texttt{|}P}{j-}{b}
-              \qcell{\{(a,b,p)\}\cup R}{\cn{rel}}\qcell{t'+}{\cn{gt}} }
+       {\Cellb{\qsend{p}{c}{m}^t}{i}{c_1}\Cella{P}{j}{c_2} \qcell{\{(c_1,c_2,p')\}\cup R}{\cn{rel}}\qcell{t'}{\cn{gt}}
+        \pcell{\emptyset}{\_}{\cn{comm}}\pcell{b}{\_}{\cn{pred}}
+       \\\\\qquad\qquad \longrightarrow \Cellb{}{i-}{c_1}\Cella{\qsend{p*p'}{c}{m}^{t}\texttt{|}P}{j-}{c_2}
+              \qcell{\{(c_1,c_2,p')\}\cup R}{\cn{rel}}\qcell{t'+}{\cn{gt}}
+               \pcell{(c_1,c_2,\qsend{p}{c}{m}^t)}{t'}{\cn{comm}}\pcell{b}{t'}{\cn{pred}} }
 
 \ignore{
    \inferrule[GenQubit]{}
@@ -157,14 +160,19 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
        {\comp{P} \longrightarrow 0}
 
   \inferrule[PreCom]{}
-      { \Cellb{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\pcell{\emptyset}{\_}{\cn{comm}}
+      { \Cellb{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\pcell{\emptyset}{\_}{\cn{comm}}\pcell{b}{\_}{\cn{pred}}
            \longrightarrow
-         \Cellb{P[m/x]}{n}{c}\qcell{t'+}{\cn{gt}}\pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}}
+         \Cellb{P[m/x]}{n}{c}\qcell{t'+}{\cn{gt}}\pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\pcell{b}{t'}{\cn{pred}}}
                   
   \inferrule[Com]{}
-      { \pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}}
+      { \pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\pcell{\cn{true}}{t'}{\cn{pred}}
            \xrightarrow{p.c.m}  
-         \pcell{\emptyset}{t'}{\cn{comm}}\qcell{\cn{true}}{\cn{pred}} } 
+         \pcell{\emptyset}{t'}{\cn{comm}}\pcell{\cn{true}}{t'}{\cn{pred}} } 
+
+  \inferrule[FinChan]{}
+      { \pcell{(c_1,c_2,A)}{t'}{\cn{comm}}\pcell{\cn{true}}{t'}{\cn{pred}}
+           \longrightarrow
+         \pcell{\emptyset}{t'}{\cn{comm}}\pcell{\cn{true}}{t'}{\cn{pred}} } 
 
   \end{mathpar}
 }
