@@ -63,7 +63,8 @@ by abstracting away the details of the gates and measurement devices,
 which represent a low-level circuit implementation of the quantum teleportation algorithm.
 
 \noindent\textbf{\textit{Extended Quantum Network Communication By Swaps.}}
-\liyi{later.}
+Quantum teleportation is developed based on the property of qubits entanglement. However, one shortage of quantum entanglement is that it can only be created within a short distance, i.e. if the sender and receiver are far from each other, then the success rate of creating an entanglement state between them would be very low. Due to this disadvantage, scientists have developed a method called entanglement swap to help create long-distance entanglement. This method relies on quantum repeaters in the middle. Suppose Alice and Bob stay in two separate places and there is a quantum repeater, $r_1$ between them, they can create a long-distance entanglement in two steps. First, Alice and Bob each create an entanglement state with $r_1$; then $r_1$ performs a Bell state measurement locally. After measurement, the two original entanglements are destroyed and therefore, a new entanglement pair is created between Alice and Bob. 
+% \liyi{later.}
 
 % Writing a quantum algorithm now, with SQIR (but likewise with Quipper, Pyquil, Circ, etc.). Example: Shor’s
 % Write quantum parts (QPE) 
