@@ -124,7 +124,7 @@ We provide a meta level rule declaration operation ($\decl{\rules}{\Cs}$), allow
 {\footnotesize
 \[
 \Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
-\Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
+\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
 \qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
 \qcell{\emptyset}{\cn{comm}}
 \pcell{\texttt{false}}{0}{\cn{pred}}
@@ -135,13 +135,13 @@ We provide a meta level rule declaration operation ($\decl{\rules}{\Cs}$), allow
 As an example of the QAM syntax, the above configuration defines the initial program state for sending a message $c.m$ from $\cn{Cat}$ to $\cn{Dan}$ via the router $r_1$, as part of the communication in \Cref{fig:q-pi-example}. Initially, the relation cell stores the connectivity between \cn{Cat}, \cn{Dan}, and $r_1$, with the success rates. 
 The global time is initialized as $0$ in the \cn{gt} cell, and the predicate cell has a fixed value $\texttt{false}$.
 The message ($\qsend{1}{c}{m}^0$) sent from \cn{Cat} has an initial probability value $1$ and the time stamp $0$, referring to the time that the message is guaranteed to send out.
-Node $r_0$ acts as a intermediate router, so it only contains the unit process $0$, and \cn{Dan} is waiting on receiving a message ($\qrev{c}{m}.0$). 
+Node $r_0$ acts as a intermediate router, so it only contains the unit process $0$, and \cn{Dan} is waiting on receiving a message ($\qrev{c}{x}.0$). 
 
 \begin{figure}[t]
 {\small
   \begin{mathpar}
 \mprset{flushleft}
-   \inferrule[GenChan]{}
+   \inferrule[GC]{}
        {\Cellb{\qsend{p}{c}{m}^t}{i}{c_1}\Cella{P}{j}{c_2} \qcell{\{(c_1,c_2,p')\}\cup R}{\cn{rel}}\qcell{t'}{\cn{gt}}
         \qcell{\emptyset}{\cn{comm}}\pcell{b}{\_}{\cn{pred}}
        \\\\\qquad\qquad \longrightarrow \Cellb{}{i-}{c_1}\Cella{\qsend{p*p'}{c}{m}^{t}\texttt{|}P}{j-}{c_2}
@@ -169,7 +169,7 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
            \xrightarrow{p.c.m}  
          \qcell{t'+}{\cn{gt}}\qcell{\emptyset}{\cn{comm}}\pcell{\cn{false}}{t'}{\cn{pred}} } 
 
-  \inferrule[FinChan]{}
+  \inferrule[FC]{}
       { \qcell{t}{\cn{gt}}\qcell{(c_1,c_2,A)}{\cn{comm}}\pcell{\cn{true}}{t}{\cn{pred}}
            \longrightarrow
          \qcell{t+}{\cn{gt}}\qcell{\emptyset}{\cn{comm}}\pcell{\cn{false}}{t}{\cn{pred}} } 
@@ -190,10 +190,10 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
 \node (3) [below right= of 1] {\text{\ \ \ \ \ \ }$\Cella{0}{9}{a}$ $\Cella{\qsend{0.5}{c}{m}|0}{9}{r_2}$..., $\ccell{\{(r_2,r_3)\}\cup\text{R}}$}; 
 \node (4) [below of=2] {$\Cella{0}{8}{r_1}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_4}$... $\langle\{(r_4,b)\}\cup$R$\rangle$};
 \node (5) [below of=3] {\text{\ \ \ \ \ \ }$\Cella{0}{8}{r_2}$ $\Cella{\qsend{0.25}{c}{m}|0}{9}{r_3}$..., $\ccell{\{(r_3,r_4)\}\cup\text{R}}$};
-\node (6) [below of=4] {$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.125}{c}{m}|\qrev{c}{m}.0}{9}{b}$... $\ccell{\text{R}}$};
+\node (6) [below of=4] {$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.125}{c}{m}|\qrev{c}{x}.0}{9}{b}$... $\ccell{\text{R}}$};
 \node (7) [below of=5] {\text{\ \ \ \ \ \ \ \ \;}$\Cella{0}{8}{r_3}$ $\Cella{\qsend{0.125}{c}{m}|0}{9}{r_4}$..., $\ccell{\{(r_4,b)\}\cup\text{R}}$};
 \node (8) [below of=6] {$\Cella{0}{9}{b}$... $\ccell{\text{R}}$};
-\node (9) [below of=7] {\text{\ \ \ \ \ \ \ \ }$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.0625}{c}{m}|\qrev{c}{m}.0}{9}{b}$..., $\ccell{\text{R}}$};
+\node (9) [below of=7] {\text{\ \ \ \ \ \ \ \ }$\Cella{0}{8}{r_4}$ $\Cella{\qsend{0.0625}{c}{m}|\qrev{c}{x}.0}{9}{b}$..., $\ccell{\text{R}}$};
 \node (10) [below of=9] {\text{\ \ \ \ \ \ }$\Cella{0}{n}{b}$... $\ccell{\text{R}}$};
 \draw[->] (1) -- node[midway, above left] {} (2); 
 \draw[->] (1) -- node[midway, above right] {} (3); 
@@ -220,7 +220,7 @@ where $\Ms$ is a set of messages;
 $\Ls$ is a set of channels containing at least $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$;
 $\Ts$ is a set of time stamps that forms a linear order ($<$) with $0$ being the minimum;
 $C$ is the configuration containing different cells that represent the nodes with processes and environment for the system, at least containing cell $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$, mentioned in \Cref{sec:qamsyntax};
-and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{GenChan}, \rulelab{MoreTries}, \rulelab{NoTries}, \rulelab{PreCom}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
+and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{GC}, \rulelab{MoreTries}, \rulelab{NoTries}, \rulelab{PreCom}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
 
 QAM is flexible enough to define most quantum network/security protocols 
 through the ability to extend rules by the rule declaration operation in \Cref{fig:q-pi-syntax}.
@@ -242,30 +242,30 @@ In QAM, there are mainly two groups of rules, finishing the tasks of conveying a
 Each group can be divided into a consecutive three kinds of rule applications: 1) we finish the major functionality of the task and move necessary information to the \cn{comm} and \cn{pred} cells for granting; 2) one or more granting rules are applied on the system to check if the task is finished correctly; and 3) we clean up the task information from the \cn{comm} and \cn{pred} cells and update the global clock to finalize the task execution.
 
 In conveying a message from a starting node to its destination,
-we have the rule applications \rulelab{GenChan} and \rulelab{FinChan} for step (1) and (3) above, with some possible granting rules, such as rule \rulelab{Grant} above.
-Rule \rulelab{GenChan} defines the message transformation behavior of conveying a message from a node to another that might be an intermediate router node, with the consumption of a qubit in each of the parties and a slot time change happening in the global clock.
+we have the rule applications \rulelab{GC} and \rulelab{FC} for step (1) and (3) above, with some possible granting rules, such as rule \rulelab{Grant} above.
+Rule \rulelab{GC} defines the message transformation behavior of conveying a message from a node to another that might be an intermediate router node, with the consumption of a qubit in each of the parties and a slot time change happening in the global clock.
 The $...$ operation in cell $a$ refers to that there might 
 be other paralleled processes associated in the process cell, but we disregard them.
-In rule \rulelab{GenChan}, it also moves the necessary information, such as the sender and receiver channel names as well as the message, in the \cn{comm} cell with the update of the time stamp $t'$ in the \cn{pred} cell to be the current global time,
+In rule \rulelab{GC}, it also moves the necessary information, such as the sender and receiver channel names as well as the message, in the \cn{comm} cell with the update of the time stamp $t'$ in the \cn{pred} cell to be the current global time,
 indicating that at the current point, the system is conveying a message from a node to another.
-After an intermediate granting step, rule \rulelab{FinChan} is applied on a configuration to empty the \cn{comm} cell, initialize the \cn{pred} cell by putting an \cn{false} value, and increment the global clock.
+After an intermediate granting step, rule \rulelab{FC} is applied on a configuration to empty the \cn{comm} cell, initialize the \cn{pred} cell by putting an \cn{false} value, and increment the global clock.
 
 {\footnotesize
 \[
 \begin{array}{ll}
 \longrightarrow\;\;
 \Cella{0}{9}{\cn{Cat}}\Cella{A}{9}{r_1}
-\Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
+\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
 \qcell{R}{\cn{rel}}
 \qcell{(\cn{Cat},r_1,A)}{\cn{comm}}
 \pcell{\texttt{false}}{0}{\cn{pred}}
 \qcell{0}{\cn{gt}}
 &
-(\rulelab{GenChan})
+(\rulelab{GC})
 \\[0.2em]
 \longrightarrow\;\;
 \Cella{0}{9}{\cn{Cat}}\Cella{A}{9}{r_1}
-\Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
+\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
 \qcell{R}{\cn{rel}}
 \qcell{(\cn{Cat},r_1,A)}{\cn{comm}}
 \pcell{\texttt{true}}{0}{\cn{pred}}
@@ -275,23 +275,23 @@ After an intermediate granting step, rule \rulelab{FinChan} is applied on a conf
 \\[0.2em]
 \longrightarrow\;\;
 \Cella{0}{9}{\cn{Cat}}\Cella{A}{9}{r_1}
-\Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
+\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
 \qcell{R}{\cn{rel}}
 \qcell{\emptyset}{\cn{comm}}
 \pcell{\texttt{false}}{0}{\cn{pred}}
 \qcell{1}{\cn{gt}}
 &
-(\rulelab{FinChan})
+(\rulelab{FC})
 \\[0.2em]
 \longrightarrow\;\;
 \Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
-\Cella{\parl{A'}{\qrev{c}{m}.0}}{9}{\cn{Dan}} 
+\Cella{\parl{A'}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
 \qcell{R}{\cn{rel}}
 \qcell{(r_1,\cn{Dan},A')}{\cn{comm}}
 \pcell{\texttt{false}}{1}{\cn{pred}}
 \qcell{1}{\cn{gt}}
 &
-(\rulelab{GenChan})
+(\rulelab{GC})
 \end{array}
 \]
 }
@@ -305,19 +305,19 @@ A'\triangleq\qsend{0.25}{c}{m}^0$
 \end{center}
 }
 
-The above transitions evolves the configuration in \Cref{sec:qamsyntax}, we first apply rule \rulelab{GenChan}. The message $\qsend{1}{c}{m}^0$ in cell \cn{Cat} is conveyed to the $r_1$ cell with the new probability $0.5$, meaning that only $50\%$ change this communication is guaranteed.
+The above transitions evolves the configuration in \Cref{sec:qamsyntax}, we first apply rule \rulelab{GC}. The message $\qsend{1}{c}{m}^0$ in cell \cn{Cat} is conveyed to the $r_1$ cell with the new probability $0.5$, meaning that only $50\%$ change this communication is guaranteed.
 This can happen because there is a defined relation tuple $(\cn{Cat},r_1,0.5)$ in the relation cell $\cn{rel}$. During the process, the qubit resources in $\cn{Cat}$ and $r_1$ both reduce one, and the global clock is updated. 
 It is worth noting that 
 we associate the parallel process $\cn{|}$ with identity, associativity, and commutativity equational rules, 
 such that $\parl{P}{0}=P$, $\parl{(\parl{P}{Q})}{Q'}=\parl{P}{(\parl{Q}{Q'})}$, and $\parl{P}{Q}=\parl{Q}{P}$.
 In the above case, $\qsend{0.5}{c}{m}^0$ can be viewed as $\parl{\qsend{0.5}{c}{m}^0}{0}$.
-We then apply rule \rulelab{Grant} to put a \cn{true} value in the \cn{pred} cell and the \rulelab{FinChan} rule application cleans up the cells, so the transition of the message from node $r_1$ to \cn{Dan} can happen through the last \rulelab{GenChan} rule application.
+We then apply rule \rulelab{Grant} to put a \cn{true} value in the \cn{pred} cell and the \rulelab{FC} rule application cleans up the cells, so the transition of the message from node $r_1$ to \cn{Dan} can happen through the last \rulelab{GC} rule application.
 
 {\footnotesize
 \[
 \begin{array}{lll}
 &\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
-\Cella{\parl{A'}{\qrev{c}{m}.0}}{9}{\cn{Dan}} 
+\Cella{\parl{A'}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
 \qcell{R}{\cn{rel}}
 \qcell{\emptyset}{\cn{comm}}
 \pcell{\texttt{false}}{1}{\cn{pred}}
@@ -384,7 +384,7 @@ We will see an example success rate guarantee mechanism by using the replication
 \noindent\textbf{Extension of Rules.}
 The rule set $\overline{\rules}$ is extendable by user-defined rules, 
 such that if a user declares the statement $\decl{\rules_1}{...\; \decl{\rules_n}{C_0}}$
-in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{GenChan},\rulelab{MoreTries},\rulelab{NoTries}, \rulelab{PreCom},\rulelab{Com}\}$.
+in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{GC},\rulelab{MoreTries},\rulelab{NoTries}, \rulelab{PreCom},\rulelab{Com}\}$.
 
 Permitting user-defined rules allows the definitions of different protocol guarantees in QAM,
 which are useful in evaluating different performance merits of different protocols,
@@ -406,7 +406,7 @@ If a message is not delivered in time, its quantum state is decohered and its in
 \\[0.2em]
 \qquad
 \Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
-\Cella{\qrev{c}{m}.0}{10}{\cn{Dan}} 
+\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
 \qcell{R}{\cn{rel}}
 \pcell{\emptyset}{0}{\cn{comm}}
 \qcell{\texttt{false}}{\cn{pred}}
