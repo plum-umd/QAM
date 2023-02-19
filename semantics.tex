@@ -1,7 +1,5 @@
 \section{The Quantum Abstract Machine:  Syntax and Semantics} \label{sec:qam}
 
-This section describes QAM's syntax and semantics through the QPass example \cite{10.1145/3387514.3405853}.
-
 \begin{figure}[t]
 {\small
 \begin{center}
@@ -25,18 +23,24 @@ This section describes QAM's syntax and semantics through the QPass example \cit
 \end{tikzpicture}
 \end{center}
 }
-\caption{QPass Example Path Connectivity}
+\caption{Example Path Connectivity}
   \label{fig:q-pi-example}
 \end{figure}
 
-\subsection{Capturing the Quantum Network Behaviors} \label{sec:qamexample}
+This section describes QAM's syntax and semantics,
+whose design is based on two observations of different quantum network protocols, through an example connectivity diagram in \Cref{fig:q-pi-example}.
+First, there are two main tasks in sending quantum messages, message transmissions and deliveries.
+The former uses the quantum swaps to convey a message from a node to another which is closer to the final destination and connectivity is usually represented as a graph structure such as the one in \Cref{fig:q-pi-example}.
+During the procedure, the actual quantum swap circuit detail is less interesting than the cost analysis, where each two-node message transmission costs each node one qubit resource, because how swaps are constructed in circuit is almost identical in different protocols.
+We also use a quantum teleportation circuit for delivering a message. Again, the more interesting analysis is about different guarantees a network protocol can provide in the message deliveries rather than the circuit detail.
 
-As we mentioned in \Cref{sec:background}, all quantum network protocols are based on the physical procedures of quantum teleportation and quantum swap operations and their physical phenomena and mathematical semantics have been well studied.
-On the other hand, building an evaluation framework for quantum network protocols does not require us to implement the complete physical procedure of individual operations; 
-instead, we intend to capture the operational behaviors that affect the evaluation factors,
-including the success rates and probabilities of sending messages and the required resources.
-In fact, both quantum teleportation and swap can be summarized as a procedure to communicate a qubit between two parties with the cost of two qubits.
+Next, many quantum message sending guarantees are time-sensitive and related to probabilities that are time-sensitive.
+Thus, we model in QAM a global clock and each task step, a message transmission or delivery, costs one time slot,
+and every message is associated with a probability value defining the success likelihood of delivering the message.
+For example, sending a message from \cn{Cat} to \cn{Dan} in \Cref{fig:q-pi-example} needs an intermediate transmission node $r_1$, and the likelihood of successfully delivering the message is obviously lower than the case if we can directly send the message from \cn{Cat} to \cn{Dan} without an intermediate step. In addition, qubits might be decohered after a certain period of time, so a property we can define,
+based on the QAM system, is to guarantee that every delivered message is within a threshold time period.
 
+\ignore{
 Here, we investigate the modeling of message transmission in QAM by the QPass protocol \cite{10.1145/3387514.3405853}.
 \Cref{fig:q-pi-example} shows an example connectivity diagram such that party $\cn{Ann}$ and $\cn{Cat}$ send messages to $\cn{Bob}$ and $\cn{Dan}$, via the middle routers $r_1$ to $r_4$. There are two paths for \cn{Ann} to send to \cn{Bob} ($r_2 - r_4$ and $r_1 - r_4$), while there is only one path to send message from \cn{Cat} to \cn{Dan} ($r_1$). 
 
@@ -56,7 +60,7 @@ with a final external communication $\xrightarrow{a}$, meaning that two parties 
 When running a QAM program, there might be different ways where it can transit, which forms different sequences of transmissions that represent different possible ways of communication. It is also possible that some sequences only contain the internal communication part without the final external communication, which represents failure tries that there are some bottlenecks preventing the communication moving forward, because we want to allow different parties send messages via the same network at the same time period; however, this might cause message transition bottlenecks due to limited resources in different nodes.
 
 Since quantum qubit information has lifetime, it might cause a message $a$ to lost completely if we simply queue a message at a bottleneck location until enough resources are available. Most quantum network protocols have the mechanism to bypass the message sending to another route. For example, assume that \cn{Ann} and \cn{Cat}'s messages are transmitted to $r_1$ at the same time, and $r_1$ only has a qubit resource and decide to send \cn{Cat}'s message first. Thus, \cn{Ann}'s message is queued because $r_1$ has no more resource. Then, after the life time of the \cn{Ann}'s message ends, the message sending sequence is classified as a failure try that does not have an ending external communication. To successfully send both messages, we need \cn{Ann}'s message to be bypassed through the $r_2 - r_4$ route, so the bottleneck in node $r_1$ is resolved and both messages can be delivered on time.
-
+}
 In the next two sections, we introduce the modeling of quantum network protocols via QAM formally.
 
 \begin{figure}[t]
@@ -68,7 +72,7 @@ In the next two sections, we introduce the modeling of quantum network protocols
     \texttt{Channel} & c &\in& \Ls\\
     \texttt{Time Stamp} & t &\in& \mathbb{T}\\
     \texttt{Label} & a &\in& \Ls \times \mathbb{M}\\
-      \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^t \mid \qrev{c}{x} \\
+      \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^{t?} \mid \qrev{c}{x} \\
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
       \texttt{Relations} & R & \in & \Ls \times \Ls \times \Rs \\
       \texttt{Predicate Action} & \alpha & ::= & \qsend{p}{c}{m}^t \mid (c,c,\qsend{p}{c}{m}^t) \\
@@ -92,7 +96,8 @@ QAM describes multiparty communication behaviors,
 whose syntax is similarity to the chemistry abstract machine \cite{BERRY1992217} and $\Pi$-calculus.
 The message label that is used to communicate different parties has the form $c.m$, 
 where $c$ refers to a communication channel, and $m$ is a message, possibly a quantum state.
-Each single process action can be a message sending $\qsend{p}{c}{m}^t$, meaning that a message $m$ is sent through the channel $c$ with the success probability rate $p$ initialized at the time stamp $t$, and a message receipt $\qrev{c}{x}$, referring to that a message is received through the channel $c$ and represented as variable $x$.
+Each single process action can be a message sending $\qsend{p}{c}{m}^{t?}$, meaning that a message $m$ is sent through the channel $c$ with the success probability rate $p$ initialized at the time stamp $t$, and a message receipt $\qrev{c}{x}$, referring to that a message is received through the channel $c$ and represented as variable $x$.
+The time stamp $t$ in a message sending operation can be omitted as $\qsend{p}{c}{m}$, meaning that the time stamp is generated when the message is sent out from its starting place.
 
 To describe the behaviors of a network system, every QAM system comes with a configuration $C$
 containing two different kinds of cells --- process and content cells.
@@ -107,7 +112,7 @@ which is used for resending messages, explained in \Cref{sec:qamsemantics}.
 In QAM, a parallel process of a message sending and receipt, $\parl{\qact{\qsend{p}{c}{m}^t}{P}}{\qact{\qrev{c}{x}}{Q}}$,
 causes the process to transit to $\parl{P}{Q[m/x]}$, which is similar to the $\Pi$-calculus semantics.
 On the other hand, a parallel of two message sending, $\parl{\qact{\qsend{p}{c}{m}^t}{P}}{\qsend{p'}{c'}{m'}^{t'}{P'}}$,
-refers to that the two operations are competing to convey the message outside of the node, possibly to other destinations.
+refers to that the two operations are competing to transmit the message outside of the node, possibly to other destinations.
 
 The content cells act as control units for storing environment information for executing a QAM system.
 Users are able to define their own content cell by instantiating object types $\Os$ to different user-defined types.
@@ -123,7 +128,7 @@ We provide a meta level rule declaration operation ($\decl{\rules}{\Cs}$), allow
 
 {\footnotesize
 \[
-\Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
+\Cella{\qsend{1}{c}{m}}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
 \Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
 \qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
 \qcell{\emptyset}{\cn{comm}}
@@ -134,7 +139,7 @@ We provide a meta level rule declaration operation ($\decl{\rules}{\Cs}$), allow
 
 As an example of the QAM syntax, the above configuration defines the initial program state for sending a message $c.m$ from $\cn{Cat}$ to $\cn{Dan}$ via the router $r_1$, as part of the communication in \Cref{fig:q-pi-example}. Initially, the relation cell stores the connectivity between \cn{Cat}, \cn{Dan}, and $r_1$, with the success rates. 
 The global time is initialized as $0$ in the \cn{gt} cell, and the predicate cell has a fixed value $\texttt{false}$.
-The message ($\qsend{1}{c}{m}^0$) sent from \cn{Cat} has an initial probability value $1$ and the time stamp $0$, referring to the time that the message is guaranteed to send out.
+The message ($\qsend{1}{c}{m}$) sent from \cn{Cat} has an initial probability value $1$.
 Node $r_0$ acts as a intermediate router, so it only contains the unit process $0$, and \cn{Dan} is waiting on receiving a message ($\qrev{c}{x}.0$). 
 
 \begin{figure}[t]
@@ -153,10 +158,13 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
        {\Cella{P}{n,t'}{a}\qcell{t}{\cn{gt}}\longrightarrow \Cella{P}{n+,t}{a}\qcell{t}{\cn{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta\wedge t' < t
 }
 
+   \inferrule[CT]{}
+       {\Cellb{\qsend{p}{c}{m}}{i}{c_1}\qcell{t}{\cn{gt}} \longrightarrow \Cellb{\qsend{p}{c}{m}^t}{i}{c_1}\qcell{t}{\cn{gt}}}
+
    \inferrule[MT]{}
        {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
       
-   \inferrule[NoTries]{}
+   \inferrule[NT]{}
        {\comp{P} \longrightarrow 0}
 
   \inferrule[PC]{}
@@ -220,13 +228,13 @@ where $\Ms$ is a set of messages;
 $\Ls$ is a set of channels containing at least $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$;
 $\Ts$ is a set of time stamps that forms a linear order ($<$) with $0$ being the minimum;
 $C$ is the configuration containing different cells that represent the nodes with processes and environment for the system, at least containing cell $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$, mentioned in \Cref{sec:qamsyntax};
-and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{GC}, \rulelab{MT}, \rulelab{NoTries}, \rulelab{PC}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
+and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{CT},\rulelab{GC}, \rulelab{MT}, \rulelab{NT}, \rulelab{PC}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
 
 QAM is flexible enough to define most quantum network/security protocols 
 through the ability to extend rules by the rule declaration operation in \Cref{fig:q-pi-syntax}.
-Every rule set must contain the five rules listed in \Cref{fig:q-pi-semantics},
+Every rule set must contain the six rules listed in \Cref{fig:q-pi-semantics},
 because they represent the universally sound facts about multiparty quantum communication. 
-We first discuss these five rules through the example configuration at the end of \Cref{sec:qamsyntax}. 
+We first discuss these six rules through the example configuration at the end of \Cref{sec:qamsyntax}. 
 For showing the consecutive transitions of a system, there must be additional rules for
 granting every step of transition by turning the \cn{pred} cell's content to be \cn{true}.
 Here, we first assume our example system includes the simplest granting rule by assigning \cn{true} to the \cn{pred} cell if the global time stamps in the \cn{gt} and \cn{pred} cells matched, as:
@@ -238,21 +246,32 @@ Here, we first assume our example system includes the simplest granting rule by 
 \end{mathpar}
 }
 
-In QAM, there are mainly two groups of rules, finishing the tasks of conveying a message from a starting node to its destination via many middle routers and delivering the message in the destination.
+In QAM, there are mainly two groups of rules, finishing the tasks of transmitting a message from a starting node to its destination via many middle routers and delivering the message in the destination.
 Each group can be divided into a consecutive three kinds of rule applications: 1) we finish the major functionality of the task and move necessary information to the \cn{comm} and \cn{pred} cells for granting; 2) one or more granting rules are applied on the system to check if the task is finished correctly; and 3) we clean up the task information from the \cn{comm} and \cn{pred} cells and update the global clock to finalize the task execution.
 
-In conveying a message from a starting node to its destination,
+In transmitting a message from a starting node to its destination,
 we have the rule applications \rulelab{GC} and \rulelab{FC} for step (1) and (3) above, with some possible granting rules, such as rule \rulelab{Grant} above.
-Rule \rulelab{GC} defines the message transformation behavior of conveying a message from a node to another that might be an intermediate router node, with the consumption of a qubit in each of the parties and a slot time change happening in the global clock.
+Rule \rulelab{GC} defines the message transmission behavior that might be an intermediate router node, with the consumption of a qubit in each of the parties and a slot time change happening in the global clock.
 The $...$ operation in cell $a$ refers to that there might 
 be other paralleled processes associated in the process cell, but we disregard them.
 In rule \rulelab{GC}, it also moves the necessary information, such as the sender and receiver channel names as well as the message, in the \cn{comm} cell with the update of the time stamp $t'$ in the \cn{pred} cell to be the current global time,
-indicating that at the current point, the system is conveying a message from a node to another.
+indicating that at the current point, the system conveys a message from a node to another.
 After an intermediate granting step, rule \rulelab{FC} is applied on a configuration to empty the \cn{comm} cell, initialize the \cn{pred} cell by putting an \cn{false} value, and increment the global clock.
+Additionally, rule \rulelab{CT} generates a time stamp for a message that is about to send out.
 
 {\footnotesize
 \[
 \begin{array}{ll}
+\longrightarrow\;\;
+\Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
+\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\texttt{false}}{0}{\cn{pred}}
+\qcell{0}{\cn{gt}}
+&
+(\rulelab{CT})
+\\[0.2em]
 \longrightarrow\;\;
 \Cella{0}{9}{\cn{Cat}}\Cella{A}{9}{r_1}
 \Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
@@ -305,7 +324,7 @@ A'\triangleq\qsend{0.25}{c}{m}^0$
 \end{center}
 }
 
-The above transitions evolves the configuration in \Cref{sec:qamsyntax}, we first apply rule \rulelab{GC}. The message $\qsend{1}{c}{m}^0$ in cell \cn{Cat} is conveyed to the $r_1$ cell with the new probability $0.5$, meaning that only $50\%$ change this communication is guaranteed.
+The above transitions evolves the configuration in \Cref{sec:qamsyntax}. We first apply rule \rulelab{CT} to attach the current time $0$ to the message to send as $\qsend{1}{c}{m}^0$; then, apply rule \rulelab{GC}. The message $\qsend{1}{c}{m}^0$ in cell \cn{Cat} is transmitted to the $r_1$ cell with the new probability $0.5$, meaning that only $50\%$ change this communication is guaranteed.
 This can happen because there is a defined relation tuple $(\cn{Cat},r_1,0.5)$ in the relation cell $\cn{rel}$. During the process, the qubit resources in $\cn{Cat}$ and $r_1$ both reduce one, and the global clock is updated. 
 It is worth noting that 
 we associate the parallel process $\cn{|}$ with identity, associativity, and commutativity equational rules, 
@@ -375,26 +394,26 @@ a \rulelab{Com} rule application processes the delivered message $\qsend{p}{c}{m
 so the message delivery is publicized. Other than applying rule \rulelab{Com}, all other rule applications are considered to be internal communications. 
 In the above example, the last \rulelab{Com} rule application removes the message from the cell with a publicized transition label $0.25.c,m$. 
 
-Rules \rulelab{MT} and \rulelab{NoTries} define the behaviors of the replication $\comp{P}$.
+Rules \rulelab{MT} and \rulelab{NT} define the behaviors of the replication $\comp{P}$.
 The former suggests that a process can be replicated as many as we want, while the latter one refers to that a replication process can non-deterministically terminates.
 In quantum communication, message deliveries are always associated with a success rate,
 which indicates that users might be interested in repeatedly sending a message until some success rate assurance is guaranteed.
-We will see an example success rate guarantee mechanism by using the replication operations with additional user-defined rules in \Cref{sec:case-study}.
+We will see an example success rate guarantee mechanism by using the replication operations with additional user-defined rules in \Cref{sec:add-prop}.
 
 \noindent\textbf{Extension of Rules.}
 The rule set $\overline{\rules}$ is extendable by user-defined rules, 
 such that if a user declares the statement $\decl{\rules_1}{...\; \decl{\rules_n}{C_0}}$
-in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{GC},\rulelab{MT},\rulelab{NoTries}, \rulelab{PC},\rulelab{Com}\}$.
+in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{CT},\rulelab{GC},\rulelab{MT},\rulelab{NT}, \rulelab{PC},\rulelab{Com}\}$.
 
 Permitting user-defined rules allows the definitions of different protocol guarantees in QAM,
 which are useful in evaluating different performance merits of different protocols,
 while rules in \Cref{fig:q-pi-semantics} establish the semantic basis of quantum network communication.
 As the \rulelab{Grant} rule example above, the guarantees are established by evaluating different predicates in the \cn{pred} cell,
 which we name granting steps in handling the tasks of conveying and delivering messages.
-Here, we discuss how to guarantee the on-time message delivery in the QPass/QCast protocols,
+Here, we discuss how to guarantee the on-time message delivery in the QPass/QCast protocols \cite{10.1145/3387514.3405853},
 which is a property that people tried to guarantee in these these protocols, but was not established formally \cite{10.1145/3387514.3405853}.
 
-A key observation in quantum network is that qubit messages have short life circles,
+A key observation in quantum network is that qubit messages have short liftime,
 so the above quantum protocols developed complicated algorithms to guarantee the high delivery rates for quantum messages.
 If a message is not delivered in time, its quantum state is decohered and its information loses.
 
@@ -433,7 +452,7 @@ In the configuration setting, function $f$ is defined as a lambda abstraction $\
 }
 
 After we declare rule \rulelab{TP} and the new configuration, we essentially create a new QAM system $(\Ms,\Ls,\Ts,C',\overline{\rules'})$,
-where $C'$ is the new declared configuration and the rule set $\overline{\rules'}$ contains the five rules in \Cref{fig:q-pi-semantics}, rule \rulelab{Grant} above, as well as rule \rulelab{TP}.
+where $C'$ is the new declared configuration and the rule set $\overline{\rules'}$ contains the six rules in \Cref{fig:q-pi-semantics}, rule \rulelab{Grant} above, as well as rule \rulelab{TP}.
 In the execution example above, after applying rule \rulelab{PC}, the \cn{comm} cell becomes $\pcell{\qsend{0.25}{c}{m}^0}{2}{\cn{comm}}$ with the starting time stamp $0$ and the delivery time stamp $2$.
 By applying rule \rulelab{TP}, the expression $2-0 < 5$ results in \texttt{true}, which grants the message transition for the following \rulelab{Com} rule application. 
 However, if we set the threshold to be $2$, such as having the function definition $\lambda\;(t,t')\,.\,t'-t<2$ in the \cn{tp} cell of the above configuration, the expression $2-0 < 2$ results in \texttt{false}, which means that the following \rulelab{Com} rule is not applicable.
