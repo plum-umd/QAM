@@ -153,13 +153,13 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
        {\Cella{P}{n,t'}{a}\qcell{t}{\cn{gt}}\longrightarrow \Cella{P}{n+,t}{a}\qcell{t}{\cn{gt}}}\;\;\texttt{when}\;t \texttt{|} \beta\wedge t' < t
 }
 
-   \inferrule[MoreTries]{}
+   \inferrule[MT]{}
        {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
       
    \inferrule[NoTries]{}
        {\comp{P} \longrightarrow 0}
 
-  \inferrule[PreCom]{}
+  \inferrule[PC]{}
       { \Cellb{\qsend{p}{c}{m}^t\texttt{|} \qrev{c}{x}.P}{n}{c}\qcell{t'}{\cn{gt}}\qcell{\emptyset}{\cn{comm}}\pcell{b}{\_}{\cn{pred}}
            \longrightarrow
          \Cellb{P[m/x]}{n}{c}\qcell{t'}{\cn{gt}}\qcell{\qsend{p}{c}{m}^t}{\cn{comm}}\pcell{b}{t'}{\cn{pred}}}
@@ -220,7 +220,7 @@ where $\Ms$ is a set of messages;
 $\Ls$ is a set of channels containing at least $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$;
 $\Ts$ is a set of time stamps that forms a linear order ($<$) with $0$ being the minimum;
 $C$ is the configuration containing different cells that represent the nodes with processes and environment for the system, at least containing cell $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$, mentioned in \Cref{sec:qamsyntax};
-and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{GC}, \rulelab{MoreTries}, \rulelab{NoTries}, \rulelab{PreCom}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
+and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{GC}, \rulelab{MT}, \rulelab{NoTries}, \rulelab{PC}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
 
 QAM is flexible enough to define most quantum network/security protocols 
 through the ability to extend rules by the rule declaration operation in \Cref{fig:q-pi-syntax}.
@@ -332,7 +332,7 @@ We then apply rule \rulelab{Grant} to put a \cn{true} value in the \cn{pred} cel
 \pcell{\texttt{false}}{2}{\cn{pred}}
 \qcell{2}{\cn{gt}}
 &
-(\rulelab{PreCom})
+(\rulelab{PC})
 \\[0.2em]
 \longrightarrow
 &
@@ -367,15 +367,15 @@ A'\triangleq\qsend{0.25}{c}{m}^0$
 }
 
 For delivering a message in the destination,
-rules \rulelab{PreCom} and \rulelab{Com} define the steps except the intermediate granting step.
-Rule \rulelab{PreCom} is applicable if the sending operation is already in its destination cell, and being paralleled with a same-channel message receipt process $\qrev{c}{x}.P$. After applying the rule, the message is processed as $P[m/x]$, and we also move the message $\qsend{p}{c}{m}^t$ to the communication cell $\cn{comm}$ with the current time stamp $t'$, so further user-defined rules can be applied on the message.
-The above example first provides an \rulelab{PreCom} rule application showing the exactly procedure above, i.e, the message is moved to the \cn{comm} cell with the current global time $2$.
+rules \rulelab{PC} and \rulelab{Com} define the steps except the intermediate granting step.
+Rule \rulelab{PC} is applicable if the sending operation is already in its destination cell, and being paralleled with a same-channel message receipt process $\qrev{c}{x}.P$. After applying the rule, the message is processed as $P[m/x]$, and we also move the message $\qsend{p}{c}{m}^t$ to the communication cell $\cn{comm}$ with the current time stamp $t'$, so further user-defined rules can be applied on the message.
+The above example first provides an \rulelab{PC} rule application showing the exactly procedure above, i.e, the message is moved to the \cn{comm} cell with the current global time $2$.
 After the granting step,
 a \rulelab{Com} rule application processes the delivered message $\qsend{p}{c}{m}^t$ by removing it from the $\cn{comm}$ cell if the predicate cell $\cn{pred}$ is $\texttt{true}$. The processing refers to making the message a transition label $p.c.m$ appearing in the transition,
 so the message delivery is publicized. Other than applying rule \rulelab{Com}, all other rule applications are considered to be internal communications. 
 In the above example, the last \rulelab{Com} rule application removes the message from the cell with a publicized transition label $0.25.c,m$. 
 
-Rules \rulelab{MoreTries} and \rulelab{NoTries} define the behaviors of the replication $\comp{P}$.
+Rules \rulelab{MT} and \rulelab{NoTries} define the behaviors of the replication $\comp{P}$.
 The former suggests that a process can be replicated as many as we want, while the latter one refers to that a replication process can non-deterministically terminates.
 In quantum communication, message deliveries are always associated with a success rate,
 which indicates that users might be interested in repeatedly sending a message until some success rate assurance is guaranteed.
@@ -384,7 +384,7 @@ We will see an example success rate guarantee mechanism by using the replication
 \noindent\textbf{Extension of Rules.}
 The rule set $\overline{\rules}$ is extendable by user-defined rules, 
 such that if a user declares the statement $\decl{\rules_1}{...\; \decl{\rules_n}{C_0}}$
-in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{GC},\rulelab{MoreTries},\rulelab{NoTries}, \rulelab{PreCom},\rulelab{Com}\}$.
+in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{GC},\rulelab{MT},\rulelab{NoTries}, \rulelab{PC},\rulelab{Com}\}$.
 
 Permitting user-defined rules allows the definitions of different protocol guarantees in QAM,
 which are useful in evaluating different performance merits of different protocols,
@@ -422,7 +422,7 @@ $R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}$
 }
 
 To guarantee the property, we add a new cell $\cn{tp}$ and declare a new rule above (let's call it rule \rulelab{TP}).
-Every time when an action is in the \cn{comm} cell, which we know rule \rulelab{PreCom} is applied prior to the state, we apply the function $f$ in the new content cell \cn{tp} to the two time stamps $t$ and $t'$, and check if the message starting time $t$ and its delivery time $t'$ is within a threshold.
+Every time when an action is in the \cn{comm} cell, which we know rule \rulelab{PC} is applied prior to the state, we apply the function $f$ in the new content cell \cn{tp} to the two time stamps $t$ and $t'$, and check if the message starting time $t$ and its delivery time $t'$ is within a threshold.
 In the configuration setting, function $f$ is defined as a lambda abstraction $\lambda\;(t,t')\,.\,t'-t<5$ and it takes two time stamps and checks if $t'-t$ is less than the threshold number $5$. In addition, we can rewrite the \rulelab{Grant} rule below to only grant transitions for conveying messages; in such case, the \cn{comm} cell contains a tuple $(c_1,c_2,A)$.  
 
 {\small
@@ -434,7 +434,7 @@ In the configuration setting, function $f$ is defined as a lambda abstraction $\
 
 After we declare rule \rulelab{TP} and the new configuration, we essentially create a new QAM system $(\Ms,\Ls,\Ts,C',\overline{\rules'})$,
 where $C'$ is the new declared configuration and the rule set $\overline{\rules'}$ contains the five rules in \Cref{fig:q-pi-semantics}, rule \rulelab{Grant} above, as well as rule \rulelab{TP}.
-In the execution example above, after applying rule \rulelab{PreComm}, the \cn{comm} cell becomes $\pcell{\qsend{0.25}{c}{m}^0}{2}{\cn{comm}}$ with the starting time stamp $0$ and the delivery time stamp $2$.
+In the execution example above, after applying rule \rulelab{PC}, the \cn{comm} cell becomes $\pcell{\qsend{0.25}{c}{m}^0}{2}{\cn{comm}}$ with the starting time stamp $0$ and the delivery time stamp $2$.
 By applying rule \rulelab{TP}, the expression $2-0 < 5$ results in \texttt{true}, which grants the message transition for the following \rulelab{Com} rule application. 
 However, if we set the threshold to be $2$, such as having the function definition $\lambda\;(t,t')\,.\,t'-t<2$ in the \cn{tp} cell of the above configuration, the expression $2-0 < 2$ results in \texttt{false}, which means that the following \rulelab{Com} rule is not applicable.
 The system might be stuck because there is no rule to empty the \cn{comm} cell, which can be classified as a failure due to the violation of the delivery time guarantee. 
