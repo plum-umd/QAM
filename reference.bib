@@ -63,6 +63,31 @@ author = {H.J. Groenewold},
   copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
 }
 
+@article{fundamentallimits,
+author = {Pirandola, Stefano and Laurenza, Riccardo and Ottaviani, Carlo and Banchi, Leonardo},
+year = {2017},
+month = {04},
+pages = {15043},
+title = {Fundamental limits of repeaterless quantum communications},
+volume = {8},
+journal = {Nature Communications},
+doi = {10.1038/ncomms15043}
+}
+
+@article{
+doi:10.1126/science.aam9288,
+author = {Stephanie Wehner  and David Elkouss  and Ronald Hanson },
+title = {Quantum internet: A vision for the road ahead},
+journal = {Science},
+volume = {362},
+number = {6412},
+pages = {eaam9288},
+year = {2018},
+doi = {10.1126/science.aam9288},
+URL = {https://www.science.org/doi/abs/10.1126/science.aam9288},
+eprint = {https://www.science.org/doi/pdf/10.1126/science.aam9288},
+abstract = {As indispensable as the internet has become in our daily lives, it still has many shortcomings, not least of which is that communication can be intercepted and information stolen. If, however, the internet attained the capability of transmitting quantum information—qubits—many of these security concerns would be addressed. Wehner et al. review what it will take to achieve this so-called quantum internet and propose stages of development that each correspond to increasingly powerful applications. Although a full-blown quantum internet, with functional quantum computers as nodes connected through quantum communication channels, is still some ways away, the first long-range quantum networks are already being planned. Science, this issue p. eaam9288 The internet—a vast network that enables simultaneous long-range classical communication—has had a revolutionary impact on our world. The vision of a quantum internet is to fundamentally enhance internet technology by enabling quantum communication between any two points on Earth. Such a quantum internet may operate in parallel to the internet that we have today and connect quantum processors in order to achieve capabilities that are provably impossible by using only classical means. Here, we propose stages of development toward a full-blown quantum internet and highlight experimental and theoretical progress needed to attain them.}}
+
 @inproceedings{10.1145/3387514.3405853,
 author = {Shi, Shouqian and Qian, Chen},
 title = {Concurrent Entanglement Routing for Quantum Networks: Model and Designs},
@@ -92,7 +117,7 @@ series = {SIGCOMM '20}
   doi={10.1109/JSAIT.2020.3016061}}
 @inproceedings{10.1145/1040305.1040318,
 author = {Gay, Simon J. and Nagarajan, Rajagopal},
-title = {Communicating Quantum Processes},
+title = {{Communicating Quantum Processes}},
 year = {2005},
 isbn = {158113830X},
 publisher = {Association for Computing Machinery},
@@ -3299,6 +3324,154 @@ Alexandre Boulgakov and A.W. Roscoe},
     pages = {135--142},
     publisher = {IEEE}
 }
+
+@inproceedings{10.1145/977091.977108,
+author = {Jorrand, Philippe and Lalire, Marie},
+title = {Toward a Quantum Process Algebra},
+year = {2004},
+isbn = {1581137419},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/977091.977108},
+doi = {10.1145/977091.977108},
+abstract = {Quantum computations operate in the quantum world. For their results to be useful in any way, there is an intrinsic necessity of cooperation and communication controlled by the classical world. As a consequence, full formal descriptions of algorithms making use of quantum principles must take into account both quantum and classical computing components and assemble them so that they communicate and cooperate. This paper aims at defining a high level language allowing the description of classical and quantum programming, and their cooperation. Since process algebras provide a framework to model cooperating computations and have well defined semantics, they have been chosen as a basis for this language. Starting with a classical process algebra, this paper explains how to transform it for including quantum computation. The result is a quantum process algebra with its operational semantics, which can be used to fully describe quantum algorithms in their classical context.},
+booktitle = {Proceedings of the 1st Conference on Computing Frontiers},
+pages = {111–119},
+numpages = {9},
+keywords = {probabilistic process algebra, quantum computing, semantics of quantum measurement},
+location = {Ischia, Italy},
+series = {CF '04}
+}
+
+@article{Pirker_2019,
+doi = {10.1088/1367-2630/ab05f7},
+url = {https://dx.doi.org/10.1088/1367-2630/ab05f7},
+year = {2019},
+month = {mar},
+publisher = {IOP Publishing},
+volume = {21},
+number = {3},
+pages = {033003},
+author = {A Pirker and W Dür},
+title = {A quantum network stack and protocols for reliable entanglement-based networks},
+journal = {New Journal of Physics},
+abstract = {We present a stack model for breaking down the complexity of entanglement-based quantum networks. More specifically, we focus on the structures and architectures of quantum networks and not on concrete physical implementations of network elements. We construct the quantum network stack in a hierarchical manner comprising several layers, similar to the classical network stack, and identify quantum networking devices operating on each of these layers. The layers responsibilities range from establishing point-to-point connectivity, over intra-network graph state generation, to inter-network routing of entanglement. In addition we propose several protocols operating on these layers. In particular, we extend the existing intra-network protocols for generating arbitrary graph states to ensure reliability inside a quantum network, where here reliability refers to the capability to compensate for devices failures. Furthermore, we propose a routing protocol for quantum routers which enables the generation of arbitrary graph states across network boundaries. This protocol, in correspondence with classical routing protocols, can compensate dynamically for failures of routers, or even complete networks, by simply re-routing the given entanglement over alternative paths. We also consider how to connect quantum routers in a hierarchical manner to reduce complexity, as well as reliability issues arising in connecting these quantum networking devices.}
+}
+
+@inproceedings{10.1145/3386367.3431293,
+author = {Kozlowski, Wojciech and Dahlberg, Axel and Wehner, Stephanie},
+title = {Designing a Quantum Network Protocol},
+year = {2020},
+isbn = {9781450379489},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3386367.3431293},
+doi = {10.1145/3386367.3431293},
+abstract = {The second quantum revolution brings with it the promise of a quantum internet. As the first quantum network hardware prototypes near completion new challenges emerge. A functional network is more than just the physical hardware, yet work on scalable quantum network systems is in its infancy. In this paper we present a quantum network protocol designed to enable end-to-end quantum communication in the face of the new fundamental and technical challenges brought by quantum mechanics. We develop a quantum data plane protocol that enables end-to-end quantum communication and can serve as a building block for more complex services. One of the key challenges in near-term quantum technology is decoherence --- the gradual decay of quantum information --- which imposes extremely stringent limits on storage times. Our protocol is designed to be efficient in the face of short quantum memory lifetimes. We demonstrate this using a simulator for quantum networks and show that the protocol is able to deliver its service even in the face of significant losses due to decoherence. Finally, we conclude by showing that the protocol remains functional on the extremely resource limited hardware that is being developed today underlining the timeliness of this work.},
+booktitle = {Proceedings of the 16th International Conference on Emerging Networking EXperiments and Technologies},
+pages = {1–16},
+numpages = {16},
+keywords = {quantum internet, quantum communication, quantum networks},
+location = {Barcelona, Spain},
+series = {CoNEXT '20}
+}
+
+
+@misc{https://doi.org/10.48550/arxiv.1507.05278,
+  doi = {10.48550/ARXIV.1507.05278},
+  
+  url = {https://arxiv.org/abs/1507.05278},
+  
+  author = {Feng, Yuan and Ying, Mingsheng},
+  
+  keywords = {Cryptography and Security (cs.CR), Quantum Physics (quant-ph), FOS: Computer and information sciences, FOS: Computer and information sciences, FOS: Physical sciences, FOS: Physical sciences},
+  
+  title = {{Toward automatic verification of quantum cryptographic protocols}},
+  
+  publisher = {arXiv},
+  
+  year = {2015},
+  
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
+
+
+@InProceedings{10.1007/978-3-030-45237-7_2,
+author="Qin, Xudong
+and Deng, Yuxin
+and Du, Wenjie",
+editor="Biere, Armin
+and Parker, David",
+title="Verifying Quantum Communication Protocols with Ground Bisimulation",
+booktitle="Tools and Algorithms for the Construction and Analysis of Systems",
+year="2020",
+publisher="Springer International Publishing",
+address="Cham",
+pages="21--38",
+abstract="One important application of quantum process algebras is to formally verify quantum communication protocols. With a suitable notion of behavioural equivalence and a decision method, one can determine if an implementation of a protocol is consistent with its specification. Ground bisimulation is a convenient behavioural equivalence for quantum processes because of its associated coinduction proof technique. We exploit this technique to design and implement two on-the-fly algorithms for the strong and weak versions of ground bisimulation to check if two given processes in quantum CCS are equivalent. We then develop a tool that can verify interesting quantum protocols such as the BB84 quantum key distribution scheme.",
+isbn="978-3-030-45237-7"
+}
+
+@misc{https://doi.org/10.48550/arxiv.2207.03403,
+  doi = {10.48550/ARXIV.2207.03403},
+  
+  url = {https://arxiv.org/abs/2207.03403},
+  
+  author = {Khatri, Sumeet},
+  
+  keywords = {Quantum Physics (quant-ph), Networking and Internet Architecture (cs.NI), FOS: Physical sciences, FOS: Physical sciences, FOS: Computer and information sciences, FOS: Computer and information sciences},
+  
+  title = {On the design and analysis of near-term quantum network protocols using Markov decision processes},
+  
+  publisher = {arXiv},
+  
+  year = {2022},
+  
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
+
+
+@article{10.1145/2400676.2400680,
+author = {Feng, Yuan and Duan, Runyao and Ying, Mingsheng},
+title = {Bisimulation for Quantum Processes},
+year = {2012},
+issue_date = {December 2012},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {34},
+number = {4},
+issn = {0164-0925},
+url = {https://doi.org/10.1145/2400676.2400680},
+doi = {10.1145/2400676.2400680},
+abstract = {Quantum cryptographic systems have been commercially available, with a striking advantage over classical systems that their security and ability to detect the presence of eavesdropping are provable based on the principles of quantum mechanics. On the other hand, quantum protocol designers may commit more faults than classical protocol designers since human intuition is poorly adapted to the quantum world. To offer formal techniques for modeling and verification of quantum protocols, several quantum extensions of process algebra have been proposed. An important issue in quantum process algebra is to discover a quantum generalization of bisimulation preserved by various process constructs, in particular, parallel composition, where one of the major differences between classical and quantum systems, namely quantum entanglement, is present. Quite a few versions of bisimulation have been defined for quantum processes in the literature, but in the best case they are only proved to be preserved by parallel composition of purely quantum processes where no classical communication is involved.Many quantum cryptographic protocols, however, employ the LOCC (Local Operations and Classical Communication) scheme, where classical communication must be explicitly specified. So, a notion of bisimulation preserved by parallel composition in the circumstance of both classical and quantum communication is crucial for process algebra approach to verification of quantum cryptographic protocols. In this article we introduce novel notions of strong bisimulation and weak bisimulation for quantum processes, and prove that they are congruent with respect to various process algebra combinators including parallel composition even when both classical and quantum communication are present. We also establish some basic algebraic laws for these bisimulations. In particular, we show the uniqueness of the solutions to recursive equations of quantum processes, which proves useful in verifying complex quantum protocols. To capture the idea that a quantum process approximately implements its specification, and provide techniques and tools for approximate reasoning, a quantified version of strong bisimulation, which defines for each pair of quantum processes a bisimulation-based distance characterizing the extent to which they are strongly bisimilar, is also introduced.},
+journal = {ACM Trans. Program. Lang. Syst.},
+month = {dec},
+articleno = {17},
+numpages = {43},
+keywords = {Quantum communication, quantum computing, quantum process algebra, bisimulation, congruence}
+}
+
+
+@article{10.1145/1507244.1507249,
+author = {Ying, Mingsheng and Feng, Yuan and Duan, Runyao and Ji, Zhengfeng},
+title = {{An Algebra of Quantum Processes}},
+year = {2009},
+issue_date = {April 2009},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {10},
+number = {3},
+issn = {1529-3785},
+url = {https://doi.org/10.1145/1507244.1507249},
+doi = {10.1145/1507244.1507249},
+abstract = {We introduce an algebra qCCS of pure quantum processes in which communications by moving quantum states physically are allowed and computations are modeled by super-operators, but no classical data is explicitly involved. An operational semantics of qCCS is presented in terms of (nonprobabilistic) labeled transition systems. Strong bisimulation between processes modeled in qCCS is defined, and its fundamental algebraic properties are established, including uniqueness of the solutions of recursive equations. To model sequential computation in qCCS, a reduction relation between processes is defined. By combining reduction relation and strong bisimulation we introduce the notion of strong reduction-bisimulation, which is a device for observing interaction of computation and communication in quantum systems. Finally, a notion of strong approximate bisimulation (equivalently, strong bisimulation distance) and its reduction counterpart are introduced. It is proved that both approximate bisimilarity and approximate reduction-bisimilarity are preserved by various constructors of quantum processes. This provides us with a formal tool for observing robustness of quantum processes against inaccuracy in the implementation of its elementary gates.},
+journal = {ACM Trans. Comput. Logic},
+month = {apr},
+articleno = {19},
+numpages = {36},
+keywords = {super-operator, quantum communication, Quantum computation, bisimulation, process algebra}
+}
+
 
 @MISC{Kuncakquantifier-freeboolean,
     author = {Viktor Kuncak},
