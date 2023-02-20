@@ -3358,6 +3358,59 @@ journal = {New Journal of Physics},
 abstract = {We present a stack model for breaking down the complexity of entanglement-based quantum networks. More specifically, we focus on the structures and architectures of quantum networks and not on concrete physical implementations of network elements. We construct the quantum network stack in a hierarchical manner comprising several layers, similar to the classical network stack, and identify quantum networking devices operating on each of these layers. The layers responsibilities range from establishing point-to-point connectivity, over intra-network graph state generation, to inter-network routing of entanglement. In addition we propose several protocols operating on these layers. In particular, we extend the existing intra-network protocols for generating arbitrary graph states to ensure reliability inside a quantum network, where here reliability refers to the capability to compensate for devices failures. Furthermore, we propose a routing protocol for quantum routers which enables the generation of arbitrary graph states across network boundaries. This protocol, in correspondence with classical routing protocols, can compensate dynamically for failures of routers, or even complete networks, by simply re-routing the given entanglement over alternative paths. We also consider how to connect quantum routers in a hierarchical manner to reduce complexity, as well as reliability issues arising in connecting these quantum networking devices.}
 }
 
+@inproceedings{10.1145/3341302.3342070,
+author = {Dahlberg, Axel and Skrzypczyk, Matthew and Coopmans, Tim and Wubben, Leon and Rozpundefineddek, Filip and Pompili, Matteo and Stolk, Arian and Pawe\l{}czak, Przemys\l{}aw and Knegjens, Robert and de Oliveira Filho, Julio and Hanson, Ronald and Wehner, Stephanie},
+title = {A Link Layer Protocol for Quantum Networks},
+year = {2019},
+isbn = {9781450359566},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3341302.3342070},
+doi = {10.1145/3341302.3342070},
+abstract = {Quantum communication brings radically new capabilities that are provably impossible to attain in any classical network. Here, we take the first step from a physics experiment to a quantum internet system. We propose a functional allocation of a quantum network stack, and construct the first physical and link layer protocols that turn ad-hoc physics experiments producing heralded entanglement between quantum processors into a well-defined and robust service. This lays the groundwork for designing and implementing scalable control and application protocols in platform-independent software. To design our protocol, we identify use cases, as well as fundamental and technological design considerations of quantum network hardware, illustrated by considering the state-of-the-art quantum processor platform available to us (Nitrogen-Vacancy (NV) centers in diamond). Using a purpose built discrete-event simulator for quantum networks, we examine the robustness and performance of our protocol using extensive simulations on a supercomputing cluster. We perform a full implementation of our protocol in our simulator, where we successfully validate the physical simulation model against data gathered from the NV hardware. We first observe that our protocol is robust even in a regime of exaggerated losses of classical control messages with only little impact on the performance of the system. We proceed to study the performance of our protocols for 169 distinct simulation scenarios, including trade-offs between traditional performance metrics such as throughput, and the quality of entanglement. Finally, we initiate the study of quantum network scheduling strategies to optimize protocol performance for different use cases.},
+booktitle = {Proceedings of the ACM Special Interest Group on Data Communication},
+pages = {159–173},
+numpages = {15},
+keywords = {link layer, quantum networks, quantum internet},
+location = {Beijing, China},
+series = {SIGCOMM '19}
+}
+
+
+@misc{https://doi.org/10.48550/arxiv.1907.11630,
+  doi = {10.48550/ARXIV.1907.11630},
+  
+  url = {https://arxiv.org/abs/1907.11630},
+  
+  author = {Chakraborty, Kaushik and Rozpedek, Filip and Dahlberg, Axel and Wehner, Stephanie},
+  
+  keywords = {Quantum Physics (quant-ph), Networking and Internet Architecture (cs.NI), FOS: Physical sciences, FOS: Physical sciences, FOS: Computer and information sciences, FOS: Computer and information sciences},
+  
+  title = {Distributed Routing in a Quantum Internet},
+  
+  publisher = {arXiv},
+  
+  year = {2019},
+  
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
+
+@article{PhysRevResearch.4.043064,
+  title = {Packet switching in quantum networks: A path to the quantum Internet},
+  author = {DiAdamo, Stephen and Qi, Bing and Miller, Glen and Kompella, Ramana and Shabani, Alireza},
+  journal = {Phys. Rev. Res.},
+  volume = {4},
+  issue = {4},
+  pages = {043064},
+  numpages = {17},
+  year = {2022},
+  month = {Oct},
+  publisher = {American Physical Society},
+  doi = {10.1103/PhysRevResearch.4.043064},
+  url = {https://link.aps.org/doi/10.1103/PhysRevResearch.4.043064}
+}
+
+
 @inproceedings{10.1145/3386367.3431293,
 author = {Kozlowski, Wojciech and Dahlberg, Axel and Wehner, Stephanie},
 title = {Designing a Quantum Network Protocol},
