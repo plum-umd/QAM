@@ -1,0 +1,555 @@
+\section{Case Study: QPass and QCast Protocol}\label{sec:case-study}
+
+In the end of \Cref{sec:qamsemantics}, an example rule extension in QAM is mentioned to guarantee every message delivered is within a time limit. In this section, we see how we can utilize the rule extension in QAM to capture the behaviors of real-world quantum network protocols, such as QPass and QCast. In addition, an additional rule set is defined to show how we can utlize QAM to define additional properties that many quantum network protocols were intended but failed to do. The two properties are to guarantee that every message must be delivered in a threshold probability, and different nodes can periodically generate new qubits.
+
+\ignore{
+In this section, we show how to use the quantum abstract machine to model two quantum network protocols: QPass and QCast. These two protocols are developed by Shi and Qian \textit{[cite]}. Since a large-scale quantum network has many devices, the goal of those protocols is to solve the entanglement routing problem and build long distance entanglement for multiple source-destination pairs concurrently. These protocols have four phases: at the first phase, all nodes of the network are informed about the source-destination node pairs. Then these s-d pairs are inputted to the routing algorithm at phase two. The algorithm will output paths between source and destination. (Phase two is also the phase that our abstract machine tries to simulate.) At the third phase, all nodes exchanges their link states to their neighbors through classical channel. The entanglement swap is performed at the fourth phase so the long distance entanglement is eventuality created for quantum teleportation. QPass and QCast protocols are similar in general and the differences between them will be discussed in the following sections. }
+
+
+\subsection{Defining Qpass and QCast Protocols}
+
+\begin{figure}[t]
+{\footnotesize
+  \begin{mathpar}
+
+\inferrule[QPassConfig]{}{
+\overline{\varphi}
+\qcell{R}{\cn{rel}}
+\qcell{0}{\cn{gt}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\cn{false}}{0}{\cn{pred}}
+\qcell{f}{\cn{tp}}}
+
+\mprset{flushleft}
+  \inferrule[SP]{}
+      {\qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}}\qcell{(c_1,c_2,A(c))}{\cn{comm}}\pcell{b}{t}{\cn{pred}}
+        \longrightarrow 
+            \qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}}\qcell{(c_1,c_2,A(c))}{\cn{comm}}\pcell{\exists p'\,.\,(c_1,c_2,p')\in \cn{sp}(R,c_1,c)}{t}{\cn{pred}}}
+
+  \inferrule[MP]{}
+      {\pcell{\_}{n}{c_1}\pcell{\_}{m}{c_2}
+        \qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}}\qcell{(c_1,c_2,A(c))}{\cn{comm}}\pcell{b}{t}{\cn{pred}}
+    \\\qquad\longrightarrow 
+      \pcell{\_}{n}{c_1}\pcell{\_}{m}{c_2}
+  \qcell{\cn{up}(R,c_1,n,c_2,m)}{\cn{rel}}\qcell{t}{\cn{gt}}\qcell{(c_1,c_2,A(c))}{\cn{comm}}
+      \pcell{\exists p'\,.\,(c_1,c_2,p')\in \cn{mp}(R,c_1,c)}{t}{\cn{pred}}}
+  \end{mathpar}
+}
+{\footnotesize
+\begin{center}
+$A(c)\triangleq\qsend{p}{c}{m}^{t'}
+\qquad
+f\triangleq\lambda\;(t,t')\,.\,t'-t<5
+$
+\end{center}
+}
+\caption{The additional rules and configuration for QPass and QCast, which have the same initial configuration, and \rulelab{SP} is for QPass, while \rulelab{MP} is for QCast.}
+  \label{fig:qpass-rule}
+\end{figure}
+
+We first discuss the QPass protocol definition in QAM, and then the QCast one.
+
+\noindent\textbf{The QPass Protocol.}
+The main observations of the QPass protocol are two: 1) dynamically computing the probability value of each relation pair in the \cn{rel} cell is hard; and 2) it is more efficient to rely on the statically commutable shortest path as a fixed way of conveying messages between two nodes. The key feature for modeling QPass is to test if a message conveying path is the shortest path. We first model the initial configuration of the QPass protocol as the \rulelab{QPassConfig} configuration in \Cref{fig:qpass-rule}, which is the same configuration at the end of \Cref{sec:qamsemantics}. In defining QPass, we also assume that the process cell name and the message channel name are the same. For example in \Cref{fig:q-pi-example}, if \cn{Cat} sends a message $\qsend{p}{c}{m}^{t'}$ to \cn{Dan}, $c$ must be \cn{Dan}.
+
+The rule set definition for the QPass protocol includes the \rulelab{TP} rule. Now, we add a new rule \rulelab{SP},
+so it contains the six rules in \Cref{fig:q-pi-semantics}, rule \rulelab{TP} above, and rule \rulelab{SP}.
+Rule \rulelab{SP} grants a message conveying step. In each step, when a message $\qsend{p}{c}{m}^{t'}$ is conveyed from $c_1$ to $c_2$,
+we define a predicate $\exists p'\,.\,(c_1,c_2,p')\in \cn{sp}(R,c_1,c)$ in cell \cn{pred} to check if pair $(c_1,c_2)$ is a part of the shortest path from $c_1$ to $c$. The function $\cn{sp}(R,c_1,c)$ finds the shortest path from $c_1$ to $c$ based on the relation set $R$.
+If the predicate is satisfied, the message conveying step is granted, we then apply rule \cn{FC} to clean up everything and prepare for the next transition tasks.
+
+{\footnotesize
+\begin{center}
+\[
+\begin{array}{ll}
+\Cella{0}{1}{\cn{Cat}}
+\Cella{0}{0}{r_1}
+\Cella{0}{1}{\cn{Dan}}
+\Cella{A}{2}{\cn{Ann}}
+\Cella{0}{2}{r_2}
+\Cella{0}{2}{r_3}
+\Cella{0}{2}{r_4}
+\Cella{\qrev{\cn{Bob}}{x}.0}{2}{\cn{Bob}}
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{b}{2}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+\\[0.2em]
+\longrightarrow
+\;\;
+\Cella{0}{1}{\cn{Cat}}
+\Cella{0}{0}{r_1}
+\Cella{0}{1}{\cn{Dan}}
+\Cella{0}{1}{\cn{Ann}}
+\Cella{A}{1}{r_2}
+\Cella{0}{2}{r_3}
+\Cella{0}{2}{r_4}
+\Cella{\qrev{\cn{Bob}}{x}.0}{2}{\cn{Bob}}
+\qcell{R}{\cn{rel}}
+\qcell{(\cn{Ann},r_2,A)}{\cn{comm}}
+\pcell{b}{3}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+&
+(\rulelab{GC})
+\\[0.2em]
+\longrightarrow
+\;\;
+\Cella{0}{1}{\cn{Cat}}
+\Cella{0}{0}{r_1}
+\Cella{0}{1}{\cn{Dan}}
+\Cella{0}{1}{\cn{Ann}}
+\Cella{A}{1}{r_2}
+\Cella{0}{2}{r_3}
+\Cella{0}{2}{r_4}
+\Cella{\qrev{\cn{Bob}}{x}.0}{2}{\cn{Bob}}
+\qcell{R}{\cn{rel}}
+\qcell{(\cn{Ann},r_2,A)}{\cn{comm}}
+\pcell{\cn{false}}{3}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+&
+(\rulelab{SP})
+\end{array}
+\]
+\end{center}
+}
+{\footnotesize
+\begin{center}
+$A\triangleq\qsend{1}{\cn{Bob}}{m}^3
+$
+\end{center}
+}
+
+The above process cells are a part of the complete configuration that reflects the connectivity in \Cref{fig:q-pi-example}, by omitting cell \cn{tp}.
+We assume that the system has a limited qubit resources, so every cell has initially $2$ qubits,
+and a message from \cn{Cat} is delivered to the \cn{Dan} cell. In addition, we also assume that a \rulelab{CT} rule application is applied to attach the time stamp $3$ to the message $\qsend{1}{\cn{Bob}}{m}$. 
+At this point, cell $r_1$ has $0$ qubit resource, and a message at the \cn{Ann} cell is waiting to convey to either $r_1$ or $r_2$,
+but we cannot apply rule \rulelab{GC} to convey the message to $r_1$, since it has no enough resource; therefore, we apply rule \rulelab{GC} to convey to message to cell $r_2$.
+Since $r_2$ is not part of the shortest path from $\cn{Ann}$ to $\cn{Bob}$, the application of rule \cn{SP} disqualifies the transition by marking the \cn{pred} cell to be $\cn{false}$.
+After the \rulelab{SP} rule application, the configuration is stuck since there is no other possible rule that can be applied to it; thus, the system enters an error state.
+
+\noindent\textbf{The QCast Protocol.}
+From the above example, we can see that the QPass protocol can be unreasonable sometimes.
+Since all message sending paths are statically computed as the shortest paths,
+it is possible that other possible paths such as the message conveying from \cn{Ann} to $r_2$ above are omitted in the execution.
+QCast modifies this drawback by making estimations of different probability values for pairs in the \cn{rel} cell
+and select a path with the highest probability estimation value, instead of selecting the shortest path in QPass.
+Additionally, we update predicted probabilities dynamically to reflect the probability reductions causing by qubit resource
+consumption in different nodes.
+
+In modeling the QCast protocol, we utilize the same initial configuration as QPass in \Cref{fig:qpass-rule}.
+Instead of having rule \rulelab{SP}, we design the \rulelab{MP} rule for QCast.
+There are two key differences. First, we now check if the pair $(c_1,c_2)$ is in the maximum probability path from $c_1$ to $c$, computed by the function $\cn{mp}(R,c_1,c)$. Instead of checking if the pair is in a shortest path from $c_1$ to $c$ in QPass, we now find the path that can deliver a message in a maximum chance by firstly computing the probability estimations for all different paths from $c_1$ to $c$ and then selecting the one having the maximum value. Second, we proportionally reduce the probability estimations that are associated with the $c_1$ and $c_2$ nodes. The qubit resources in nodes $c_1$ and $c_2$ are reduced, so paths through these two nodes are have a less likelihood to successfully convey messages, compared to the case when qubit resources are enough.
+For simplicity, for every pair $(c_l,c_r,p)$, if $c_l$ and $c_r$ are one of $c_1$ (or $c_2$), whose qubit resource is $n$ (or $m$), we multiply $p$ with $\frac{n}{n+1}$ (or$ \frac{m}{m+1}$). 
+
+{\footnotesize
+\begin{center}
+\[
+\begin{array}{ll}
+\Cella{0}{1}{\cn{Cat}}
+\Cella{0}{0}{r_1}
+\Cella{0}{1}{\cn{Dan}}
+\Cella{A}{2}{\cn{Ann}}
+\Cella{0}{2}{r_2}
+\Cella{0}{2}{r_3}
+\Cella{0}{2}{r_4}
+\Cella{\qrev{\cn{Bob}}{x}.0}{2}{\cn{Bob}}
+\qcell{R'}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{b}{2}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+\\[0.2em]
+\longrightarrow
+\;\;
+\Cella{0}{1}{\cn{Cat}}
+\Cella{0}{0}{r_1}
+\Cella{0}{1}{\cn{Dan}}
+\Cella{0}{1}{\cn{Ann}}
+\Cella{A}{1}{r_2}
+\Cella{0}{2}{r_3}
+\Cella{0}{2}{r_4}
+\Cella{\qrev{\cn{Bob}}{x}.0}{2}{\cn{Bob}}
+\qcell{R'}{\cn{rel}}
+\qcell{(\cn{Ann},r_2,A)}{\cn{comm}}
+\pcell{b}{3}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+&
+(\rulelab{GC})
+\\[0.2em]
+\longrightarrow
+\;\;
+\Cella{0}{1}{\cn{Cat}}
+\Cella{0}{0}{r_1}
+\Cella{0}{1}{\cn{Dan}}
+\Cella{0}{1}{\cn{Ann}}
+\Cella{A}{1}{r_2}
+\Cella{0}{2}{r_3}
+\Cella{0}{2}{r_4}
+\Cella{\qrev{\cn{Bob}}{x}.0}{2}{\cn{Bob}}
+\qcell{R''}{\cn{rel}}
+\qcell{(\cn{Ann},r_2,A)}{\cn{comm}}
+\pcell{\cn{true}}{3}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+&
+(\rulelab{MP})
+\end{array}
+\]
+\end{center}
+}
+{\footnotesize
+\begin{center}
+$A\triangleq\qsend{1}{\cn{Bob}}{m}^3$
+\end{center}
+}
+
+The main purpose of the dynamic probability estimation update is to take into account the qubit resources as a factor in conveying messages. The above example is a rewrite of the one in the QPass protocol. The \cn{rel} cell content $R'$ is updated before the execution, as the probability estimations for some pairs are not $0.5$ anymore; especially, the connection between $\cn{Ann}$ and $r_1$ has $0$ probability as $(\cn{Ann},r_1,0)$, because cell $r_1$ has $0$ qubit resource. Thus, the \rulelab{MP} rule application at the end grants the transition by marking cell \cn{pred} to be \cn{true}, because the path from \cn{Ann} to \cn{Bob} via $r_2$ has a higher chance than the one via $r_1$, whose chance value is $0$. Additionally, we update the connectivity table $R'$ to $R''$, with the probability reductions on pairs related to nodes $\cn{Ann}$ and $r_2$.
+
+Notice that the $\cn{up}$ function in rule \rulelab{MP} can be parameterized. If we parameterize the \cn{up} function to not update any relations in \cn{rel} cell, i.e., $\cn{up}(R,c_1,n,c_2,m)=R$, starting from the same configuration, we can show that the QPass system probabilistically trace refines the QCast system, which is stated as follows:
+
+\begin{theorem}\label{def:traceeq}\rm[QAM Trace Refinement]
+Given an initial configuration $C$ as \rulelab{QPassConfig} in \Cref{fig:qpass-rule}, with processes $\overline{\varphi}$, relation $R$, and \cn{tp} cell threshold function $f$, QPass $\sqsubseteq^p$ QCast.
+
+\end{theorem}
+
+\begin{figure}[t]
+{\footnotesize
+  \begin{mathpar}
+
+\inferrule[HighConfig]{}{
+\overline{\varphi}
+\qcell{R}{\cn{rel}}
+\qcell{0}{\cn{gt}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\cn{false}}{0}{\cn{pred}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{\beta}{\cn{at}}
+}
+
+\inferrule[QIConfig]{}{
+\overline{\varphi}
+\qcell{R}{\cn{rel}}
+\qcell{0}{\cn{gt}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\cn{false}}{0}{\cn{pred}}
+\qcell{f}{\cn{tp}}
+\pcell{\cn{false}}{\nu}{\cn{qi}}
+}
+
+\mprset{flushleft}
+  \inferrule[HP]{}
+      {\qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}}\qcell{\qsend{p}{c}{m}^{t'}}{\cn{comm}}\pcell{b}{t}{\cn{pred}}\qcell{f}{\cn{tp}}\pcell{g}{\beta}{\cn{at}}
+\\\qquad
+        \longrightarrow 
+            \qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}}\qcell{\qsend{p}{c}{m}^{t'}}{\cn{comm}}\pcell{f(t,t')\wedge g(c.m)<\beta}{t}{\cn{pred}}
+        \pcell{g[c.m\mapsto g(c.m)\oplus p]}{\beta}{\cn{at}}
+      }
+
+  \inferrule[QI1]{}
+      {\pcell{P}{n}{c}\qcell{t}{\cn{gt}}\pcell{\cn{false}}{\nu}{\cn{qi}}
+        \longrightarrow 
+        \pcell{P}{n}{c}\qcell{t}{\cn{gt}}\pcell{\nu\cn{|}t}{\nu}{\cn{qi}}
+      }
+
+  \inferrule[QI2]{}
+      {\pcell{P}{n+}{c}\pcell{\cn{true}}{\nu}{\cn{qi}}
+        \longrightarrow 
+        \pcell{P}{n+}{c}\pcell{\cn{false}}{\nu}{\cn{qi}}
+      }
+
+  \inferrule[TI]{}
+      {\qcell{t}{\cn{gt}}
+        \longrightarrow 
+        \qcell{t+}{\cn{gt}} \\\cn{[owise]}
+      }
+
+  \end{mathpar}
+}
+{\footnotesize
+\begin{center}
+$A(c,t')\triangleq\qsend{p}{c}{m}^{t'}
+\qquad
+f\triangleq\lambda\;(t,t')\,.\,t'-t<5
+\qquad
+\cn{type}(g)\triangleq c.m \rightharpoonup p
+$
+\end{center}
+}
+\caption{The additional rules and configuration for high probability of message deliveries and qubit resource generation.}
+  \label{fig:mes-rule}
+\end{figure}
+
+\subsection{Additional Quantum Network Properties}
+\label{sec:add-prop}
+
+There are many different properties that we want from a quantum network protocols.
+Here, we introduce two of them that were discussed in the previous works but not captured by these works. 
+The first property is to guarantee a high probability threshold of every message delivery,
+while the second one is to introduce qubit creation. 
+
+\noindent\textbf{Guarantee High Probability of Message Deliveries.}
+Quantum message sending has a certain chance of failure, which depends on the transmission distance.
+To guarantee the success rate, one simple solution is to repeatedly send the message until a threshold is reached.
+We introduce a new initial configuration \rulelab{HighConfig} to model such behavior,
+with a new cell \cn{at} having a content map $g$, storing the current success rates for different messages $c.m$, and a flag $\beta$, the success rate threshold every message needs to satisfy in $g$.
+We then introduce the \rulelab{HP} rule based on the \rulelab{TP} rule in \Cref{sec:qamsemantics}
+for granting a message delivery.
+A message $c.m$ is valid to deliver if it satisfies the time threshold $f(t,t')$
+and its current success rate in $g$ is less than the threshold $\beta$.
+Once the threshold is reached, we do not need additional repetition of sending $c.m$, so that we only need to grant message delivery that has not yet satisfied the threshold.
+Additionally, every success message delivery increments ($g[c.m\mapsto g(c.m)\oplus p]$) the current success rate for that message in the \cn{at} cell.
+
+{\footnotesize
+\[
+\begin{array}{ll}
+\Cella{\comp{(\qsend{1}{c}{m}})}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\qcell{0}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{\parl{\qsend{1}{c}{m}}{\comp{(\qsend{1}{c}{m}})}}{10}{\cn{Cat}}
+\Cella{0}{10}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\qcell{0}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+&
+(\rulelab{MT})
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{\parl{\qsend{1}{c}{m}^0}{\comp{(\qsend{1}{c}{m}})}}{10}{\cn{Cat}}
+\Cella{0}{10}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\qcell{0}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+&
+(\rulelab{CT})
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{\qsend{0.5}{c}{m}^0}{9}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{A}{\cn{comm}}
+\qcell{0}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+&(\rulelab{GC})
+\\[0.2em]
+\longrightarrow\;...\;\longrightarrow
+\\[0.2em]
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{0}{8}{r_1}
+\Cella{\parl{\qsend{0.25}{c}{m}^0}{\comp{(\qrev{c}{x}.0)}}}{9}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\qcell{2}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{0}{8}{r_1}
+\Cella{\parl{\qsend{0.25}{c}{m}^0}{\parl{\qrev{c}{x}.0}{\comp{(\qrev{c}{x}.0)}}}}{9}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\qcell{2}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+&
+(\rulelab{MT})
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{0}{8}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{A'}{\cn{comm}}
+\qcell{2}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+&
+(\rulelab{PC})
+\end{array}
+\]
+}
+{\footnotesize
+\begin{center}
+$R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}
+\qquad
+A\triangleq (\cn{Cat},r_1,\qsend{0.5}{c}{m}^0)
+\qquad
+A'\triangleq \qsend{0.25}{c}{m}^0
+\qquad
+g=\lambda x\,.\,0
+$
+\end{center}
+}
+
+We create message repetition by the $\comp{P}$ process, 
+as the example configuration transitions above, which omit the \cn{pred} cell.
+Here, both the sender and receiver cells have repetition processes, 
+$\comp{(\qsend{1}{c}{m}^0)}$ and $\comp{(\qrev{c}{x}.0)}$.
+When it is necessary, the \cn{MT} rule application generates additional sending/receiving process to send/receive a message.
+After a \cn{MT} rule application to generate a single message sending $\qsend{1}{c}{m}$, 
+a \cn{CT} rule application is applied to attach time stamp $0$ to the message.
+Then, the message is transmitted to the \cn{Dan} cell
+and we use rule \cn{MT} to generate a message receipt $\qrev{c}{x}.0$;
+thus, a \cn{PC} rule application is applied to move the message to the \cn{comm} cell, waiting for its granting.
+The configuration below finalizes the above configuration with the \cn{pred} cell.
+
+{\footnotesize
+\[
+\begin{array}{ll}
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{0}{8}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{A(0)}{\cn{comm}}
+\pcell{\emptyset}{2}{\cn{pred}}
+\qcell{2}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g}{0.36}{\cn{at}}
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{0}{8}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{f(0,2)\wedge 0 < 0.36}{0}{\cn{pred}}
+\qcell{2}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g'}{0.36}{\cn{at}}
+&
+(\rulelab{HP})
+\\[0.2em]
+\xrightarrow{0.25.c.m}  \;\;
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{0}{8}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\cn{false}}{0}{\cn{pred}}
+\qcell{3}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g'}{0.36}{\cn{at}}
+&
+(\rulelab{Com})
+\\[0.2em]
+\longrightarrow\;...\;\longrightarrow
+\\[0.2em]
+\Cella{\comp{(\qsend{1}{c}{m}})}{8}{\cn{Cat}}
+\Cella{0}{6}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{8}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{A(3)}{\cn{comm}}
+\pcell{\emptyset}{2}{\cn{pred}}
+\qcell{5}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g'}{0.36}{\cn{at}}
+\\[0.2em]
+\longrightarrow\;\;
+\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
+\Cella{0}{8}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{f(0,2)\wedge 0.25 < 0.36}{0}{\cn{pred}}
+\qcell{5}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g_1}{0.36}{\cn{at}}
+&
+(\rulelab{HP})
+\\[0.2em]
+\xrightarrow{0.25.c.m}  \;\;
+\Cella{\comp{(\qsend{1}{c}{m}})}{8}{\cn{Cat}}
+\Cella{0}{6}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{8}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\cn{false}}{0}{\cn{pred}}
+\qcell{5}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g_1}{0.36}{\cn{at}}
+&
+(\rulelab{Com})
+\\[0.2em]
+\longrightarrow  \;\;
+\Cella{0}{8}{\cn{Cat}}
+\Cella{0}{6}{r_1}
+\Cella{\comp{(\qrev{c}{x}.0)}}{8}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\cn{false}}{0}{\cn{pred}}
+\qcell{5}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g_1}{0.36}{\cn{at}}
+&
+(\rulelab{NT})
+\\[0.2em]
+\longrightarrow  \;\;
+\Cella{0}{8}{\cn{Cat}}
+\Cella{0}{6}{r_1}
+\Cella{0}{8}{\cn{Dan}} 
+\qcell{R}{\cn{rel}}
+\qcell{\emptyset}{\cn{comm}}
+\pcell{\cn{false}}{0}{\cn{pred}}
+\qcell{5}{\cn{gt}}
+\qcell{f}{\cn{tp}}
+\pcell{g_1}{0.36}{\cn{at}}
+&
+(\rulelab{NT})
+\end{array}
+\]
+}
+{\footnotesize
+\begin{center}
+$
+\begin{array}{l}
+R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}
+\qquad
+A(t)\triangleq \qsend{0.25}{c}{m}^t
+\\[0.2em]
+g=\lambda x\,.\,0
+\qquad
+g'=g[c.m \mapsto 0.25]
+\qquad
+g_1=g[c.m \mapsto 0.39]
+\end{array}
+$
+\end{center}
+}
+
+In the above transition, we apply rule \rulelab{HP} to grant the message sending operation $\qsend{0.25}{c}{m}^0$, since $f(0,2)$ is equivalent to $2-0<5$ and $g(c.m)=0$ is less than the threshold $0.36$ associated with the \cn{at} cell.
+In the \cn{at} cell, we updates $g$ for $c.m$ to be $0.25$.
+We assume that if messages have the same channel $c$ and message name $m$, they refer to the same message,
+so repetitions of a message $c.m$ refer to the same one in the \cn{at} cell.
+The procedure can be repeated to send more copies of message $c.m$ and then we can use \rulelab{HP} and \rulelab{Com} rule applications to grant the message delivery. In the above example, after two repeating $c.m$ message deliveries, the current success rate of $c.m$ is $0.39$ which is beyond the $0.36$ threshold. Any additional repetition causes the system to be stuck, so we apply two consecutive \rulelab{NT} rule applications to turn away the two repetition process operations. 
+
+\noindent\textbf{Modeling Qubit Generation.}
+An useful case for quantum network protocols is to generate new qubit resources for supporting message transmissions.
+For example, in the QPass protocol example above, if we can generate qubits for node $r_1$, we can then transmit the message via node $r_1$ without the problem of qubit resource lacking.
+It is always that the generation of a qubit takes multiple time slots compare to transmitting/sending messages.
+
+In modeling the qubit generation mechanism, we include a new cell \cn{qi} in configuration \rulelab{QIConfig} in \Cref{fig:mes-rule},
+which determines if the qubit resource in a process cell can increment.
+The additional flag $\nu$ is an integer defining the time period for generating a qubit.
+Rule \rulelab{QI1} increments a qubit in cell $c$ if $\nu$ divides the current global time $t$ ($\nu \cn{|} t$),
+while rule \rulelab{QI2} cleans up the \cn{qi} cell for next possible qubit increment computation.
+By including the new rule \rulelab{QI1}, it is possible for a QAM system to reach deadlock,
+because a system can be stuck due to lack of a qubit in a process cell, but in the very next time, the qubit resource in the cell can increment by applying rule \rulelab{QI1}; however, there is no rule in the system for the global clock cell \cn{gt} to increment by itself.
+To overcome this, we include rule \rulelab{TI} here to allow self-increment in the \cn{gt} cell, 
+with the flag $\cn{owise}$ meaning that the rule can be applied only if there is no other possible rules to apply.
+
+
+
+
+
