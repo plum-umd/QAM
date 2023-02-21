@@ -1,57 +1,67 @@
 \section{Behavioral Refinement and Equivalence} \label{sec:refinement}
 
-We define the QAM equivalence relation, we utilize the trace refinement relation.
-The essential idea is that two transition systems are equivalent if the same sequences of actions can be performed
+Here, we define QAM trace refinement relations, where two QAM systems are equivalent if the same sequences of actions can be performed
 from their respective initial states.
-Based on the QAM language defined in \Cref{sec:qam}, we define a labeled transition system as the following.
+Essentially, a QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$
+can be viewed as a tuple of four fixed sets $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$
+and a configuration $C$ representing the initial program state.
+Each rule in $\overline{\rules}$ is a label transition relation $C_1 \xrightarrow{\alpha} C_2$,
+where $C_1$ and $C_2$ are configurations representing the states
+before and after the rule application, and $\alpha$ is either empty or $p.c.m$.
+If we collect the free metavariables ($\cn{FV}(-)$) appearing in a configuration and rule, 
+the initial configuration $C$ is a \textit{ground term} without any metavariables ($\cn{FV}(C)=\emptyset$);
+while $\cn{FV}(\alpha) \cup \cn{FV}(C_2)\subseteq \cn{FV}(C_1)$ for every rule, which is the well-formedness assumption for a QAM system.
+We can define the transitions in a QAM system as follows:
 
-\begin{definition}\label{def:labeledsystem}\rm[QAM Labeled Transition System]
-A \emph{QAM labeled transition system (LTS)} is a triple $\Sigma=(\Cs,A,S)$ where
+\begin{definition}\label{def:labeledsystem}\rm[One QAM Transition Step]
+Given a QAM system tuple $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initial configuration $C$, there is a rule $C_1 \xrightarrow{\alpha} C_2 \in \overline{\rules}$, and one step transition by applying this rule is given as:
 \begin{itemize}
-\item $\Cs$ is a set of configuration defined in \Cref{fig:q-pi-syntax}.
-\item $A$ is a set of labels, whose elements have the form $p.c.m$ defined in \Cref{fig:q-pi-syntax}.
-\item $S$ is a set of transition rules reflecting the QAM semantics in \Cref{sec:qamsemantics}.
+\item There is a substitution $\sigma$ mapping every metavariable in $C_1$ to a term, such that $\sigma(C_1)=C$, where we substitute metavariables $x$ in $C_1$ with the mapped terms as $\sigma(x)$.
+\item The result label and configuration by applying the rule is $\sigma(\alpha)$ and $\sigma(C_2)$.
 \end{itemize}
 \end{definition}
 
-We can also define an initial configuration $C$ for a LTS $\Sigma=(\Cs,A,S)$ to restrict $\Sigma$ to begin at $C$, written as $(\Sigma,C)$.
-In a LTS $(\Sigma,C)$, a trace is defined as a sequence of labels by evaluating an initial configuration $C$ by only collecting non-empty labels in sequence defined in \Cref{sec:qamsemantics}. The definition of a trace refinement relation is typically defined on a set of traces, referring to all possible traces by evaluating $C$ as the initial state, with the definition as follows.
+Based on the transition step definition, we define QAM traces as an inductive set below. Given a QAM system tuple $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$, a ground term configuration $C$ is \textit{stuck}, if and only if no rules in $\overline{\rules}$ can be applied on $C$ for a transition step. We also refer to $C \longrightarrow^* C'$ as configuration $C$ transitioning to $C'$, based on the rules in $\Cs$, via several internal steps (steps having no labels).
 
 \begin{definition}\label{def:traces}\rm[QAM Traces]
-Given a LTS $(\Sigma,C)$ with $\Sigma=(\Cs,A,S)$, the set of \emph{traces} for a configuration $C\in \Cs$, written as $traces(\Sigma,C)$,
-is the minimal set satisfying:
+Given a QAM system tuple $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$, traces of a configuration $C$ on the tuple is defined as an inductive set $\Tts(\Cs,C)$ of label sequences as:
 
 \begin{itemize}
-\item $\epsilon\in traces(\Sigma,C)$, i.e., the empty trace is a member of $traces(\Sigma,C)$,
-\item if there is a configuration $C'$, such that $C\longrightarrow C'$, $traces(\Sigma,C)=traces(\Sigma,C')$,
-\item if there is a configuration $C'$, such that $C\xrightarrow{p.c.m}C'$ and $\sigma\in traces(\Sigma,C')$,
-then the concatenation of $(p.c.m)$ and $\sigma$ is in $traces(\Sigma,C)$, written as $(p.c.m)\sigma \in traces(\Sigma,C)$.
+\item If $C \longrightarrow^* C'$ and $C'$ is stuck, $\Tts(\Cs,C)=\emptyset$.
+\item If $C \longrightarrow^* C' \xrightarrow{p.c.m} C''$ and $C'$ is stuck, $\Tts(\Cs,C)=(c.m)::\Tts(\Cs,C'')$, i.e., $(c.m)::\Tts(\Cs,C'')$ is a new set that for all sequence $\xi \in \Tts(\Cs,C'')$, $(c.m)::\xi \in (c.m)::\Tts(\Cs,C'')$ and $::$ is a sequence concatenation operation.
 \end{itemize}
 \end{definition}
 
-In defining a trace refinement relation, we are comparing two labeled transition systems $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$ with the action set to be the same in the two LTS by the definition below.
+With the trace definition above, we can then define a trace refinement relation between two different QAM systems with tuples $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and $\Cs=(\Ms',\Ls',\Ts',\overline{\rules'})$, as well as initial configurations $C$ and $C'$.
 
 \begin{definition}\label{def:traceeq}\rm[QAM Trace Refinement]
-Given two labeled transition systems $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$, we say that $(\Sigma_1,C_1)$ trace refines $(\Sigma_2,C_2)$, written as $(\Sigma_1,C_1) \sqsubseteq (\Sigma_2,C_2)$, iff $traces(\Sigma_1,C_1)\subseteq traces(\Sigma_2,C_2)$
+Given two QAM system tuples $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and $\Cs=(\Ms',\Ls',\Ts',\overline{\rules'})$, and initial configurations $C$ and $C'$,  we say that $(\Cs,C)$ trace refines $(\Cs',C')$, written as $(\Cs,C) \sqsubseteq (\Cs',C')$, iff $\Tts(\Cs,C)\subseteq \Tts(\Cs',C')$.
 
 \end{definition}
 
-It is tricky to utilize the above definition to prove inductive properties for quantum abstract machines. To do so, we need to incorporate
-two labeled systems with the traces definition in \Cref{def:traces}.
-Mainly, we equate a configuration $C_a$ in $(\Sigma_1,C_1)$ with a configuration $C_b$ in $(\Sigma_2,C_2)$ by a configuration equivalence relation $=_C$, written as $C_a =_C C_b$. The inductive version of the trace refinement definition is given as follows.
+Sometimes, in dealing with quantum protocol evaluation, we want to know if every step of transition in a QAM system has higher success rate than the other system. In such case, we first define probability traces in QAM below.
 
-\begin{definition}\label{def:traceeq1}\rm[QAM Trace Refinement]
-Given two labeled transition systems $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$, and $C_1 =_C C_2$, we say that $(\Sigma_1,C_1)$ trace refines $(\Sigma_2,C_2)$, written as $(\Sigma_1,C_1) \sqsubseteq (\Sigma_2,C_2)$, iff
+\begin{definition}\label{def:ptraces}\rm[QAM Probability Traces]
+Given a QAM system tuple $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$, traces of a configuration $C$ on the tuple is defined as an inductive set $\Pts(\Cs,C)$ of label sequences as:
 
 \begin{itemize}
-\item $(\Sigma_1,C_1)$ and $(\Sigma_2,C_2)$ cannot make a move,
-\item there is a configuration $C'_1$, such that $C_1\longrightarrow C'_1$, and $(\Sigma_1,C'_1) \sqsubseteq (\Sigma_2,C_2)$,
-\item there is a configuration $C'_2$, such that $C_2\longrightarrow C'_2$, then $(\Sigma_1,C_1) \sqsubseteq (\Sigma_2,C'_2)$,
-\item there are configurations $C'_1$ and $C'_2$, such that $C_1\xrightarrow{p.c.m}C'_1$ and $C_2\xrightarrow{p.c.m}C'_2$ and $C_1' =_C C'_2$ and $(\Sigma_1,C'_1) \sqsubseteq (\Sigma_2,C'_2)$.
+\item If $C \longrightarrow^* C'$ and $C'$ is stuck, $\Pts(\Cs,C)=\emptyset$.
+\item If $C \longrightarrow^* C' \xrightarrow{p.c.m} C''$ and $C'$ is stuck, $\Pts(\Cs,C)=(c.m)^p::\Pts(\Cs,C'')$, i.e., $(c.m)^p::\Pts(\Cs,C'')$ is a new set that for all sequence $\xi \in \Pts(\Cs,C'')$, $(c.m)^p::\xi \in (c.m)^p::\Pts(\Cs,C'')$ and $::$ is a sequence concatenation operation.
 \end{itemize}
 \end{definition}
 
-We utilize \Cref{def:traceeq1} to show that the QPass protocol is a special instance of QCast, by showing that if we treat the statically generated connectivity graph in QCast, then every QPass trace is an instance of a QCast trace. The detail descriptions of viewing QPass and QCast as two labeled transition systems as well as the theorem are given in \Cref{sec:case-study}.
+We can then define the probability subset relation between two trace sets and the probability trace refinement below.
+
+\begin{definition}\label{def:ptracesub}\rm[QAM Probability Trace Subset]
+Given two probability trace sets $S$ and $S'$, $S \subseteq^p S'$ iff, for all $\xi \in S$, there is $\xi' \in S'$, such that for every $i$-th position in $\xi$ and $\xi'$, $\xi[i]=(c.m)^p$ and $\xi'[i]=(c.m)^{p'}$ and $p \le p'$.
+
+\end{definition}
+
+\begin{definition}\label{def:ptracerefine}\rm[QAM Probability Trace Refinment]
+Given two QAM system tuples $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and $\Cs=(\Ms',\Ls',\Ts',\overline{\rules'})$, and initial configurations $C$ and $C'$,  we say that $(\Cs,C)$ probabilistically trace refines $(\Cs',C')$, written as $(\Cs,C) \sqsubseteq^p (\Cs',C')$, iff $\Pts(\Cs,C)\subseteq^p \Pts(\Cs',C')$.
+
+\end{definition}
+
 
 
 
