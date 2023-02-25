@@ -29,38 +29,7 @@
 
 This section describes QAM's syntax and semantics,
 whose design is based on two observations of different quantum network protocols, through an example connectivity diagram in \Cref{fig:q-pi-example}.
-First, there are two main tasks in sending quantum messages, message transmissions and deliveries.
-The former uses the quantum swaps to convey a message from a node to another which is closer to the final destination and connectivity is usually represented as a graph structure such as the one in \Cref{fig:q-pi-example}.
-During the procedure, the actual quantum swap circuit detail is less interesting than the cost analysis, where each two-node message transmission costs each node one qubit resource, because how swaps are constructed in circuit is almost identical in different protocols.
-We also use a quantum teleportation circuit for delivering a message. Again, the more interesting analysis is about different guarantees a network protocol can provide in the message deliveries rather than the circuit detail.
 
-Next, many quantum message sending guarantees are time-sensitive and related to probabilities that are time-sensitive.
-Thus, we model in QAM a global clock and each task step, a message transmission or delivery, costs one time slot,
-and every message is associated with a probability value defining the success likelihood of delivering the message.
-For example, sending a message from \cn{Cat} to \cn{Dan} in \Cref{fig:q-pi-example} needs an intermediate transmission node $r_1$, and the likelihood of successfully delivering the message is obviously lower than the case if we can directly send the message from \cn{Cat} to \cn{Dan} without an intermediate step. In addition, qubits might be decohered after a certain period of time, so a property we can define,
-based on the QAM system, is to guarantee that every delivered message is within a threshold time period.
-
-\ignore{
-Here, we investigate the modeling of message transmission in QAM by the QPass protocol \cite{10.1145/3387514.3405853}.
-\Cref{fig:q-pi-example} shows an example connectivity diagram such that party $\cn{Ann}$ and $\cn{Cat}$ send messages to $\cn{Bob}$ and $\cn{Dan}$, via the middle routers $r_1$ to $r_4$. There are two paths for \cn{Ann} to send to \cn{Bob} ($r_2 - r_4$ and $r_1 - r_4$), while there is only one path to send message from \cn{Cat} to \cn{Dan} ($r_1$). 
-
-In QAM, sending a message $a$ is viewed as a sequence of transmissions of $a$'s ownership from a node to its adjacent node.
-For example, assume that we want to send message $a$ from \cn{Cat} to \cn{Dan}.
-We transmit $a$ from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan}, 
-each of which costs the two participated nodes one qubit each.
-There is also a probability reduction in guaranteeing that $a$ to be delivered to \cn{Dan}:
-the more ownership transmissions, the lower probability that $a$ is delivered.
-For example, the success rate of the transmission from \cn{Cat} to $r_1$ and from $r_1$ to \cn{Dan} might be user defined probability values $p$ and $p'$, so the success rate to send a message from \cn{Cat} to \cn{Dan} is $p * p'$.
-For simplicity, in the example in \Cref{fig:q-pi-example}, we assume that each station transmission reduces the success rate by $50\%$,
-i.e., if a message is transmitted from $a$ to $r_1$, it has $50\%$ chance that the message is lost.
-
-In QAM, sending a message can be viewed as a sequence of transitions as $\to^{*}\xrightarrow{a}$,
-where we might first execute several internal communication ($\to^{*}$, referring to $\tau$ transitions in classical process algebra),
-with a final external communication $\xrightarrow{a}$, meaning that two parties are communicated through a message $a$.
-When running a QAM program, there might be different ways where it can transit, which forms different sequences of transmissions that represent different possible ways of communication. It is also possible that some sequences only contain the internal communication part without the final external communication, which represents failure tries that there are some bottlenecks preventing the communication moving forward, because we want to allow different parties send messages via the same network at the same time period; however, this might cause message transition bottlenecks due to limited resources in different nodes.
-
-Since quantum qubit information has lifetime, it might cause a message $a$ to lost completely if we simply queue a message at a bottleneck location until enough resources are available. Most quantum network protocols have the mechanism to bypass the message sending to another route. For example, assume that \cn{Ann} and \cn{Cat}'s messages are transmitted to $r_1$ at the same time, and $r_1$ only has a qubit resource and decide to send \cn{Cat}'s message first. Thus, \cn{Ann}'s message is queued because $r_1$ has no more resource. Then, after the life time of the \cn{Ann}'s message ends, the message sending sequence is classified as a failure try that does not have an ending external communication. To successfully send both messages, we need \cn{Ann}'s message to be bypassed through the $r_2 - r_4$ route, so the bottleneck in node $r_1$ is resolved and both messages can be delivered on time.
-}
 In the next two sections, we introduce the modeling of quantum network protocols via QAM formally.
 
 \begin{figure}[t]

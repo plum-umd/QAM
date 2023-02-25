@@ -91,54 +91,7 @@ Quantum Abstract Machine
 
 \input{qam-macros.tex}
 
-\section{Introduction} \label{sec:introduction}
-
-\begin{itemize}
-    \item Importance of quantum computing and communication
-    \item Need at present to be a quantum-mechanics expert to understand quantum computing
-    \item This work is intended to give an operational account of quantum interaction in a process-algebraic style, inspired by the Chemical Abstract Machine
-\end{itemize}
-
-Quantum computers offer unique capabilities that can be used to
-program substantially faster algorithms compared to those written for
-classical computers. For example, Grover's search algorithm \cite{grover1996,grover1997}
-can query unstructured data in sub-linear time (compared to linear
-time on a classical computer), and Shor's algorithm \cite{shors} can factorize a
-number in polynomial time (compared to sub-exponential time for the
-best known classical algorithm).
-Additionally, quantum computing provides a secured communication system that can transmit
-information without the possibility of eavesdropping.
-For example, quantum teleportation can safely communicate a qubit information between two parties.
-
-It is more and more essential to build a network based on the combination of quantum computing
-and the current classical network facilities to provide extra secured information transformation.
-Several classical quantum hybrid network protocols are proposed \cite{10.1145/3387514.3405853,https://doi.org/10.48550/arxiv.2205.08479,8068178,e24101488}.
-These protocols represent the first step for developing reliable classical quantum hybrid network (CQHN).
-It is necessary to develop a CQHN protocol framework that allow
-researchers to create efficient and correct CQHN protocols. 
-Many previous frameworks \cite{10.1145/1040305.1040318,9165801} were a quantum imitation of classical process algebra, by incorporating classical process algebra framework with quantum circuit operations.
-For example, CQP \cite{10.1145/1040305.1040318} instantiated CSP \cite{Hoare:1985:CSP:3921} with a quantum circuit language.
-
-There are two major issues associated with the previous frameworks.
-First, the beauty of process algebra is to define a mathematical model that captures the essence of
-multi-threaded program semantics; so that program executions are easily viewed as 
-automata transitions -- usually associated with automata based model checking mechanisms.
-Incorporating quantum circuit languages significantly complicates the program semantics of the previous frameworks. Thus, the associated verification framework is unnecessarily complicated.
-For example, defining a simple quantum teleportation in CQP has even more complicated structure than the original circuit describing quantum teleportation.
-Second, quantum circuit semantics is unintuitive, and incorporating quantum semantics with process algebra makes the system even more unintuitive.
-Eventually, programmers, who might have a brief idea about quantum computation, need to use a given protocol framework to define CQHN network protocols. If they spent most of the time working out how the unintuitive framework works, why will they use the framework?
-Unfortunately, previous CQHN frameworks had unintuitive program semantics because they basically put quantum circuit languages together with multi-threaded process algebra together with no chemistry. 
-
-In this paper, we introduce quantum abstract machine (QAM), permitting the definition of CQHN protocols based on classical chemical abstract machine. The key aspect in QAM's design identifies a set of properties enough to describe quantum network protocols without including quantum program operational semantics in the system.
-QAM leverages the fact that quantum network protocols are all based on multi-parties of quantum teleportation.
-Instead of defining the operational semantics for describing quantum teleportation, such as creating entanglement and qubit measurmwent, we obverse the mathmetical properties involving in the procedure and define them as conceptual mathemtical terms in our system.
-We identify a list of contributions:
-
-\begin{itemize}
-    \item Design quantum abstract machine suitable for defining CQHN protocols, which can be easily interpreted as automata.
-    \item Design a trace refinement framework based on the QAM language, which is useful for verifying if two protocols are equivalent. 
-    \item We utilize QAM to define QPASS and QCAST network protocols \cite{10.1145/3387514.3405853} in a simple automata structure, and we use the trace refinement framework to verify that the QPASS protocol is an instance of the QCAST protocol. 
-\end{itemize}
+\input{introduction}
 
 \input{background}
 
