@@ -8,16 +8,9 @@
       \texttt{Message} & m &\in& \mathbb{M}\\
     \texttt{Channel} & c &\in& \Ls\\
     \texttt{Time Stamp} & t &\in& \mathbb{T}\\
-    \texttt{Label} & a &\in& \Ls \times \mathbb{M}\\
-      \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^{t?} \mid \qrev{c}{x} \\
-      \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
-      \texttt{Relations} & R & \in & \Ls \times \Ls \times \Rs \\
-      \texttt{Predicate Action} & \alpha & ::= & \qsend{p}{c}{m}^t \mid (c,c,\qsend{p}{c}{m}^t) \\
-      \texttt{Objects} & \Os \\
-      \texttt{Custom Cell} & \varphi,\psi & ::= & \pcell{P}{n}{c} \mid \qcell{\Os}{c}\\
-      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}{\cn{rel}} \qcell{t}{\cn{gt}}
-                             \qcell{\alpha}{\cn{comm}} \pcell{\cn{bool}}{t}{\cn{pred}} \psi^* \\
-      \texttt{Rules} & \rules & ::= & C \longrightarrow C \\
+    \texttt{Label} & \alpha &::=& c.m \mid p.c.m \mid (p.c.m)^t \mid \emptyset\\
+      \texttt{Configuration} & C & \\
+      \texttt{Rule} & \rules & ::= & C \xrightarrow{\alpha} C \\
     \end{array}
   \]
 }
@@ -25,20 +18,32 @@
   \label{fig:q-pi-syntax}
 \end{figure}
 
-This section describes QAM's syntax and semantics,
-whose design is based on two observations of different quantum network protocols, through an example connectivity diagram in \Cref{fig:q-pi-example}.
+This section describes QAM's syntax and semantics, whose design is the abstraction of different quantum network protocols based on the observations given in \Cref{sec:introduction}.
 
-A QAM system is a structure $(\Ms,\Ls,\Ts,C,\overline{\rules})$,
+We define QAM system to represent the transitions for any quantum network protocols, which allows programmers to define initial configurations, representing the initial programs and process environment, as well as user-definable transition rules, guiding how configurations are transitioned. A QAM system is a structure $(\Ms,\Ls,\Ts,\overline{\rules})$,
 where $\Ms$ is a set of messages;
-$\Ls$ is a set of channels containing at least $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$;
+$\Ls$ is a set of channels;
 $\Ts$ is a set of time stamps that forms a linear order ($<$) with $0$ being the minimum;
-$C$ is the configuration containing different cells that represent the nodes with processes and environment for the system, at least containing cell $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$, mentioned in \Cref{sec:qamsyntax};
-and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{CT},\rulelab{GC}, \rulelab{MT}, \rulelab{NT}, \rulelab{PC}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
+and $\overline{\rules}$ is a finite set of rules for guiding how configurations are transitioned. 
+Any rule has the form $C_1 \xrightarrow{\alpha} C_2$, referring to that we transition configuration $C_1$ to $C_2$ via a label $\alpha$, being either emptily internal ($\emptyset$), a pair $c.m$, a triple $p.c.m$, or a quadruple $(p.c.m)^t$, where $c$ is the channel for communication, $m$ is a possibly quantum message, $p$ is the success rate of the message delivery, and $t$ is the initial time stamp of the message.
 
+The execution in QAM is with respect to a QAM system $(\Ms,\Ls,\Ts,\overline{\rules})$ and an initial configuration $C$ that defines the input program and initial process environment.
+If we collect the free metavariables ($\cn{FV}(-)$) appearing in a configuration and rule, 
+the initial configuration $C$ is a \textit{ground term} without any metavariables ($\cn{FV}(C)=\emptyset$);
+while $\cn{FV}(\alpha) \cup \cn{FV}(C_2)\subseteq \cn{FV}(C_1)$ for every rule $C_1 \xrightarrow{\alpha} C_2$, which is the well-formedness assumption for a QAM system.
+We can define the transitions in a QAM system as follows:
 
+\begin{definition}\label{def:labeledsystem}\rm[One QAM Transition Step]
+Given a QAM system $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initial configuration $C$, a transition step defining for a rule $C_1 \xrightarrow{\alpha} C_2 \in \overline{\rules}$ on $C$ is given as:
+\begin{itemize}
+\item We find a substitution $\sigma$ mapping every metavariable in $C_1$ to a term, such that $\sigma(C_1)=C$, where we substitute metavariables $x$ in $C_1$ with the mapped terms as $\sigma(x)$.
+\item The result label and configuration by applying the rule is $\sigma(\alpha)$ and $\sigma(C_2)$.
+\end{itemize}
+\end{definition}
 
+\Cref{def:labeledsystem} provides an abstraction of transitions in QAM, where the details configurations and rules are parameterized as some abstract objects. Below, we provide step by step instantiation of configurations and rules to capture different quantum network protocol behaviors. 
 
-\subsection{Syntax} \label{sec:qamsyntax}
+\subsection{Single Party Process Level Communication} \label{sec:qamsyntax}
 
 QAM describes multiparty communication behaviors,
 whose syntax is similarity to the chemistry abstract machine \cite{BERRY1992217} and $\Pi$-calculus.

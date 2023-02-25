@@ -13,13 +13,7 @@ the initial configuration $C$ is a \textit{ground term} without any metavariable
 while $\cn{FV}(\alpha) \cup \cn{FV}(C_2)\subseteq \cn{FV}(C_1)$ for every rule, which is the well-formedness assumption for a QAM system.
 We can define the transitions in a QAM system as follows:
 
-\begin{definition}\label{def:labeledsystem}\rm[One QAM Transition Step]
-Given a QAM system tuple $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initial configuration $C$, there is a rule $C_1 \xrightarrow{\alpha} C_2 \in \overline{\rules}$, and one step transition by applying this rule is given as:
-\begin{itemize}
-\item There is a substitution $\sigma$ mapping every metavariable in $C_1$ to a term, such that $\sigma(C_1)=C$, where we substitute metavariables $x$ in $C_1$ with the mapped terms as $\sigma(x)$.
-\item The result label and configuration by applying the rule is $\sigma(\alpha)$ and $\sigma(C_2)$.
-\end{itemize}
-\end{definition}
+
 
 Based on the transition step definition, we define QAM traces as an inductive set below. Given a QAM system tuple $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$, a ground term configuration $C$ is \textit{stuck}, if and only if no rules in $\overline{\rules}$ can be applied on $C$ for a transition step. We also refer to $C \longrightarrow^* C'$ as configuration $C$ transitioning to $C'$, based on the rules in $\Cs$, via several internal steps (steps having no labels).
 
