@@ -9,46 +9,37 @@ We frequently write the qubit vector as $\alpha\ket{0} + \beta\ket{1}$ where $\k
 
 We can join multiple qubits together to form a larger quantum state with the \emph{tensor product} ($\otimes$) from linear algebra. For example, the two-qubit state $\ket{0} \otimes \ket{1}$ (also written as $\ket{01}$) corresponds to vector $[~0~1~0~0~]^T$. 
 Sometimes a multi-qubit state cannot be expressed as the tensor of individual states; such states are called \emph{entangled}. One example is the state $\frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$, known as a \emph{Bell pair}.
-Entangled states lead to exponential blowup: A general $n$-qubit state must be described with a $2^n$-length vector, rather than $n$ vectors of length two. The latter is possible for unentangled states like $\ket{0} \otimes \ket{1}$; \vqir's type system guarantees that qubits remain unentangled.
+Entangled states lead to exponential blowup: A general $n$-qubit state must be described with a $2^n$-length vector, rather than $n$ vectors of length two.
 
 \begin{figure}[t]
             {
-          \begin{minipage}[b]{.38\textwidth}
-              \small\qquad
-              \Qcircuit @C=0.5em @R=0.5em {
-                \lstick{\ket{0}} & \gate{H} & \ctrl{1} & \qw &\qw & & \dots & \\
-                \lstick{\ket{0}} & \qw & \targ & \ctrl{1} & \qw & &  \dots &  \\
-                \lstick{\ket{0}} & \qw & \qw   & \targ & \qw & &  \dots &  \\
-                & \vdots &   &  &  & & & \\
-                & \vdots &  & \dots & & & \ctrl{1} & \qw  \\
-                \lstick{\ket{0}} & \qw & \qw & \qw &\qw &\qw & \targ & \qw
-              }
-            \caption{GHZ Circuit}
+          \begin{minipage}[b]{.48\textwidth}
+                 \includegraphics[width=1\textwidth]{tele_circuit.png}
+            \caption{Quantum Teleportation Circuit}
             \label{fig:background-circuit-examplea}
           \end{minipage}
          %
-          \begin{minipage}[b]{.60\textwidth}
+          \begin{minipage}[b]{.50\textwidth}
                  \includegraphics[width=1\textwidth]{teleportation.png}
-            \caption{Quantum Teleportation Circuit}
+            \caption{Quantum Teleportation Communication Diagram}
             \label{fig:background-circuit-exampleb}
           \end{minipage}
          }
   \label{fig:background-circuit-example}
 \end{figure}
 
-\noindent\textbf{\textit{Quantum Computations and Conditionals.}} High-level quantum programming languages are usually designed to follow the \emph{QRAM model}~\cite{Knill1996}, where quantum computers are used as co-processors to classical computers. The classical computer generates descriptions of circuits to send to the quantum computer and then processes the measurement results.
-Computation on a quantum value state consists of a series of \emph{quantum operations}, each of which acts on a subset of qubits in the value state. In the standard presentation, quantum computations are expressed as \emph{circuits}, as shown in \Cref{fig:background-circuit-examplea}, which constructs a circuit that prepares the Greenberger-Horne-Zeilinger (GHZ) value state \cite{Greenberger1989}, which is an $n$-qubit entangled value state of the form: $\ket{\text{GHZ}^n} = \frac{1}{\sqrt{2}}(\ket{0}^{\otimes n}+\ket{1}^{\otimes n})$.
-In these circuits, each horizontal wire represents a qubit and boxes on these wires indicate quantum operations, or \emph{gates}. The circuit in \Cref{fig:background-circuit-examplea} uses $n$ qubits and applies $n$ gates: a \emph{Hadamard} (\coqe{H}) gate and $n-1$ \emph{controlled-not} (\coqe{CNOT}) gates.
+\noindent\textbf{\textit{Quantum Computations and Measurement.}} High-level quantum programming languages are usually designed to follow the \emph{QRAM model}~\cite{Knill1996}, where quantum computers are used as co-processors to classical computers. The classical computer generates descriptions of circuits to send to the quantum computer and then processes the measurement results.
+Computation on a quantum value state consists of a series of \emph{quantum operations}, each of which acts on a subset of qubits in the value state. In the standard presentation, quantum computations are expressed as \emph{circuits}, as shown in \Cref{fig:background-circuit-examplea}, which constructs a circuit for quantum teleportation algorithm \cite{PhysRevLett.70.1895}, which sends a quantum message $\varphi$ from Alice to Bob, as shown in \Cref{fig:background-circuit-exampleb}.
+In these circuits, each horizontal wire represents a qubit and boxes on these wires indicate quantum operations, or \emph{gates}. The circuit for $\texttt{bel1000}$ in \Cref{fig:background-circuit-examplea} uses two qubits and applies two gates: a \emph{Hadamard} (\coqe{H}) and \emph{controlled-not} (\coqe{CNOT}) gate to preprare a Bell pair above.
+\ignore{
+Applying a gate to a state \emph{evolves} the state. The traditional semantics of doing so is expressed by multiplying the state vector by the gate's corresponding matrix representation; single-qubit gates are 2-by-2 matrices, and two-qubit gates are 4-by-4 matrices. A gate's matrix must be \emph{unitary}, ensuring that it preserves the unitarity invariant of quantum states' amplitudes. An entire circuit can be expressed as a matrix by composing its constituent gates.
+}
 
-% Analogous to the position and momentum representations in Schrodinger's picture of quantum mechanics, there are also two commonly used special bases in the finitely dimensional Hilbert space studied in quantum information. The computational basis refers to classical bit strings written as the tensor product of $\{\ket{0}, \ket{1}\}$, while the dual basis, or the Fourier basis, is obtained by applying \emph{quantum Fourier transformation} (QFT) on the computational basis. The computational space refers to the space spanned by the computational basis, and similarly to the dual space, although the computational and dual spaces are isomorphic to each other.  As shown by~\citet{qft-adder}, arithmetic on the computational basis can sometimes be more efficiently carried in the dual basis, which leads to the use of quantum operations in optimizing circuits with classical functionalities. 
-
-Applying a gate to a state \emph{evolves} the state. The semantics of doing so is expressed by multiplying the state vector by the gate's corresponding matrix representation; single-qubit gates are 2-by-2 matrices, and two-qubit gates are 4-by-4 matrices. A gate's matrix must be \emph{unitary}, ensuring that it preserves the unitarity invariant of quantum states' amplitudes. An entire circuit can be expressed as a matrix by composing its constituent gates.
-
-\noindent\textbf{\textit{Measurement.}} A \emph{measurement} operation extracts classical information from a quantum state, typically when a computation completes. Measurement collapses the state to a basis states with a probability related to the state's amplitudes. For example, measuring $\frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$ in the computational basis will collapse the state to $\ket{0}$ with probability $\frac{1}{2}$ and likewise for $\ket{1}$, returning classical value 0 or 1, respectively. In all the programs discussed in this paper, we leave the final measurement operation implicit.
+A \emph{measurement} operation extracts classical information from a quantum state, typically when a computation completes. Measurement collapses the state to a basis states with a probability related to the state's amplitudes. For example, measuring $\frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$ in the computational basis will collapse the state to $\ket{0}$ with probability $\frac{1}{2}$ and likewise for $\ket{1}$, returning classical value 0 or 1, respectively. In all the programs discussed in this paper, we leave the final measurement operation implicit.
 
 \noindent\textbf{\textit{Quantum Network based on Teleportation.}}
 Almost all quantum network protocols are originated from the quantum teleportation algorithm \cite{PhysRevLett.70.1895}.
-The circuit diagram in \Cref{fig:background-circuit-exampleb} describes a quantum teleportation circuit for communicating one qubit message between Alice and Bob. The other cases are a simple replication of the diagram.
+The circuit diagram in \Cref{fig:background-circuit-exampleb} describes a quantum teleportation circuit for communicating one qubit message between Alice and Bob.
 In this algorithm, Alice sends a qubit message $\varphi$ to Bob via an entangled group $\phi^{+}$ consisting of two qubits.
 Before sending the $\varphi$ qubit, Alice and Bob holds one qubit in the entangled qubit group $\phi^{+}$.
 In the beginning, Alice entangles $\varphi$ with her holding $\phi^{+}$ qubit by using a CNOT gate following by a Hadamard gate.
@@ -62,8 +53,15 @@ In this paper, we will try to model the quantum teleportation concept
 by abstracting away the details of the gates and measurement devices,
 which represent a low-level circuit implementation of the quantum teleportation algorithm.
 
-\noindent\textbf{\textit{Extended Quantum Network Communication By Swaps.}}
-Quantum teleportation is developed based on the property of qubits entanglement. However, one shortage of quantum entanglement is that it can only be created within a short distance, i.e. if the sender and receiver are far from each other, then the success rate of creating an entanglement state between them would be very low. Due to this disadvantage, scientists have developed a method called entanglement swap to help create long-distance entanglement. This method relies on quantum repeaters in the middle. Suppose Alice and Bob stay in two separate places and there is a quantum repeater, $r_1$ between them, they can create a long-distance entanglement in two steps. First, Alice and Bob each create an entanglement state with $r_1$; then $r_1$ performs a Bell state measurement locally. After measurement, the two original entanglements are destroyed and therefore, a new entanglement pair is created between Alice and Bob. 
+\liyi{Le: not very clear. need to add some pictures and explain in details how swaps work.}
+\noindent\textbf{\textit{Extended Quantum Network Communication By Quantum Routing.}}
+Quantum teleportation describes the circuit details of communicating quantum messages through two parties.
+For a long distance communication, the quantum routing concept is involved.
+A typical and near term possible technique to send quantum information through long distance is \textit{entanglement swap},
+which relies on intermediate quantum repeaters between the two parties. Suppose Alice and Bob stay in two separate places and there is a quantum repeater, $r_1$ between them, they can create a long-distance entanglement in two steps. First, Alice and Bob each create an entanglement state with $r_1$; then $r_1$ performs a Bell state measurement locally. After measurement, the two original entanglements are destroyed and therefore, a new entanglement pair is created between Alice and Bob. 
+
+Through the entanglement swaps, quantum messages can be sent through long-distance, with a consumption of qubit resources and reduction of success rate of transmitting the messages, because each entanglement pair destruction and creation requires qubit resources and has a certain percentage of failure. 
+Since almost all quantum network protocols utilize the quantum teleportation and quantum routing as the guidance to send quantum messages, in QAM, we model quantum teleportation as the step to receive a message, and quantum routing as the step to transmit a message through a long distance by consuming some qubit resources and reducing some success rate.
 % \liyi{later.}
 
 % Writing a quantum algorithm now, with SQIR (but likewise with Quipper, Pyquil, Circ, etc.). Example: Shor’s
