@@ -2,38 +2,6 @@
 
 \begin{figure}[t]
 {\small
-\begin{center}
-\begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
-\node[main] (1) {\cn{Ann}}; 
-\node[main] (2) [right of=1] {$r_1$};
-\node[main] (3) [right of=2] {$r_4$};
-\node[main] (4) [right of=3] {\cn{Bob}};
-\node[main] (5) [above right=0.5cm and 1.5cm of 1] {$r_2$};
-\node[main] (6) [right of=5] {$r_3$};
-\node[main] (7) [below of=1] {\cn{Cat}};
-\node[main] (8) [below of=3] {\cn{Dan}};
-\draw[-] (1) --  (2);
-\draw[-] (2) --  (3);
-\draw[-] (3) --  (4);
-\draw[-] (1) --  (5);
-\draw[-] (5) --  (6);
-\draw[-] (6) --  (3);
-\draw[-] (7) --  (2);
-\draw[-] (2) --  (8);
-\end{tikzpicture}
-\end{center}
-}
-\caption{Example Path Connectivity}
-  \label{fig:q-pi-example}
-\end{figure}
-
-This section describes QAM's syntax and semantics,
-whose design is based on two observations of different quantum network protocols, through an example connectivity diagram in \Cref{fig:q-pi-example}.
-
-In the next two sections, we introduce the modeling of quantum network protocols via QAM formally.
-
-\begin{figure}[t]
-{\small
   \[\begin{array}{llcl} 
       \texttt{Variable} & x,y \\
       \texttt{Probability} & p &\in &\Rs\\
@@ -50,13 +18,24 @@ In the next two sections, we introduce the modeling of quantum network protocols
       \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}{\cn{rel}} \qcell{t}{\cn{gt}}
                              \qcell{\alpha}{\cn{comm}} \pcell{\cn{bool}}{t}{\cn{pred}} \psi^* \\
       \texttt{Rules} & \rules & ::= & C \longrightarrow C \\
-      \texttt{Meta Function} & \Cs & ::= & \decl{\rules}{\Cs} \mid C\\
     \end{array}
   \]
 }
-\caption{Quantum Pi Syntax}
+\caption{Quantum Abstract Machine Syntax Table}
   \label{fig:q-pi-syntax}
 \end{figure}
+
+This section describes QAM's syntax and semantics,
+whose design is based on two observations of different quantum network protocols, through an example connectivity diagram in \Cref{fig:q-pi-example}.
+
+A QAM system is a structure $(\Ms,\Ls,\Ts,C,\overline{\rules})$,
+where $\Ms$ is a set of messages;
+$\Ls$ is a set of channels containing at least $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$;
+$\Ts$ is a set of time stamps that forms a linear order ($<$) with $0$ being the minimum;
+$C$ is the configuration containing different cells that represent the nodes with processes and environment for the system, at least containing cell $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$, mentioned in \Cref{sec:qamsyntax};
+and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{CT},\rulelab{GC}, \rulelab{MT}, \rulelab{NT}, \rulelab{PC}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
+
+
 
 
 \subsection{Syntax} \label{sec:qamsyntax}
@@ -188,6 +167,33 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
   \label{fig:q-pi-example1}
 \end{figure} 
 }
+
+\begin{figure}[t]
+{\small
+\begin{center}
+\begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
+\node[main] (1) {\cn{Ann}}; 
+\node[main] (2) [right of=1] {$r_1$};
+\node[main] (3) [right of=2] {$r_4$};
+\node[main] (4) [right of=3] {\cn{Bob}};
+\node[main] (5) [above right=0.5cm and 1.5cm of 1] {$r_2$};
+\node[main] (6) [right of=5] {$r_3$};
+\node[main] (7) [below of=1] {\cn{Cat}};
+\node[main] (8) [below of=3] {\cn{Dan}};
+\draw[-] (1) --  (2);
+\draw[-] (2) --  (3);
+\draw[-] (3) --  (4);
+\draw[-] (1) --  (5);
+\draw[-] (5) --  (6);
+\draw[-] (6) --  (3);
+\draw[-] (7) --  (2);
+\draw[-] (2) --  (8);
+\end{tikzpicture}
+\end{center}
+}
+\caption{Example Path Connectivity}
+  \label{fig:q-pi-example}
+\end{figure}
 
 \subsection{Semantics} \label{sec:qamsemantics}
 
