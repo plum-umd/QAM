@@ -8,12 +8,6 @@ and a configuration $C$ representing the initial program state.
 Each rule in $\overline{\rules}$ is a label transition relation $C_1 \xrightarrow{\alpha} C_2$,
 where $C_1$ and $C_2$ are configurations representing the states
 before and after the rule application, and $\alpha$ is either empty or $p.c.m$.
-If we collect the free metavariables ($\cn{FV}(-)$) appearing in a configuration and rule, 
-the initial configuration $C$ is a \textit{ground term} without any metavariables ($\cn{FV}(C)=\emptyset$);
-while $\cn{FV}(\alpha) \cup \cn{FV}(C_2)\subseteq \cn{FV}(C_1)$ for every rule, which is the well-formedness assumption for a QAM system.
-We can define the transitions in a QAM system as follows:
-
-
 
 Based on the transition step definition, we define QAM traces as an inductive set below. Given a QAM system tuple $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$, a ground term configuration $C$ is \textit{stuck}, if and only if no rules in $\overline{\rules}$ can be applied on $C$ for a transition step. We also refer to $C \longrightarrow^* C'$ as configuration $C$ transitioning to $C'$, based on the rules in $\Cs$, via several internal steps (steps having no labels).
 
