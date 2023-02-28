@@ -86,7 +86,7 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \inferrule[CR]{}
       {\parp{P}{Q} \longrightarrow Q}
 
-  \inferrule[PC]{}
+  \inferrule[Com]{}
       { \pard{\qsend{p}{c}{m}^t.Q}{ \qrev{c}{x}.P}
            \xrightarrow{(p.c.m)^t} \pard{Q}{P[m/x]}}
 
@@ -113,7 +113,7 @@ A process can be an empty process $0$, a process ($A.P$) executing a singleton a
 
 The intra-destination level semantics in \Cref{fig:q-pi-semantics1} is inherited from CHEM.
 One thing worth noting is that we omit $\emptyset$ labels in all the internal labeled rules.
-Through the \rulelab{Heating} rule, a parallel process $\parl{P}{Q}$ is dissolved to a multiset ($\pard{P}{Q}$) containing two elements $P$ and $Q$, ready for semantic evaluation; while the \rulelab{Cooling} rule merges two elements in a multiset ($\pard{P}{Q}$) as a parallel process. Rules \rulelab{Heating}, \rulelab{Cooling}, and \rulelab{ID} captures the implicit associativity, commutativity, and identity equational properties for QAM processes, so that any two processes in the process multiset might communicate, without syntactic barriers. For example, in a multiset, rule \rulelab{PC} defines the behavior of a sender process, on the left, communicating an action $\qsend{p}{c}{m}^t.Q$ with a receiver process $\qrev{c}{x}.P$, on the right, and resulting in the two multiset elements $\pard{Q}{P[m/x]}$, indicating that process $P$ consumes the message $m$ as variable $x$ in the following continuation. The above three rules allow us not to care about the positions of the sender and receiver in the multiset.
+Through the \rulelab{Heating} rule, a parallel process $\parl{P}{Q}$ is dissolved to a multiset ($\pard{P}{Q}$) containing two elements $P$ and $Q$, ready for semantic evaluation; while the \rulelab{Cooling} rule merges two elements in a multiset ($\pard{P}{Q}$) as a parallel process. Rules \rulelab{Heating}, \rulelab{Cooling}, and \rulelab{ID} captures the implicit associativity, commutativity, and identity equational properties for QAM processes, so that any two processes in the process multiset might communicate, without syntactic barriers. For example, in a multiset, rule \rulelab{Com} defines the behavior of a sender process, on the left, communicating an action $\qsend{p}{c}{m}^t.Q$ with a receiver process $\qrev{c}{x}.P$, on the right, and resulting in the two multiset elements $\pard{Q}{P[m/x]}$, indicating that process $P$ consumes the message $m$ as variable $x$ in the following continuation. The above three rules allow us not to care about the positions of the sender and receiver in the multiset.
 
 Rules \rulelab{CL} and \rulelab{CR} define conditional choice operations. For example, if we have:
 $\parl{\qact{\qsend{0.5}{\cn{Ann}}{m}^0}{P}}{\parp{\qact{\qrev{\cn{Ann}}{x}}{Q}}{\qact{\qrev{\cn{Ann}}{x}}{Q'}}}$, 
@@ -145,14 +145,14 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 \mprset{flushleft}
    \inferrule[GC]{}
        {\pcell{\pard{\qsend{p}{c}{m}^t.P}{...}}{\cn{S}\;i}{c_1}\pcell{ ...}{\cn{S}\;j}{c_2}
-        \qcell{\emptyset}{\cn{comm}}\qcell{b}{\cn{pred}}
+        \qcell{\emptyset}{\cn{comm}}
         \longrightarrow \pcell{\pard{P}{...}}{i}{c_1}\pcell{\pard{\qsend{p}{c}{m}^t}{...}}{j}{c_2}
-               \pcell{(p.c.m)^t}{c_1\rightarrow c_2}{\cn{comm}}\qcell{b}{\cn{pred}}}
+               \pcell{(p.c.m)^t}{c_1\rightarrow c_2}{\cn{comm}}}
 
   \inferrule[PC]{\overline{P}\xrightarrow{\alpha^t} \overline{Q} }
-      { \pcell{\overline{P}}{n}{c}\qcell{\emptyset}{\cn{comm}}\qcell{b}{\cn{pred}}
+      { \pcell{\overline{P}}{n}{c}\qcell{\emptyset}{\cn{comm}}
            \longrightarrow
-         \pcell{\overline{Q}}{n}{c}\pcell{\alpha^t}{c}{\cn{comm}}\qcell{b}{\cn{pred}}}
+         \pcell{\overline{Q}}{n}{c}\pcell{\alpha^t}{c}{\cn{comm}}}
                
    \inferrule[Grant]{}
        {\qcell{\cn{F}}{\cn{pred}} \longrightarrow \qcell{\cn{T}}{\cn{pred}}}
@@ -161,7 +161,7 @@ $\textcolor{blue}{\text{Semantics:}}\\$
       { \pcell{\alpha}{c_1\rightarrow c_2}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}
            \longrightarrow \qcell{\emptyset}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}} } 
  
-  \inferrule[Com]{}
+  \inferrule[AC]{}
       { \pcell{\alpha^t}{c}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}
            \xrightarrow{\alpha}  \qcell{\emptyset}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}} } 
 
@@ -171,14 +171,83 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \label{fig:q-pi-semantics2}
 \end{figure}
 
+\begin{figure}[t]
+{\footnotesize
+\[
+\begin{array}{lll}
+&
+\pcell{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
+\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
+&
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
+&
+(\rulelab{GC})
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
+\qcell{\texttt{T}}{\cn{pred}}
+&
+(\rulelab{Grant})
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
+&
+(\rulelab{FC})
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{9}{\cn{Dan}} 
+\pcell{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
+&
+(\rulelab{Com}+\rulelab{PC})
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{9}{\cn{Dan}} 
+\pcell{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcell{\texttt{T}}{\cn{pred}}
+&
+(\rulelab{Grant})
+\\[0.3em]
+\xrightarrow{1.c.m}&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{9}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
+&
+(\rulelab{AC})
+\end{array}
+\]
+}
+\caption{Example transitions based on the model in \Cref{fig:q-pi-semantics2}.}
+  \label{fig:q-pi-example}
+\end{figure}
+
 To model inter-destination communication, i.e., message transformations across different locations,
 the QAM system is inspired by the abstract machine concept that models communication as sequencing steps of
 interactions with different abstract environment components.
 Here, we instantiate the QAM configuration to a multiset of cells in \Cref{fig:q-pi-semantics2},
 as we utilize a membrane (cell) in chemical abstract machine to model a distinct component in a network protocol.
 Processes in different destination lives in a process cell $\pcell{\overline{P}}{n}{c}$, where $\overline{P}$ is a process multiset for communication, $n$ is a linear order indicating the qubit resource in the location, and $c$ is the location name.
-There are other cells storing the environment information. 
-The \cn{gt} cell ($\qcell{t}{\cn{gt}}$) is a global clock that times every QAM transitions. Cells \cn{comm} and \cn{pred} are the QAM ways to define side conditions, since rule syntax does not allow side condition definitions, explained shortly below. 
+The other cells (\cn{comm} and \cn{pred}) store environment information, which represent the QAM ways to define side conditions, since rule syntax does not allow side condition definitions, explained shortly below. 
 \cn{comm} cell ($\pcell{\alpha}{\beta}{\cn{comm}}$) contains a flag $\beta$ defining the location the label $\alpha$ happens: $c$ refer to that the transition happens at $c$ and $c_1\rightarrow c_2$ means that the transition happens at conveying messages from $c_1$ to $c_2$.
 
 The configuration instantiation to a cell multiset in \Cref{fig:q-pi-semantics2} provides a frame for semantic rule definitions
@@ -186,7 +255,54 @@ and allow rule definitions to mention only the necessary parts regardless the ot
 For example, rule \rulelab{Grant} mentions only cell \cn{pred} and it means that we can always turn cell \cn{pred}'s value \cn{T} regardless the other cells. Additionally, the configuration extension from the one in \Cref{fig:q-pi-semantics1} to \Cref{fig:q-pi-semantics2} does not invalidate the rules in the former, as they are still valid for intra-process communications.
 In this sense, the configuration setup, based on the extension of previous configuration, permits gradual semantic development for quantum network protocols with only minimal changes in the rule definitions.
 
+To definite protocol communication nondeterminism in QAM, every communication transition is divided into three basic steps: \textit{communicating}, \textit{granting}, and \textit{cleaning}. 
+A communicating step performs the actual transition and moves the result label to the \cn{comm} cell waiting for granting.
+In \Cref{fig:q-pi-semantics2}, rules \rulelab{GC} and \rulelab{PC} performs a communicating step.
+The former conveys a message sending action from locations $c_1$ to $c_2$ and moves the label $(p.c.m)^t$ to the \cn{comm} cell with the $c_1\rightarrow c_2$ flag referring to that the action conveys between the two locations.
+The latter performs an intra-process communication in the $c$ cell with the label $\alpha^t$ ($\alpha$ has form $p.c.m$) and moves the label to the \cn{comm} cell with the $c$ flag.
+A granting step validates a communicating step through possibly additional predicate judgment applying on the \cn{comm} cell labels, with the result storing in the \cn{pred} cell. For the simplest case, we define rule \rulelab{Grant} to grant every communicating step.
+A cleaning step initializes the \cn{comm} and \cn{pred} cells for next communication transitions to perform.
+Rules \rulelab{FC} and \rulelab{AC} are cleaning rules corresponding to rules \rulelab{GC} and \rulelab{PC}, respectively.
+The former purges the two cells after a \rulelab{GC} rule is performed,
+while the latter purges the two cells after a message is delivered by applying rule \rulelab{PC} and it also moves the delivered message label $\alpha$ to the transition arrow as $\xrightarrow{\alpha}$, making the communication external for further analysis, discussed in \Cref{sec:refinement}.  
 
+Evaluating an initial configuration
+{
+$\pcell{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
+\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}$
+}
+results in the transitions steps in \Cref{fig:q-pi-example}.
+The initial configuration instantiates the parameters in the configuration pattern in \Cref{fig:q-pi-semantics2}.
+Specifically, we initialize the process cells $\overline{\varphi}$ as two distinct elements: \cn{Cat} and \cn{Dan},
+with \cn{Cat} containing a sending process and \cn{Dan} containing a receiver process; 
+\cn{comm} is initialized as $\emptyset$ and \cn{pred} has value \cn{F}.
+In the beginning \cn{Cat} and \cn{Dan} have $10$ pieces of qubit resources \footnote{A piece of qubit resource is user definable and it might not be exactly as one qubit.}.
+We first apply rule \rulelab{GC} on the initial configuration
+that conveys the sending operation from \cn{Cat} to \cn{Dan},
+with the following two rule applications (\rulelab{Grant} and \rulelab{FC}) to grant and purge the \rulelab{GC} step.
+During the \rulelab{GC} application, \cn{Cat} and \cn{Dan} lose a piece of resource that is enough to send out the quantum message $m$. 
+The next step applies rule \rulelab{PC} that delivers a message the label $(1.c.m)^0$;
+such step requires the application of an extra rule \rulelab{Com} to communicates the sender and receiver in the \cn{Dan} cell.
+Then, the two following applications (\rulelab{Grant} and \rulelab{AC}) to grant and purge this step.
+
+The final configuration results in $\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{9}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}$
+having process cells being all unit processes $0$ as well as cells \cn{comm} and \cn{pred} are purged.
+Such configuration is a satisfied terminated state. However, configuration can transition to a stuck state, i.e., an error state that is not a satisfied final state.
+We define a satisfied terminated and stuck configurations below.
+
+\begin{definition}\label{def:stuck}\rm[Terminated and Stuck Configurations]
+A configuration $C$ is a terminated state if no rule is possible to apply to $C$ and:
+\begin{itemize}
+\item For all process cell in $C$, its content is a unit process $0$.
+\item $\alpha$ and $\beta$ in $\pcell{\alpha}{\beta}{\cn{comm}}$ are $\emptyset$ and $b$ in $\qcell{b}{\cn{pred}}$ is \cn{F}.
+\end{itemize}
+$C$ is stuck if no rule is possible to apply to it and the above conditions are not satisfied.
+\end{definition}
 
 
 \ignore{
@@ -275,6 +391,65 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
 \end{figure} 
 }
 
+
+\subsection{Adding Connectivity and Time Stamps} \label{sec:qamsemantics1}
+
+\begin{figure}[t]
+{\small
+$\textcolor{blue}{\text{Syntax:}}\\$
+  \[\begin{array}{llcl} 
+      \texttt{Time Predicate Function} & f & \in & \Ts \times \Ts \to \cn{bool} \\[0.2em]
+      \texttt{Relation} & R & ::= & \overline{(c,c,p)}  \\[0.2em]
+      \textcolor{red}{\texttt{Configuration Third Instant}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
+\textcolor{red}{\overline{\varphi}\pcell{\alpha}{\beta}{\cn{comm}}
+  \qcell{\cn{bool}}{\cn{pred}}\qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}} }
+    \end{array}
+  \]
+
+$\textcolor{blue}{\text{Semantics:}}\\$
+  \begin{mathpar}
+\mprset{flushleft}
+   \inferrule[GC1]{}
+       {\pcell{\pard{\qsend{p}{c}{m}^t.P}{...}}{\cn{S}\;i}{c_1}\pcell{ ...}{\cn{S}\;j}{c_2}
+        \qcell{\emptyset}{\cn{comm}}
+        \qcell{\pard{(c_1,c_2,p')}{...}}{\cn{rel}}
+        \\\\ \qquad \longrightarrow \pcell{\pard{P}{...}}{i}{c_1}\pcell{\pard{\qsend{p'\cn{*}p'}{c}{m}^t}{...}}{j}{c_2}
+               \pcell{(p \cn{*} p'.c.m)^t}{c_1\rightarrow c_2}{\cn{comm}}
+        \qcell{\pard{(c_1,c_2,p')}{...}}{\cn{rel}}}
+
+   \inferrule[CT]{}
+       {\pcell{\pard{\qsend{p}{c}{m}.P}{...}}{i}{c_1}\qcell{t}{\cn{gt}} \longrightarrow 
+             \pcell{\pard{\qsend{p}{c}{m}^t.P}{...}}{i}{c_1}\qcell{t}{\cn{gt}}}
+
+\textcolor{blue}{
+  \inferrule[PC]{\overline{P}\xrightarrow{\alpha^t} \overline{Q} }
+      { \pcell{\overline{P}}{n}{c}\qcell{\emptyset}{\cn{comm}}
+           \longrightarrow
+         \pcell{\overline{Q}}{n}{c}\pcell{\alpha^t}{c}{\cn{comm}}}
+}
+               
+   \inferrule[Grant1]{}
+       {\qcell{\cn{F}}{\cn{pred}}\pcell{\alpha}{c_1\rightarrow c_2}{\cn{comm}}
+             \longrightarrow \qcell{\cn{T}}{\cn{pred}}\pcell{\alpha}{c_1\rightarrow c_2}{\cn{comm}}}
+  
+   \inferrule[Grant2]{}
+       {\pcell{\alpha^t}{c}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}}\qcell{t'}{\cn{gt}} 
+     \longrightarrow \pcell{\alpha^t}{c}{\cn{comm}}\qcell{f(t,t')}{\cn{pred}}\qcell{t'}{\cn{gt}}}
+
+  \inferrule[FC1]{}
+      { \pcell{\alpha}{c_1\rightarrow c_2}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}\qcell{t}{\cn{gt}}
+           \longrightarrow \qcell{\emptyset}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}}\qcell{t\cn{+}}{\cn{gt}} } 
+ 
+  \inferrule[AC1]{}
+      { \pcell{\alpha^t}{c}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}\qcell{t}{\cn{gt}}
+           \xrightarrow{\alpha}  \qcell{\emptyset}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}}\qcell{t\cn{+}}{\cn{gt}} } 
+
+  \end{mathpar}
+}
+\caption{Extended inter-destination communication syntax and semantics. $\beta$ can be omitted when being $\emptyset$. $\alpha^t$ is an action such that $\alpha$ has the form $p.c.m$. $\qsend{p}{c}{m}^t\equiv \qsend{p}{c}{m}^t.0$.}
+  \label{fig:q-pi-semantics3}
+\end{figure}
+
 \begin{figure}[t]
 {\small
 \begin{center}
@@ -298,281 +473,170 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
 \end{tikzpicture}
 \end{center}
 }
-\caption{Example Path Connectivity}
-  \label{fig:q-pi-example}
+\caption{Example Path Connectivity \liyi{Le: this looks bad. I think a better diagram is to have only \cn{Cat} and \cn{Dan} through a directed graph, with success rate marking. }}
+  \label{fig:examplepath}
 \end{figure}
 
-\subsection{Semantics} \label{sec:qamsemantics}
+As in \Cref{sec:qamsyntax1}, QAM permits a quantum protocol semantics through the manipulation of configurations and rules describing the communicating, granting, and cleaning steps for framing quantum network communications.
+Here, we extend the configuration and rules in \Cref{fig:q-pi-semantics2} to define two important properties appearing in almost all quantum network protocols: connectivity and time.
+The former refers to that quantum messages are always transmitted based on a connectivity graph, i.e., two cells can communicate if they have an edge in the graph and each edge has a certain success rate of message transmission. One example connectivity is in \Cref{fig:examplepath}.
+The latter means that quantum messages are time-sensitive and are required to deliver in a short lifetime; otherwise, the messages are decohered and lost.
 
-Defining protocol systems might require the extension of semantic rule set to include specific behaviors.
-We provide a meta level rule declaration operation ($\decl{\rules}{\Cs}$), allowing users to declare a new rule $\rules$ used in the system $\Cs$. 
+To define the two properties, we extend the configuration with the \cn{gt} and \cn{rel} cells in \Cref{fig:q-pi-semantics3},
+which respectively contain a global clock time $t$ and a multiset of relation triples $R$ whose element is a triple of source and target cell locations and the success rate to transmit a message from the source to the target.
+A user defined validity check function $f$ is used to determine if a message spends too much time in its transmission.
+\Cref{fig:q-pi-semantics3} shows the semantic rule definitions for the two properties. Rule \rulelab{PC} is marked blue because it keeps the same as the case in \Cref{fig:q-pi-semantics2}, while the other rules require some modifications, explained below.
+ 
+\noindent\textbf{Defining connectivity.}
+Definition the property requires the update of rule \rulelab{GC} to \rulelab{GC1} in \Cref{fig:q-pi-semantics3}
+by including the extra \cn{rel} cell.
+In each message ($\qsend{p}{c}{m}^t$) transmission, we pattern match the source $c_1$ and target $c_1$ locations in the \cn{rel} cell as $(c_1,c_2,p')$. After the message is transmitted, we reduce its success rate as $p\cn{*}p'$, referring to that the message transmission results in a success rate reduction.
 
-{\footnotesize
-\[
-\Cella{\qsend{1}{c}{m}}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
-\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{\texttt{false}}{0}{\cn{pred}}
-\qcell{0}{\cn{gt}}
-\]
-}
+\noindent\textbf{Defining time.}
+Definition this property is essentially two procedures.
+First, a global time clock is introduced in the cell \cn{gt}.
+In the upgraded rules (\rulelab{FC1} and \rulelab{AC1}) for cleaning steps, we include the \cn{gt} cell and increments the clock ($t\cn{+}$). We also include a new rule \rulelab{CT} to generate time stamp label for a message, so that we can mark the sending time of the message correctly. Second, we need to define a new granting rule by applying the validity check function $f$ to verify if a message's delivery is past due. To do so, we split the granting rule (\rulelab{Grant} in \Cref{fig:q-pi-semantics2}) into two rules.
+For the case of message transmission (flag $c_1 \rightarrow c_2$ in \cn{comm}), it keeps the same;
+otherwise, we apply function $f$ on a pair of time stamps, indicating the starting time of the message ($t$) and the final delivery time ($t'$), respectively. Function $f$ is user-defined. One example definition could be a lambda abstraction $\lambda\,(t,t')\,.\,t'-t<m$, where $m$ is a threshold time period for a message guaranteeing to deliver.
 
-To describe the behaviors of a network system, every QAM system comes with a configuration $C$
-containing two different kinds of cells --- process and content cells.
-A configuration might contain one or more process cells $\pcell{P}{n}{c}$, representing the execution maltreated process of a local node with name $c$, such as the $\cn{Ann}$ and $r_1$ nodes in \Cref{fig:q-pi-example},
-and $n$ is the available qubit resource in the node.
-A multi-threaded process $P$ is the program actions that node $c$ can perform, which has similar syntax as $\Pi$-calculus.
-Each process might contain multiple threads competing for executions, which are separated by a parallel operation $\cn{|}$.
-Each single thread is a sequence of singleton actions that ends at the unit process $0$,
-and $\comp{P}$ is a replication process that repeatedly executes the process $P$, 
-which is used for resending messages, explained in \Cref{sec:qamsemantics}.
-
-In QAM, a parallel process of a message sending and receipt, $\parl{\qact{\qsend{p}{c}{m}^t}{P}}{\qact{\qrev{c}{x}}{Q}}$,
-causes the process to transit to $\parl{P}{Q[m/x]}$, which is similar to the $\Pi$-calculus semantics.
-On the other hand, a parallel of two message sending, $\parl{\qact{\qsend{p}{c}{m}^t}{P}}{\qsend{p'}{c'}{m'}^{t'}{P'}}$,
-refers to that the two operations are competing to transmit the message outside of the node, possibly to other destinations.
-
-The content cells act as control units for storing environment information for executing a QAM system.
-Users are able to define their own content cell by instantiating object types $\Os$ to different user-defined types.
-In QAM, we require at least four kinds of content cells: 
-1) $\qcell{R}{\cn{rel}}$ is a relation cell defining the probability value to send out one message from a node to the other;
-2) $\qcell{t}{\cn{gt}}$ is a global clock cell storing the global time stamp;
-3) $\qcell{A}{\cn{comm}}$ is a communication cell storing the message about to communicate;
-and 4) $\pcell{\cn{bool}}{t}{\cn{pred}}$ is a predicate cell 
-determining if a message communication can happen ($\texttt{true}$ in the cell) or not ($\texttt{false}$ in the cell) at time $t$.
-
-The QAM semantics is given in terms of the definition of a QAM system,
-which is a structure $(\Ms,\Ls,\Ts,C,\overline{\rules})$,
-where $\Ms$ is a set of messages;
-$\Ls$ is a set of channels containing at least $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$;
-$\Ts$ is a set of time stamps that forms a linear order ($<$) with $0$ being the minimum;
-$C$ is the configuration containing different cells that represent the nodes with processes and environment for the system, at least containing cell $\cn{rel}$, $\cn{comm}$, $\cn{gt}$, and $\cn{pred}$, mentioned in \Cref{sec:qamsyntax};
-and $\overline{\rules}$ is a set of rule for guiding how the configuration is transited, at least contain rules \rulelab{CT},\rulelab{GC}, \rulelab{MT}, \rulelab{NT}, \rulelab{PC}, and \rulelab{Com} in \Cref{fig:q-pi-semantics}. 
-
-QAM is flexible enough to define most quantum network/security protocols 
-through the ability to extend rules by the rule declaration operation in \Cref{fig:q-pi-syntax}.
-Every rule set must contain the six rules listed in \Cref{fig:q-pi-semantics},
-because they represent the universally sound facts about multiparty quantum communication. 
-We first discuss these six rules through the example configuration at the end of \Cref{sec:qamsyntax}. 
-For showing the consecutive transitions of a system, there must be additional rules for
-granting every step of transition by turning the \cn{pred} cell's content to be \cn{true}.
-Here, we first assume our example system includes the simplest granting rule by assigning \cn{true} to the \cn{pred} cell if the global time stamps in the \cn{gt} and \cn{pred} cells matched, as:
-
-In QAM, there are mainly two groups of rules, finishing the tasks of transmitting a message from a starting node to its destination via many middle routers and delivering the message in the destination.
-Each group can be divided into a consecutive three kinds of rule applications: 1) we finish the major functionality of the task and move necessary information to the \cn{comm} and \cn{pred} cells for granting; 2) one or more granting rules are applied on the system to check if the task is finished correctly; and 3) we clean up the task information from the \cn{comm} and \cn{pred} cells and update the global clock to finalize the task execution.
-
-In transmitting a message from a starting node to its destination,
-we have the rule applications \rulelab{GC} and \rulelab{FC} for step (1) and (3) above, with some possible granting rules, such as rule \rulelab{Grant} above.
-Rule \rulelab{GC} defines the message transmission behavior that might be an intermediate router node, with the consumption of a qubit in each of the parties and a slot time change happening in the global clock.
-The $...$ operation in cell $a$ refers to that there might 
-be other paralleled processes associated in the process cell, but we disregard them.
-In rule \rulelab{GC}, it also moves the necessary information, such as the sender and receiver channel names as well as the message, in the \cn{comm} cell with the update of the time stamp $t'$ in the \cn{pred} cell to be the current global time,
-indicating that at the current point, the system conveys a message from a node to another.
-After an intermediate granting step, rule \rulelab{FC} is applied on a configuration to empty the \cn{comm} cell, initialize the \cn{pred} cell by putting an \cn{false} value, and increment the global clock.
-Additionally, rule \rulelab{CT} generates a time stamp for a message that is about to send out.
-
-{\footnotesize
-\[
-\begin{array}{ll}
-\longrightarrow\;\;
-\Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
-\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{\texttt{false}}{0}{\cn{pred}}
-\qcell{0}{\cn{gt}}
-&
-(\rulelab{CT})
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{0}{9}{\cn{Cat}}\Cella{A}{9}{r_1}
-\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{(\cn{Cat},r_1,A)}{\cn{comm}}
-\pcell{\texttt{false}}{0}{\cn{pred}}
-\qcell{0}{\cn{gt}}
-&
-(\rulelab{GC})
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{0}{9}{\cn{Cat}}\Cella{A}{9}{r_1}
-\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{(\cn{Cat},r_1,A)}{\cn{comm}}
-\pcell{\texttt{true}}{0}{\cn{pred}}
-\qcell{0}{\cn{gt}}
-&
-(\rulelab{Grant})
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{0}{9}{\cn{Cat}}\Cella{A}{9}{r_1}
-\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{\texttt{false}}{0}{\cn{pred}}
-\qcell{1}{\cn{gt}}
-&
-(\rulelab{FC})
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
-\Cella{\parl{A'}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{(r_1,\cn{Dan},A')}{\cn{comm}}
-\pcell{\texttt{false}}{1}{\cn{pred}}
-\qcell{1}{\cn{gt}}
-&
-(\rulelab{GC})
-\end{array}
-\]
-}
-{\footnotesize
-\begin{center}
-$R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}
-\qquad
-A\triangleq\qsend{0.5}{c}{m}^0
-\qquad
-A'\triangleq\qsend{0.25}{c}{m}^0$
-\end{center}
-}
-
-The above transitions evolves the configuration in \Cref{sec:qamsyntax}. We first apply rule \rulelab{CT} to attach the current time $0$ to the message to send as $\qsend{1}{c}{m}^0$; then, apply rule \rulelab{GC}. The message $\qsend{1}{c}{m}^0$ in cell \cn{Cat} is transmitted to the $r_1$ cell with the new probability $0.5$, meaning that only $50\%$ change this communication is guaranteed.
-This can happen because there is a defined relation tuple $(\cn{Cat},r_1,0.5)$ in the relation cell $\cn{rel}$. During the process, the qubit resources in $\cn{Cat}$ and $r_1$ both reduce one, and the global clock is updated. 
-It is worth noting that 
-we associate the parallel process $\cn{|}$ with identity, associativity, and commutativity equational rules, 
-such that $\parl{P}{0}=P$, $\parl{(\parl{P}{Q})}{Q'}=\parl{P}{(\parl{Q}{Q'})}$, and $\parl{P}{Q}=\parl{Q}{P}$.
-In the above case, $\qsend{0.5}{c}{m}^0$ can be viewed as $\parl{\qsend{0.5}{c}{m}^0}{0}$.
-We then apply rule \rulelab{Grant} to put a \cn{true} value in the \cn{pred} cell and the \rulelab{FC} rule application cleans up the cells, so the transition of the message from node $r_1$ to \cn{Dan} can happen through the last \rulelab{GC} rule application.
-
+\begin{figure}[t]
 {\footnotesize
 \[
 \begin{array}{lll}
-&\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
-\Cella{\parl{A'}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
+&
+\pcell{\qsend{1}{c}{m}.0}{10}{\cn{Cat}}
+\pcell{0}{10}{r_1}
+\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
 \qcell{\emptyset}{\cn{comm}}
-\pcell{\texttt{false}}{1}{\cn{pred}}
-\qcell{2}{\cn{gt}}
-\\[0.2em]
+\qcell{\texttt{F}}{\cn{pred}}
+\qcell{R}{\cn{rel}}
+\qcell{0}{\cn{gt}}
+&
+\\[0.3em]
 \longrightarrow
 &
-\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
-\Cella{0}{9}{\cn{Dan}} 
+\pcell{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
+\pcell{0}{10}{r_1}
+\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
 \qcell{R}{\cn{rel}}
-\qcell{A'}{\cn{comm}}
-\pcell{\texttt{false}}{2}{\cn{pred}}
-\qcell{2}{\cn{gt}}
+\qcell{0}{\cn{gt}}
 &
-(\rulelab{PC})
-\\[0.2em]
+(\rulelab{CT})
+\\[0.3em]
 \longrightarrow
 &
-\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
-\Cella{0}{9}{\cn{Dan}} 
+\pcell{0}{9}{\cn{Cat}}
+\pcell{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
+\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow r_1}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
 \qcell{R}{\cn{rel}}
-\qcell{A'}{\cn{comm}}
-\pcell{\texttt{true}}{2}{\cn{pred}}
+\qcell{0}{\cn{gt}}
+&
+(\rulelab{GC1})
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
+\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow r_1}{\cn{comm}}
+\qcell{\texttt{T}}{\cn{pred}}
+\qcell{R}{\cn{rel}}
+\qcell{0}{\cn{gt}}
+&
+(\rulelab{Grant1})
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
+\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
+\qcell{R}{\cn{rel}}
+\qcell{1}{\cn{gt}}
+&
+(\rulelab{FC1})
+\\[0.3em]
+\longrightarrow ...
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{8}{r_1}
+\pcell{\pard{\qsend{0.25}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\qcell{\emptyset}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
+\qcell{R}{\cn{rel}}
 \qcell{2}{\cn{gt}}
 &
-(\rulelab{Grant})
-\\[0.2em]
-\xrightarrow{0.25.c,m}
+\\[0.3em]
+\longrightarrow
 &
-\Cella{0}{9}{\cn{Cat}}\Cella{0}{8}{r_1}
-\Cella{0}{9}{\cn{Dan}} 
+\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{8}{r_1}
+\pcell{0}{9}{\cn{Dan}} 
+\pcell{(0.25.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcell{\texttt{F}}{\cn{pred}}
 \qcell{R}{\cn{rel}}
+\qcell{2}{\cn{gt}}
+&
+(\rulelab{Com}+\rulelab{PC})
+\\[0.3em]
+\longrightarrow
+&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{8}{r_1}
+\pcell{0}{9}{\cn{Dan}} 
+\pcell{(0.25.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcell{f(0,2)}{\cn{pred}}
+\qcell{R}{\cn{rel}}
+\qcell{2}{\cn{gt}}
+&
+(\rulelab{Grant2})
+\\[0.3em]
+\xrightarrow{0.25.c.m}&
+\pcell{0}{9}{\cn{Cat}}
+\pcell{0}{8}{r_1}
+\pcell{0}{9}{\cn{Dan}} 
 \qcell{\emptyset}{\cn{comm}}
-\pcell{\texttt{false}}{2}{\cn{pred}}
+\qcell{\texttt{F}}{\cn{pred}}
+\qcell{R}{\cn{rel}}
 \qcell{3}{\cn{gt}}
 &
-(\rulelab{Com})
-\end{array}
-\]
-}
-{\footnotesize
-\begin{center}
-$R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}
-\qquad
-A'\triangleq\qsend{0.25}{c}{m}^0$
-\end{center}
-}
-
-For delivering a message in the destination,
-rules \rulelab{PC} and \rulelab{Com} define the steps except the intermediate granting step.
-Rule \rulelab{PC} is applicable if the sending operation is already in its destination cell, and being paralleled with a same-channel message receipt process $\qrev{c}{x}.P$. After applying the rule, the message is processed as $P[m/x]$, and we also move the message $\qsend{p}{c}{m}^t$ to the communication cell $\cn{comm}$ with the current time stamp $t'$, so further user-defined rules can be applied on the message.
-The above example first provides an \rulelab{PC} rule application showing the exactly procedure above, i.e, the message is moved to the \cn{comm} cell with the current global time $2$.
-After the granting step,
-a \rulelab{Com} rule application processes the delivered message $\qsend{p}{c}{m}^t$ by removing it from the $\cn{comm}$ cell if the predicate cell $\cn{pred}$ is $\texttt{true}$. The processing refers to making the message a transition label $p.c.m$ appearing in the transition,
-so the message delivery is publicized. Other than applying rule \rulelab{Com}, all other rule applications are considered to be internal communications. 
-In the above example, the last \rulelab{Com} rule application removes the message from the cell with a publicized transition label $0.25.c,m$. 
-
-Rules \rulelab{MT} and \rulelab{NT} define the behaviors of the replication $\comp{P}$.
-The former suggests that a process can be replicated as many as we want, while the latter one refers to that a replication process can non-deterministically terminates.
-In quantum communication, message deliveries are always associated with a success rate,
-which indicates that users might be interested in repeatedly sending a message until some success rate assurance is guaranteed.
-We will see an example success rate guarantee mechanism by using the replication operations with additional user-defined rules in \Cref{sec:add-prop}.
-
-\noindent\textbf{Extension of Rules.}
-The rule set $\overline{\rules}$ is extendable by user-defined rules, 
-such that if a user declares the statement $\decl{\rules_1}{...\; \decl{\rules_n}{C_0}}$
-in the QAM system $(\Ms,\Ls,\Ts,C,\overline{\rules})$, $C=C_0$ and $\overline{\rules}=\{\rules_1,...\rules_n,\rulelab{CT},\rulelab{GC},\rulelab{MT},\rulelab{NT}, \rulelab{PC},\rulelab{Com}\}$.
-
-Permitting user-defined rules allows the definitions of different protocol guarantees in QAM,
-which are useful in evaluating different performance merits of different protocols,
-while rules in \Cref{fig:q-pi-semantics} establish the semantic basis of quantum network communication.
-As the \rulelab{Grant} rule example above, the guarantees are established by evaluating different predicates in the \cn{pred} cell,
-which we name granting steps in handling the tasks of conveying and delivering messages.
-Here, we discuss how to guarantee the on-time message delivery in the QPass/QCast protocols \cite{10.1145/3387514.3405853},
-which is a property that people tried to guarantee in these these protocols, but was not established formally \cite{10.1145/3387514.3405853}.
-
-A key observation in quantum network is that qubit messages have short liftime,
-so the above quantum protocols developed complicated algorithms to guarantee the high delivery rates for quantum messages.
-If a message is not delivered in time, its quantum state is decohered and its information loses.
-
-{\footnotesize
-\[
-\begin{array}{l}
-\decl{\pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\qcell{b}{\cn{pred}}\qcell{f}{\cn{tp}} 
-     \longrightarrow \pcell{\qsend{p}{c}{m}^t}{t'}{\cn{comm}}\qcell{f(t,t')}{\cn{pred}}\qcell{f}{\cn{tp}}}{}
-\\[0.2em]
-\qquad
-\Cella{\qsend{1}{c}{m}^0}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
-\Cella{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\pcell{\emptyset}{0}{\cn{comm}}
-\qcell{\texttt{false}}{\cn{pred}}
-\qcell{0}{\cn{gt}}
-\qcell{\lambda\;(t,t')\,.\,t'-t<5}{\cn{tp}}
+(\rulelab{AC1})
 \end{array}
 \]
 }
 {\footnotesize
 \begin{center}
 $R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}$
+\qquad
+$f=\lambda\,(t,t')\,.\,t'-t<5$
 \end{center}
 }
-
-To guarantee the property, we add a new cell $\cn{tp}$ and declare a new rule above (let's call it rule \rulelab{TP}).
-Every time when an action is in the \cn{comm} cell, which we know rule \rulelab{PC} is applied prior to the state, we apply the function $f$ in the new content cell \cn{tp} to the two time stamps $t$ and $t'$, and check if the message starting time $t$ and its delivery time $t'$ is within a threshold.
-In the configuration setting, function $f$ is defined as a lambda abstraction $\lambda\;(t,t')\,.\,t'-t<5$ and it takes two time stamps and checks if $t'-t$ is less than the threshold number $5$. In addition, we can rewrite the \rulelab{Grant} rule below to only grant transitions for conveying messages; in such case, the \cn{comm} cell contains a tuple $(c_1,c_2,A)$.  
-
-{\small
-  \begin{mathpar}
-   \inferrule[Grant]{}
-       {\qcell{t}{\cn{gt}}\qcell{(c_1,c_2,A)}{\cn{comm}}\pcell{\cn{false}}{t}{\cn{pred}} \longrightarrow \qcell{t}{\cn{gt}}\qcell{(c_1,c_2,A)}{\cn{comm}}\pcell{\cn{true}}{t}{\cn{pred}}}
-\end{mathpar}
-}
-
-After we declare rule \rulelab{TP} and the new configuration, we essentially create a new QAM system $(\Ms,\Ls,\Ts,C',\overline{\rules'})$,
-where $C'$ is the new declared configuration and the rule set $\overline{\rules'}$ contains the six rules in \Cref{fig:q-pi-semantics}, rule \rulelab{Grant} above, as well as rule \rulelab{TP}.
-In the execution example above, after applying rule \rulelab{PC}, the \cn{comm} cell becomes $\pcell{\qsend{0.25}{c}{m}^0}{2}{\cn{comm}}$ with the starting time stamp $0$ and the delivery time stamp $2$.
-By applying rule \rulelab{TP}, the expression $2-0 < 5$ results in \texttt{true}, which grants the message transition for the following \rulelab{Com} rule application. 
-However, if we set the threshold to be $2$, such as having the function definition $\lambda\;(t,t')\,.\,t'-t<2$ in the \cn{tp} cell of the above configuration, the expression $2-0 < 2$ results in \texttt{false}, which means that the following \rulelab{Com} rule is not applicable.
-The system might be stuck because there is no rule to empty the \cn{comm} cell, which can be classified as a failure due to the violation of the delivery time guarantee. 
+\caption{Example transitions based on the model in \Cref{fig:q-pi-semantics3}.}
+  \label{fig:q-pi-example1}
+\end{figure}
 
 
 
+\Cref{fig:q-pi-example1} shows an example evaluation of the initial configuration on the top,
+which is an instantiation of metavariables in configuration pattern in \Cref{fig:q-pi-semantics3}.
+We first apply rule \rulelab{CT} to generate time stamp $0$ for the sending process action $\qsend{0.25}{c}{m}$.
+We then apply rule \rulelab{GC1} and the two consecutive rules to transmit the action to cell $r_1$.
+We can perform rule \rulelab{GC1} because the triple $(\cn{Cat},r_1,0.5)$ is in $R$.
+During the steps, a piece of qubit resouce is consumed in both \cn{Cat} and $r_1$ cells, the action's success rate is reduced to $0.5$, and the global clock is updated to $1$.
+After another round of message transmission steps, the action is conveyed to cell \cn{Dan}.
+We then use rule \rulelab{PC}, with rule \rulelab{Com}, to deliver the action.
+with the rule applications \rulelab{Grant2} and \rulelab{AC1} to grant and clean the delivery.
+The delivery is granted, because the validity check results in $f(0,2)=2-0<5=\cn{T}$.
+
+On the other hand, if users set the validity check function to be $\lambda\,(t,t')\,.\,t'-t<2$,
+the validity check here results in $f(0,2)=2-0<2=\cn{F}$, which means that the evaluation is stuck at the \rulelab{Grant2} step.
 
 
 
