@@ -43,17 +43,6 @@ Given a QAM system $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initi
 
 \Cref{def:labeledsystem} provides an abstraction of transitions in QAM, where the details configurations and rules are parameterized as some abstract objects. Below, we provide step by step instantiation of configurations and rules to capture different quantum network protocol behaviors. 
 
-\ignore{
-      \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^{t?} \mid \qrev{c}{x} \\
-      \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \comp{P} \\
-      \texttt{Relations} & R & \in & \Ls \times \Ls \times \Rs \\
-      \texttt{Predicate Action} & \alpha & ::= & \qsend{p}{c}{m}^t \mid (c,c,\qsend{p}{c}{m}^t) \\
-      \texttt{Objects} & \Os \\
-      \texttt{Custom Cell} & \varphi,\psi & ::= & \pcell{P}{n}{c} \mid \qcell{\Os}{c}\\
-      \texttt{Configuration} & C & ::= & \varphi^* \qcell{R}{\cn{rel}} \qcell{t}{\cn{gt}}
-                             \qcell{\alpha}{\cn{comm}} \pcell{\cn{bool}}{t}{\cn{pred}} \psi^* \\
-}
-
 \subsection{Intra-Destination Process Communication} \label{sec:qamsyntax}
 
 
@@ -63,7 +52,7 @@ $\textcolor{blue}{\text{Syntax:}}\\$
   \[\begin{array}{llcl} 
     \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^{t?} \mid \qrev{c}{x}\\
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \parp{P}{Q}\mid \comp{P} \\
-      \textcolor{red}{\texttt{Configuration First Instant}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P}}
+      \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P}}
     \end{array}
   \]
 
@@ -131,11 +120,11 @@ We will explain the utility shortly in \Cref{sec:add-prop}.
 \begin{figure}[t]
 
 {\small
-$\textcolor{blue}{\text{Syntax:}}\\$
+$\textcolor{blue}{\text{Additional Syntax:}}\\$
   \[\begin{array}{llcl} 
       \texttt{Communication Location Flag} & \beta & ::= & \emptyset \mid c \mid c \rightarrow c\\[0.2em]
       \texttt{Process Cell} & \varphi & ::= & \pcell{\overline{P}}{n}{c}\\[0.2em]
-      \textcolor{red}{\texttt{Configuration Second Instant}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
+      \textcolor{red}{\texttt{Configuration Second Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
 \textcolor{red}{\overline{\varphi}\pcell{\alpha}{\beta}{\cn{comm}} \qcell{\cn{bool}}{\cn{pred}}}
     \end{array}
   \]
@@ -176,62 +165,62 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 \[
 \begin{array}{lll}
 &
-\pcell{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
-\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
+\pcellb{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
+\pcellb{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
 &
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\pcellb{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
 &
 (\rulelab{GC})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
-\qcell{\texttt{T}}{\cn{pred}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\pcellb{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
+\qcellb{\texttt{T}}{\cn{pred}}
 &
 (\rulelab{Grant})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
 &
 (\rulelab{FC})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{9}{\cn{Dan}} 
-\pcell{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{0}{9}{\cn{Dan}} 
+\pcellb{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
 &
 (\rulelab{Com}+\rulelab{PC})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{9}{\cn{Dan}} 
-\pcell{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
-\qcell{\texttt{T}}{\cn{pred}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{0}{9}{\cn{Dan}} 
+\pcellb{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcellb{\texttt{T}}{\cn{pred}}
 &
 (\rulelab{Grant})
 \\[0.3em]
 \xrightarrow{1.c.m}&
-\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{9}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{0}{9}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
 &
 (\rulelab{AC})
 \end{array}
@@ -396,11 +385,11 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
 
 \begin{figure}[t]
 {\small
-$\textcolor{blue}{\text{Syntax:}}\\$
+$\textcolor{blue}{\text{Extended Syntax:}}\\$
   \[\begin{array}{llcl} 
       \texttt{Time Predicate Function} & f & \in & \Ts \times \Ts \to \cn{bool} \\[0.2em]
       \texttt{Relation} & R & ::= & \overline{(c,c,p)}  \\[0.2em]
-      \textcolor{red}{\texttt{Configuration Third Instant}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
+      \textcolor{red}{\texttt{Configuration Third Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
 \textcolor{red}{\overline{\varphi}\pcell{\alpha}{\beta}{\cn{comm}}
   \qcell{\cn{bool}}{\cn{pred}}\qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}} }
     \end{array}
@@ -501,63 +490,63 @@ otherwise, we apply function $f$ on a pair of time stamps, indicating the starti
 
 \begin{figure}[t]
 {\footnotesize
-\[
+\[\hspace*{-1em}
 \begin{array}{lll}
 &
-\pcell{\qsend{1}{c}{m}.0}{10}{\cn{Cat}}
-\pcell{0}{10}{r_1}
-\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{0}{\cn{gt}}
+\pcellb{\qsend{1}{c}{m}.0}{10}{\cn{Cat}}
+\pcellb{0}{10}{r_1}
+\pcellb{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{0}{\cn{gt}}
 &
 \\[0.3em]
 \longrightarrow
 &
-\pcell{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
-\pcell{0}{10}{r_1}
-\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{0}{\cn{gt}}
+\pcellb{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
+\pcellb{0}{10}{r_1}
+\pcellb{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{0}{\cn{gt}}
 &
 (\rulelab{CT})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
-\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow r_1}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{0}{\cn{gt}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
+\pcellb{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\pcellb{(1.c.m)^0}{\cn{Cat}\rightarrow r_1}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{0}{\cn{gt}}
 &
 (\rulelab{GC1})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
-\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\pcell{(1.c.m)^0}{\cn{Cat}\rightarrow r_1}{\cn{comm}}
-\qcell{\texttt{T}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{0}{\cn{gt}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
+\pcellb{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\pcellb{(1.c.m)^0}{\cn{Cat}\rightarrow r_1}{\cn{comm}}
+\qcellb{\texttt{T}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{0}{\cn{gt}}
 &
 (\rulelab{Grant1})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
-\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{1}{\cn{gt}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{\qsend{0.5}{c}{m}^0.0}{9}{r_1}
+\pcellb{\qrev{c}{x}.0}{10}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{1}{\cn{gt}}
 &
 (\rulelab{FC1})
 \\[0.3em]
@@ -565,47 +554,47 @@ otherwise, we apply function $f$ on a pair of time stamps, indicating the starti
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{8}{r_1}
-\pcell{\pard{\qsend{0.25}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{2}{\cn{gt}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{\pard{\qsend{0.25}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{2}{\cn{gt}}
 &
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{8}{r_1}
-\pcell{0}{9}{\cn{Dan}} 
-\pcell{(0.25.c.m)^0}{\cn{Dan}}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{2}{\cn{gt}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{0}{9}{\cn{Dan}} 
+\pcellb{(0.25.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{2}{\cn{gt}}
 &
 (\rulelab{Com}+\rulelab{PC})
 \\[0.3em]
 \longrightarrow
 &
-\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{8}{r_1}
-\pcell{0}{9}{\cn{Dan}} 
-\pcell{(0.25.c.m)^0}{\cn{Dan}}{\cn{comm}}
-\qcell{f(0,2)}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{2}{\cn{gt}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{0}{9}{\cn{Dan}} 
+\pcellb{(0.25.c.m)^0}{\cn{Dan}}{\cn{comm}}
+\qcellb{f(0,2)}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{2}{\cn{gt}}
 &
 (\rulelab{Grant2})
 \\[0.3em]
 \xrightarrow{0.25.c.m}&
-\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{8}{r_1}
-\pcell{0}{9}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}
-\qcell{R}{\cn{rel}}
-\qcell{3}{\cn{gt}}
+\pcellb{0}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{0}{9}{\cn{Dan}} 
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\texttt{F}}{\cn{pred}}
+\qcellb{R}{\cn{rel}}
+\qcellb{3}{\cn{gt}}
 &
 (\rulelab{AC1})
 \end{array}
@@ -621,7 +610,6 @@ $f=\lambda\,(t,t')\,.\,t'-t<5$
 \caption{Example transitions based on the model in \Cref{fig:q-pi-semantics3}.}
   \label{fig:q-pi-example1}
 \end{figure}
-
 
 
 \Cref{fig:q-pi-example1} shows an example evaluation of the initial configuration on the top,
