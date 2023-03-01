@@ -7,7 +7,7 @@ Here, we see how we can extend the QAM system to capture the behaviors of real-w
 In this section, we show how to use the quantum abstract machine to model two quantum network protocols: QPass and QCast. These two protocols are developed by Shi and Qian \textit{[cite]}. Since a large-scale quantum network has many devices, the goal of those protocols is to solve the entanglement routing problem and build long distance entanglement for multiple source-destination pairs concurrently. These protocols have four phases: at the first phase, all process cells of the network are informed about the source-target cell pairs. Then these s-d pairs are inputted to the routing algorithm at phase two. The algorithm will output paths between source and destination. (Phase two is also the phase that our abstract machine tries to simulate.) At the third phase, all process cells exchanges their link states to their neighbors through classical channel. The entanglement swap is performed at the fourth phase so the long distance entanglement is eventuality created for quantum teleportation. QPass and QCast protocols are similar in general and the differences between them will be discussed in the following sections. }
 
 
-\subsection{Defining Qpass and QCast Protocols}
+\subsection{Defining Qpass and QCast Protocols}\label{sec:case-qpass}
 
 \begin{figure}[t]
 {\footnotesize
@@ -200,12 +200,12 @@ Given an initial configuration $C$ as an instantiation of the configuration patt
 $\textcolor{blue}{\text{Extended Syntax:}}\\$
   \[\begin{array}{llcl} 
       \texttt{Success Rate Threshold} & \mu & \in & \Rs  \\[0.2em]
-      \texttt{Message Success Rate Database} & g & \in & \Ls \times \Ms \to \Rs \\[0.2em]
+      \texttt{Message Success Rate Map} & g & \in & \Ls \times \Ms \rightharpoonup \Rs \\[0.2em]
       \texttt{Qubit Gen. Period} & \nu & \in & \Ts  \\[0.2em]
-      \textcolor{red}{\texttt{Configuration Pattern GRF. Success Rate}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
+      \textcolor{red}{\texttt{Configuration Pattern GRF. Success Rate}} & \textcolor{red}{C_1} & \textcolor{red}{::=} & 
 \textcolor{red}{\overline{\varphi}\pcell{\alpha}{\beta}{\cn{comm}}
   \qcell{\cn{bool}}{\cn{pred}}\qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}}\pcell{g}{\mu}{\cn{at}} }\\[0.2em]
-      \textcolor{red}{\texttt{Configuration Pattern for Qubit Gen.}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
+      \textcolor{red}{\texttt{Configuration Pattern for Qubit Gen.}} & \textcolor{red}{C_2} & \textcolor{red}{::=} & 
 \textcolor{red}{\overline{\varphi}\pcell{\alpha}{\beta}{\cn{comm}}
   \qcell{\cn{bool}}{\cn{pred}}\qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}}\pcell{\cn{bool}}{\nu}{\cn{qi}} }
     \end{array}
@@ -214,10 +214,10 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
 \mprset{flushleft}
   \inferrule[HP]{}
-      {\qcell{R}{\cn{rel}}\pcell{\qsend{p}{c}{m}^{t}}{c_1}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}}\qcell{t'}{\cn{gt}}\pcell{g}{\mu}{\cn{at}}
+      {\qcell{R}{\cn{rel}}\pcell{(p.c.m)^t}{c_1}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}}\qcell{t'}{\cn{gt}}\pcell{g}{\mu}{\cn{at}}
 \\\qquad
         \longrightarrow 
-            \qcell{R}{\cn{rel}}\pcell{\qsend{p}{c}{m}^{t}}{c_1}{\cn{comm}}\qcell{f(t,t')\wedge g(c.m)<\mu}{\cn{pred}}
+            \qcell{R}{\cn{rel}}\pcell{(p.c.m)^t}{c_1}{\cn{comm}}\qcell{f(t,t')\wedge g(c.m)<\mu}{\cn{pred}}
         \qcell{t'}{\cn{gt}}\pcell{g[c.m\mapsto g(c.m)\oplus p]}{\mu}{\cn{at}}
       }
 
@@ -245,275 +245,263 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \label{fig:mes-rule}
 \end{figure}
 
-There are many different properties that we want from a quantum network protocols.
-Here, we introduce two of them that were discussed in the previous works but not captured by them. 
+There are many different properties that we want to define for quantum network protocols.
+Here, we introduce two properties that were discussed in the previous works but not captured by them. 
 The first property is to guarantee a high success rate of every message delivery,
 while the second one is to introduce qubit creation. 
 
 \noindent\textbf{Guarantee High Probability of Message Deliveries.}
-Quantum message sending has a certain chance of failure, which depends on the transmission distance.
-To guarantee the success rate, one simple solution is to repeatedly send the message until a threshold is reached.
-We introduce a new initial configuration \rulelab{HighConfig} to model such behavior,
-with a new cell \cn{at} having a content map $g$, storing the current success rates for different messages $c.m$, and a flag $\beta$, the success rate threshold every message needs to satisfy in $g$.
-We then introduce the \rulelab{HP} rule based on the \rulelab{TP} rule in \Cref{sec:qamsemantics}
+Quantum message communication has a certain chance of failure, which depends on the transmission distance.
+To guarantee the success rate, one simple solution is to repeatedly send copies of the message until a success rate threshold is reached.
+In \Cref{fig:mes-rule}, we extend the configuration pattern in \Cref{fig:q-pi-semantics3} with a new cell \cn{at} having a content map (partial function) $g$, storing the current success rates for different messages $c.m$, and a flag $\beta$, the success rate threshold every message needs to satisfy in $g$.
+We then introduce the \rulelab{HP} granting rule, as a substitution of the \rulelab{Grant2} rule in \Cref{fig:q-pi-semantics3},
 for granting a message delivery.
 A message $c.m$ is valid to deliver if it satisfies the time threshold $f(t,t')$
-and its current success rate in $g$ is less than the threshold $\beta$.
-Once the threshold is reached, we do not need additional repetition of sending $c.m$, so that we only need to grant message delivery that has not yet satisfied the threshold.
-Additionally, every success message delivery increments ($g[c.m\mapsto g(c.m)\oplus p]$) the current success rate for that message in the \cn{at} cell.
-
-{\footnotesize
-\[
-\begin{array}{ll}
-\Cella{\comp{(\qsend{1}{c}{m}})}{10}{\cn{Cat}}\Cella{0}{10}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\qcell{0}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{\parl{\qsend{1}{c}{m}}{\comp{(\qsend{1}{c}{m}})}}{10}{\cn{Cat}}
-\Cella{0}{10}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\qcell{0}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-&
-(\rulelab{MT})
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{\parl{\qsend{1}{c}{m}^0}{\comp{(\qsend{1}{c}{m}})}}{10}{\cn{Cat}}
-\Cella{0}{10}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\qcell{0}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-&
-(\rulelab{CT})
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{\qsend{0.5}{c}{m}^0}{9}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{10}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{A}{\cn{comm}}
-\qcell{0}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-&(\rulelab{GC})
-\\[0.2em]
-\longrightarrow\;...\;\longrightarrow
-\\[0.2em]
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{0}{8}{r_1}
-\Cella{\parl{\qsend{0.25}{c}{m}^0}{\comp{(\qrev{c}{x}.0)}}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\qcell{2}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{0}{8}{r_1}
-\Cella{\parl{\qsend{0.25}{c}{m}^0}{\parl{\qrev{c}{x}.0}{\comp{(\qrev{c}{x}.0)}}}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\qcell{2}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-&
-(\rulelab{MT})
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{0}{8}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{A'}{\cn{comm}}
-\qcell{2}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-&
-(\rulelab{PC})
-\end{array}
-\]
-}
-{\footnotesize
+and its current success rate in $g$ is less than the threshold $\mu$.
+Once the threshold is reached, we do not need additional repetition of sending $c.m$.
+Additionally, every success message delivery increments ($g[c.m\mapsto g(c.m)\oplus p]$) the current success rate for that message in the \cn{at} cell. If we view $p_a$ and $p_a$ as the likelihoods of events $a$ and $b$ happens, respectively,
+$p_a\oplus p_b$ is defined as:
+{\small
 \begin{center}
-$R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}
-\qquad
-A\triangleq (\cn{Cat},r_1,\qsend{0.5}{c}{m}^0)
-\qquad
-A'\triangleq \qsend{0.25}{c}{m}^0
-\qquad
-g=\lambda x\,.\,0
-$
+$p_a\oplus p_b \triangleq 1 - (1-p_a)(1-p_b)$
 \end{center}
 }
 
-We create message repetition by the $\comp{P}$ process, 
-as the example configuration transitions above, which omit the \cn{pred} cell.
-Here, both the sender and receiver cells have repetition processes, 
-$\comp{(\qsend{1}{c}{m}^0)}$ and $\comp{(\qrev{c}{x}.0)}$.
-When it is necessary, the \cn{MT} rule application generates additional sending/receiving process to send/receive a message.
-After a \cn{MT} rule application to generate a single message sending $\qsend{1}{c}{m}$, 
-a \cn{CT} rule application is applied to attach time stamp $0$ to the message.
-Then, the message is transmitted to the \cn{Dan} cell
-and we use rule \cn{MT} to generate a message receipt $\qrev{c}{x}.0$;
-thus, a \cn{PC} rule application is applied to move the message to the \cn{comm} cell, waiting for its granting.
-The configuration below finalizes the above configuration with the \cn{pred} cell.
+To successfully model the property, we also need to modify the termination and stuck state conditions in \Cref{def:stuck},
+by extending the terminated state condition to include an additional condition for guaranteeing all entries in $g$ satisfying the thredshold $\mu$.
 
+\begin{definition}\label{def:stuck1}\rm[Additional Terminated State Condition]
+A configuration $C$ is a terminated state if it satisfies the terminated state conditions in \Cref{def:stuck}, and:
+\begin{itemize}
+\item For the \cn{at} cell $\pcell{g}{\mu}{\cn{at}}$ in $C$, for every label $c.m$, if $g(c.m)\neq \bot$, $g(c.m)\ge \mu$.
+\end{itemize}
+$C$ is stuck if no rule is possible to apply to it and the above conditions are not satisfied.
+\end{definition}
+
+\begin{figure}[t]
 {\footnotesize
-\[
-\begin{array}{ll}
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{0}{8}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{A(0)}{\cn{comm}}
-\pcell{\emptyset}{2}{\cn{pred}}
-\qcell{2}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g}{0.36}{\cn{at}}
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{0}{8}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{f(0,2)\wedge 0 < 0.36}{0}{\cn{pred}}
-\qcell{2}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g'}{0.36}{\cn{at}}
+\[\hspace*{-1em}
+\begin{array}{l}
+\begin{array}{lll}
+&
+\pcellb{\comp{P(1).0}}{10}{\cn{Cat}}
+\pcellb{0}{10}{r_1}
+\pcellb{\comp{Q.0}}{10}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{0}{\cn{gt}}
+\pcellb{g}{0.43}{\cn{at}}
+\\[0.5em]
+\longrightarrow&
+\pcellb{\pard{P(1).0}{\comp{P(1).0}}}{10}{\cn{Cat}}
+\pcellb{0}{10}{r_1}
+\pcellb{\comp{Q.0}}{10}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{0}{\cn{gt}}
+\pcellb{g}{0.43}{\cn{at}}
+&
+(\rulelab{MT})
+\\[0.5em]
+\longrightarrow&
+\pcellb{\pard{P(1)^0.0}{\comp{P(1).0}}}{10}{\cn{Cat}}
+\pcellb{0}{10}{r_1}
+\pcellb{\comp{Q.0}}{10}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{0}{\cn{gt}}
+\pcellb{g}{0.43}{\cn{at}}
+&
+(\rulelab{CT})
+\\[0.5em]
+\longrightarrow&
+\pcellb{\comp{P(1).0}}{9}{\cn{Cat}}
+\pcellb{P(0.5)^0.0}{9}{r_1}
+\pcellb{\comp{Q.0}}{10}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\pcellb{A}{\cn{Cat}\rightarrow r_1}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{0}{\cn{gt}}
+\pcellb{g}{0.43}{\cn{at}}
+&(\rulelab{GC1},\rulelab{ID})
+\end{array}
+\\[0.5em]
+\longrightarrow\;...\;\longrightarrow\\
+\qquad\qquad\quad\;\;
+\pcellb{\comp{P(1).0}}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{\pard{P(0.25).0}{\pard{Q.0}{\comp{Q.0}}}}{9}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{2}{\cn{gt}}
+\pcellb{g}{0.43}{\cn{at}}
+\\[0.5em]
+\begin{array}{lll}
+\longrightarrow&
+\pcellb{\comp{P(1).0}}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{\comp{Q.0}}{9}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\pcellb{A(0)}{\cn{Dan}}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{2}{\cn{gt}}
+\pcellb{g}{0.43}{\cn{at}}
+&
+(\rulelab{Com},\rulelab{PC1},\rulelab{ID})
+\\[0.5em]
+\longrightarrow&
+\pcellb{\comp{P(1).0}}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{\comp{Q.0}}{9}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\pcellb{A(0)}{\cn{Dan}}{\cn{comm}}
+\qcellb{b}{\cn{pred}}
+\qcellb{2}{\cn{gt}}
+\pcellb{g_1}{0.43}{\cn{at}}
 &
 (\rulelab{HP})
-\\[0.2em]
-\xrightarrow{0.25.c.m}  \;\;
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{0}{8}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{\cn{false}}{0}{\cn{pred}}
-\qcell{3}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g'}{0.36}{\cn{at}}
+\\[0.5em]
+\xrightarrow{0.25.c.m}&
+\pcellb{\comp{P(1).0}}{9}{\cn{Cat}}
+\pcellb{0}{8}{r_1}
+\pcellb{\comp{Q.0}}{9}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{3}{\cn{gt}}
+\pcellb{g_1}{0.43}{\cn{at}}
 &
-(\rulelab{Com})
-\\[0.2em]
-\longrightarrow\;...\;\longrightarrow
-\\[0.2em]
-\Cella{\comp{(\qsend{1}{c}{m}})}{8}{\cn{Cat}}
-\Cella{0}{6}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{8}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{A(3)}{\cn{comm}}
-\pcell{\emptyset}{2}{\cn{pred}}
-\qcell{5}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g'}{0.36}{\cn{at}}
-\\[0.2em]
-\longrightarrow\;\;
-\Cella{\comp{(\qsend{1}{c}{m}})}{9}{\cn{Cat}}
-\Cella{0}{8}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{9}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{f(0,2)\wedge 0.25 < 0.36}{0}{\cn{pred}}
-\qcell{5}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g_1}{0.36}{\cn{at}}
+(\rulelab{AC1})
+\end{array}
+\\[0.5em]
+\longrightarrow\;...\;\longrightarrow\\
+\qquad\qquad\quad\;\;
+\pcellb{\comp{P(1).0}}{8}{\cn{Cat}}
+\pcellb{0}{6}{r_1}
+\pcellb{\comp{Q.0}}{8}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\pcellb{A(3)}{\cn{Dan}}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{5}{\cn{gt}}
+\pcellb{g_1}{0.43}{\cn{at}}
+\\[0.5em]
+\begin{array}{lll}
+\longrightarrow&
+\pcellb{\comp{P(1).0}}{8}{\cn{Cat}}
+\pcellb{0}{6}{r_1}
+\pcellb{\comp{Q.0}}{8}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\pcellb{A(3)}{\cn{Dan}}{\cn{comm}}
+\qcellb{b}{\cn{pred}}
+\qcellb{5}{\cn{gt}}
+\pcellb{g_2}{0.43}{\cn{at}}
 &
 (\rulelab{HP})
-\\[0.2em]
-\xrightarrow{0.25.c.m}  \;\;
-\Cella{\comp{(\qsend{1}{c}{m}})}{8}{\cn{Cat}}
-\Cella{0}{6}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{8}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{\cn{false}}{0}{\cn{pred}}
-\qcell{5}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g_1}{0.36}{\cn{at}}
+\\[0.5em]
+\xrightarrow{0.25.c.m}  &
+\pcellb{\comp{P(1).0}}{8}{\cn{Cat}}
+\pcellb{0}{6}{r_1}
+\pcellb{\comp{Q.0}}{8}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{6}{\cn{gt}}
+\pcellb{g_2}{0.43}{\cn{at}}
 &
-(\rulelab{Com})
-\\[0.2em]
-\longrightarrow  \;\;
-\Cella{0}{8}{\cn{Cat}}
-\Cella{0}{6}{r_1}
-\Cella{\comp{(\qrev{c}{x}.0)}}{8}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{\cn{false}}{0}{\cn{pred}}
-\qcell{5}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g_1}{0.36}{\cn{at}}
+(\rulelab{AC1})
+\\[0.5em]
+\longrightarrow&
+\pcellb{0}{8}{\cn{Cat}}
+\pcellb{0}{6}{r_1}
+\pcellb{\comp{Q.0}}{8}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{6}{\cn{gt}}
+\pcellb{g_2}{0.43}{\cn{at}}
 &
 (\rulelab{NT})
-\\[0.2em]
-\longrightarrow  \;\;
-\Cella{0}{8}{\cn{Cat}}
-\Cella{0}{6}{r_1}
-\Cella{0}{8}{\cn{Dan}} 
-\qcell{R}{\cn{rel}}
-\qcell{\emptyset}{\cn{comm}}
-\pcell{\cn{false}}{0}{\cn{pred}}
-\qcell{5}{\cn{gt}}
-\qcell{f}{\cn{tp}}
-\pcell{g_1}{0.36}{\cn{at}}
+\\[0.5em]
+\longrightarrow&
+\pcellb{0}{8}{\cn{Cat}}
+\pcellb{0}{6}{r_1}
+\pcellb{0}{8}{\cn{Dan}} 
+\qcellb{R}{\cn{rel}}
+\qcellb{\emptyset}{\cn{comm}}
+\qcellb{\cn{F}}{\cn{pred}}
+\qcellb{6}{\cn{gt}}
+\pcellb{g_2}{0.43}{\cn{at}}
 &
 (\rulelab{NT})
+\end{array}
 \end{array}
 \]
 }
 {\footnotesize
-\begin{center}
-$
+\[
 \begin{array}{l}
 R\triangleq\{(\cn{Cat},r_1,0.5), (r_1,\cn{Dan},0.5)\}
 \qquad
-A(t)\triangleq \qsend{0.25}{c}{m}^t
-\\[0.2em]
-g=\lambda x\,.\,0
+P\triangleq\qsend{1}{c}{m}.0
 \qquad
-g'=g[c.m \mapsto 0.25]
+Q\triangleq\qrev{c}{x}.0
 \qquad
-g_1=g[c.m \mapsto 0.39]
+b\triangleq f(0,2)\wedge 0 < 0.43
+\\
+A\triangleq (0.5.c.m)^0
+\qquad
+A(t)\triangleq (0.25.c.m)^t
+\qquad
+g\triangleq\lambda x\,.\,\bot
+\qquad
+g_1=g[c.m \mapsto 0.25]
+\qquad
+g_2=g[c.m \mapsto 0.44]
 \end{array}
-$
-\end{center}
+\]
 }
+\caption{Example transitions based on the model for high success rate of deliveries.}
+  \label{fig:q-pi-example1}
+\end{figure}
 
-In the above transition, we apply rule \rulelab{HP} to grant the message sending operation $\qsend{0.25}{c}{m}^0$, since $f(0,2)$ is equivalent to $2-0<5$ and $g(c.m)=0$ is less than the threshold $0.36$ associated with the \cn{at} cell.
-In the \cn{at} cell, we updates $g$ for $c.m$ to be $0.25$.
-We assume that if messages have the same channel $c$ and message name $m$, they refer to the same message,
-so repetitions of a message $c.m$ refer to the same one in the \cn{at} cell.
-The procedure can be repeated to send more copies of message $c.m$ and then we can use \rulelab{HP} and \rulelab{Com} rule applications to grant the message delivery. In the above example, after two repeating $c.m$ message deliveries, the current success rate of $c.m$ is $0.39$ which is beyond the $0.36$ threshold. Any additional repetition causes the system to be stuck, so we apply two consecutive \rulelab{NT} rule applications to turn away the two repetition process operations. 
+\Cref{fig:q-pi-example1} shows an example transitions to guarantee high success rates for message deliveries.
+Here, both the sender and receiver cells have repetition processes, 
+$\comp{P(1).0}$ and $\comp{Q.0}$.
+We first apply \cn{MT} rule application generates additional sending/receiving process to send/receive a message.
+Then, a \cn{CT} rule application attaches time stamp $0$ to the message,
+and the message is transmitted to the \cn{Dan} cell through the \rulelab{GC1} rule application,
+with the success rate reducing to $0.5$.
+
+After several steps, the message is transmitted to the \cn{Dan} cell with a success rate reduction to $0.25$.
+We then apply the \rulelab{PC1} rule, with some intermediate transition rule applications, 
+to deliver the message by communicating the processes $P(0.25).0$ and $Q.0$.
+Then, we apply rule \rulelab{HP} to grant the message delivery labeled by $(0.25.c.m)^0$, because $f(0,2)$ is equivalent to $2-0<5$ and $g(c.m)=0$, less than the threshold $0.43$ in the \cn{at} cell.
+In the \cn{at} cell, we updates map $g$ for $c.m$ to be $0.25$.
+The procedure can be repeated to send more copies of message $c.m$ and then we can use \rulelab{HP} and \rulelab{AC1} rule applications to grant the message delivery and purge the configuration. 
+In the above example, after two repeating $c.m$ message deliveries, the current success rate of $c.m$ is $0.44$ which is beyond the $0.43$ threshold. Any additional repetition causes the system to be stuck, so we apply two consecutive \rulelab{NT} rule applications to turn away the two repetition process operations and push the configuration to a terminated state.
 
 \noindent\textbf{Modeling Qubit Generation.}
-An useful case for quantum network protocols is to generate new qubit resources for supporting message transmissions.
-For example, in the QPass protocol example above, if we can generate qubits for node $r_1$, we can then transmit the message via node $r_1$ without the problem of qubit resource lacking.
-It is always that the generation of a qubit takes multiple time slots compare to transmitting/sending messages.
+An useful property for quantum network protocols is to generate new qubit resources for supporting message transmissions.
+For example, in the QPass protocol example in \Cref{sec:case-qpass}, if we can generate more resources for cell $r_1$, 
+the message transmission via cell $r_1$ becomes possible.
+In reality, generating qubit resources has a significant longer time period compared to transmitting/sending quantum messages.
 
-In modeling the qubit generation mechanism, we include a new cell \cn{qi} in configuration \rulelab{QIConfig} in \Cref{fig:mes-rule},
-which determines if the qubit resource in a process cell can increment.
-The additional flag $\nu$ is an integer defining the time period for generating a qubit.
-Rule \rulelab{QI1} increments a qubit in cell $c$ if $\nu$ divides the current global time $t$ ($\nu \cn{|} t$),
-while rule \rulelab{QI2} cleans up the \cn{qi} cell for next possible qubit increment computation.
+In modeling the qubit generation mechanism, we include a new cell \cn{qi},
+ based on the configuration pattern in \Cref{fig:q-pi-semantics3} as $C_2$ in \Cref{fig:mes-rule}.
+We utilize the cell to determine if the qubit resources in a process cell can increment.
+The additional flag $\nu$ defines the time period for generating a piece of resources.
+Rule \rulelab{QI1} increments a piece of resources in cell $c$ if $\nu$ divides the current global time $t$ ($\nu \cn{|} t$),
+while rule \rulelab{QI2} purges the \cn{qi} cell for next possible qubit increment computation.
 By including the new rule \rulelab{QI1}, it is possible for a QAM system to reach deadlock,
 because a system can be stuck due to lack of a qubit in a process cell, but in the very next time, the qubit resource in the cell can increment by applying rule \rulelab{QI1}; however, there is no rule in the system for the global clock cell \cn{gt} to increment by itself.
 To overcome this, we include rule \rulelab{TI} here to allow self-increment in the \cn{gt} cell, 
 with the flag $\cn{owise}$ meaning that the rule can be applied only if there is no other possible rules to apply.
-
+For a QAM system $(\Ms,\Ls,\Ts,\overline{\rules})$, if $\rules$ is labeled with $\cn{owise}$,
+for a configuration $C$, we can try to apply rule $\rules$ to $C$, only if for every $\rules' \in \overline{\rules} - \{\rules\}$ is not applicable to $C$.
 
 
 
