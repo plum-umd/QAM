@@ -8,7 +8,8 @@
       \texttt{Message} & m &\in& \mathbb{M}\\
     \texttt{Channel} & c &\in& \Ls\\
     \texttt{Time Stamp} & t &\in& \mathbb{T}\\
-    \texttt{Label} & \alpha &::=& c.m \mid p.c.m \mid (p.c.m)^t \mid \emptyset\\
+    \texttt{Timed Label} & \alpha^t &::=& \qsend{p}{c}{m}^{t}\\
+    \texttt{Label} & \iota &::=& c.m \mid p.c.m \mid \alpha^t \mid \emptyset\\
       \texttt{Configuration} & C & \\
       \texttt{Rule} & \rules & ::= & C \xrightarrow{\alpha} C 
     \end{array}
@@ -50,7 +51,7 @@ Given a QAM system $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initi
 {\small
 $\textcolor{blue}{\text{Syntax:}}\\$
   \[\begin{array}{llcl} 
-    \texttt{Singleton Action} & A & ::= & \qsend{p}{c}{m}^{t?} \mid \qrev{c}{x}\\
+    \texttt{Singleton Action} & A & ::= & \alpha^t \mid \qrev{c}{x}\\
       \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \parp{P}{Q}\mid \comp{P} \\
       \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P}}
     \end{array}
@@ -60,14 +61,14 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
 \mprset{flushleft}
 
-   \inferrule[Heating]{}
+   \inferrule[Cohere]{}
        {\parl{P}{Q} \longrightarrow \pard{P}{Q}}
 
-   \inferrule[Cooling]{}
+   \inferrule[Decohere]{}
        {\pard{P}{Q} \longrightarrow \parl{P}{Q}}
 
-   \inferrule[ID]{}
-       {\pard{0}{P} \longrightarrow P}
+   \inferrule[Break]{}
+       {\pard{P}{Q} \longrightarrow Q}
 
   \inferrule[CL]{}
       {\parp{P}{Q} \longrightarrow P}
@@ -75,12 +76,15 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \inferrule[CR]{}
       {\parp{P}{Q} \longrightarrow Q}
 
+   \inferrule[ID]{}
+       {\pard{0}{P} \longrightarrow P}
+
   \inferrule[Com]{}
       { \pard{\qsend{p}{c}{m}^t.Q}{ \qrev{c}{x}.P}
            \xrightarrow{(p.c.m)^t} \pard{Q}{P[m/x]}}
 
    \inferrule[MT]{}
-       {\comp{P} \longrightarrow \pard{P}{\comp{P}}}
+       {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
       
    \inferrule[NT]{}
        {\comp{P} \longrightarrow 0}
@@ -102,7 +106,15 @@ A process can be an empty process $0$, a process ($A.P$) executing a singleton a
 
 The intra-destination level semantics in \Cref{fig:q-pi-semantics1} is inherited from CHEM.
 One thing worth noting is that we omit $\emptyset$ labels in all the internal labeled rules.
-Through the \rulelab{Heating} rule, a parallel process $\parl{P}{Q}$ is dissolved to a multiset ($\pard{P}{Q}$) containing two elements $P$ and $Q$, ready for semantic evaluation; while the \rulelab{Cooling} rule merges two elements in a multiset ($\pard{P}{Q}$) as a parallel process. Rules \rulelab{Heating}, \rulelab{Cooling}, and \rulelab{ID} captures the implicit associativity, commutativity, and identity equational properties for QAM processes, so that any two processes in the process multiset might communicate, without syntactic barriers. For example, in a multiset, rule \rulelab{Com} defines the behavior of a sender process, on the left, communicating an action $\qsend{p}{c}{m}^t.Q$ with a receiver process $\qrev{c}{x}.P$, on the right, and resulting in the two multiset elements $\pard{Q}{P[m/x]}$, indicating that process $P$ consumes the message $m$ as variable $x$ in the following continuation. The above three rules allow us not to care about the positions of the sender and receiver in the multiset.
+A parallel process ($\parl{P}{Q}$) represents the users' will of communicating the two processes.
+Similar to \rulelab{Heating} and \rulelab{Cooling} rules in chemical abstract machine,
+the actual communication happens when a quantum channel is established through an entanglement pair,
+which is represented as a multiset of processes, as $\pard{P}{Q}$;
+thus, a parallel process, $\parl{P}{Q}$, is turned to a multiset, $\pard{P}{Q}$, through Rule \rulelab{Cohere},
+and reverses through rule \rulelab{Decohere}.
+In quantum, decohering a state usually means the complete break down of a system;
+thus, we use a nondeterministic rule \rulelab{Break} to represent the possibility of a complete break down of a process in \Cref{fig:q-pi-semantics1}, where process $P$ can disappear completely.
+A side effect of the applications of rules \rulelab{Cohere}, \rulelab{Decohere}, and \rulelab{ID} captures the implicit associativity, commutativity, and identity equational properties for QAM processes, so that any two processes in the process multiset might communicate, without syntactic barriers. For example, in a multiset, rule \rulelab{Com} defines the behavior of a sender process, on the left, communicating an action $\qsend{p}{c}{m}^t.Q$ with a receiver process $\qrev{c}{x}.P$, on the right, and resulting in the two multiset elements $\pard{Q}{P[m/x]}$, indicating that process $P$ consumes the message $m$ as variable $x$ in the following continuation. The above three rules allow us not to care about the positions of the sender and receiver in the multiset.
 
 Rules \rulelab{CL} and \rulelab{CR} define conditional choice operations. For example, if we have:
 $\parl{\qact{\qsend{0.5}{\cn{Ann}}{m}^0}{P}}{\parp{\qact{\qrev{\cn{Ann}}{x}}{Q}}{\qact{\qrev{\cn{Ann}}{x}}{Q'}}}$, 
@@ -125,7 +137,7 @@ $\textcolor{blue}{\text{Additional Syntax:}}\\$
       \texttt{Communication Location Flag} & \beta & ::= & \emptyset \mid c \mid c \rightarrow c\\[0.2em]
       \texttt{Process Cell} & \varphi & ::= & \pcell{\overline{P}}{n}{c}\\[0.2em]
       \textcolor{red}{\texttt{Configuration Second Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
-\textcolor{red}{\overline{\varphi}\pcell{\alpha}{\beta}{\cn{comm}} \qcell{\cn{bool}}{\cn{pred}}}
+\textcolor{red}{\overline{\varphi}\pcell{\alpha^t}{\beta}{\cn{comm}} \qcell{\cn{bool}}{\cn{pred}}}
     \end{array}
   \]
 
@@ -133,21 +145,21 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
 \mprset{flushleft}
    \inferrule[GC]{}
-       {\pcell{\pard{\qsend{p}{c}{m}^t.P}{...}}{\cn{S}\;i}{c_1}\pcell{ ...}{\cn{S}\;j}{c_2}
+       {\pcell{\pard{\alpha^t.P}{...}}{\cn{S}\;i}{c_1}\pcell{ ...}{\cn{S}\;j}{c_2}
         \qcell{\emptyset}{\cn{comm}}
-        \longrightarrow \pcell{\pard{P}{...}}{i}{c_1}\pcell{\pard{\qsend{p}{c}{m}^t}{...}}{j}{c_2}
-               \pcell{(p.c.m)^t}{c_1\rightarrow c_2}{\cn{comm}}}
-
-  \inferrule[PC]{\overline{P}\xrightarrow{\alpha^t} \overline{Q} }
-      { \pcell{\overline{P}}{n}{c}\qcell{\emptyset}{\cn{comm}}
-           \longrightarrow
-         \pcell{\overline{Q}}{n}{c}\pcell{\alpha^t}{c}{\cn{comm}}}
+        \longrightarrow \pcell{\pard{P}{...}}{i}{c_1}\pcell{\pard{\alpha^t.0}{...}}{j}{c_2}
+               \pcell{\alpha^t}{c_1\rightarrow c_2}{\cn{comm}}}
                
    \inferrule[Grant]{}
        {\qcell{\cn{F}}{\cn{pred}} \longrightarrow \qcell{\cn{T}}{\cn{pred}}}
   
+  \inferrule[PC]{\overline{P}\xrightarrow{\alpha^t} \overline{Q} }
+      { \pcell{\overline{P}}{n}{c}\qcell{\emptyset}{\cn{comm}}
+           \longrightarrow
+         \pcell{\overline{Q}}{n}{c}\pcell{\alpha^t}{c}{\cn{comm}}}
+
   \inferrule[FC]{}
-      { \pcell{\alpha}{c_1\rightarrow c_2}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}
+      { \pcell{\alpha^t}{c_1\rightarrow c_2}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}
            \longrightarrow \qcell{\emptyset}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}} } 
  
   \inferrule[AC]{}
@@ -158,6 +170,37 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 }
 \caption{Inter-destination communication syntax and semantics. $\beta$ can be omitted when being $\emptyset$. $\alpha^t$ is an action such that $\alpha$ has the form $p.c.m$. $\qsend{p}{c}{m}^t\equiv \qsend{p}{c}{m}^t.0$. $\cn{T}$/$\cn{F}$: true or false values.}
   \label{fig:q-pi-semantics2}
+\end{figure}
+
+\begin{figure}[t]
+
+{\small
+$\textcolor{blue}{\text{Additional Syntax:}}\\$
+  \[\begin{array}{llcl} 
+      \texttt{Communication Location Flag} & \beta & ::= & \emptyset \mid c \mid c \rightarrow c\\[0.2em]
+      \texttt{Process Cell} & \varphi & ::= & \pcell{\overline{P}}{n}{c}\\[0.2em]
+      \textcolor{red}{\texttt{Configuration Second Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
+\textcolor{red}{\overline{\varphi}}
+    \end{array}
+  \]
+
+$\textcolor{blue}{\text{Semantics:}}\\$
+  \begin{mathpar}
+\mprset{flushleft}
+   \inferrule[GC]{}
+       {\pcell{\pard{\alpha^t.P}{...}}{\cn{S}\;i}{c_1}\pcell{ ...}{\cn{S}\;j}{c_2}
+        \qcell{\emptyset}{\cn{comm}}
+        \longrightarrow \pcell{\pard{P}{...}}{i}{c_1}\pcell{\pard{\alpha^t.0}{...}}{j}{c_2}}
+  
+  \inferrule[PC]{\overline{P}\xrightarrow{\alpha^t} \overline{Q} }
+      { \pcell{\overline{P}}{n}{c}
+           \longrightarrow
+         \pcell{\overline{Q}}{n}{c}}
+
+  \end{mathpar}
+}
+\caption{\liyi{Alternative:} Inter-destination communication syntax and semantics. $\beta$ can be omitted when being $\emptyset$. $\alpha^t$ is an action such that $\alpha$ has the form $p.c.m$. $\qsend{p}{c}{m}^t\equiv \qsend{p}{c}{m}^t.0$. $\cn{T}$/$\cn{F}$: true or false values.}
+  \label{fig:q-pi-semanticsal2}
 \end{figure}
 
 \begin{figure}[t]
@@ -317,7 +360,8 @@ Node $r_0$ acts as a intermediate router, so it only contains the unit process $
 }
 
    \inferrule[CT]{}
-       {\Cellb{\qsend{p}{c}{m}}{i}{c_1}\qcell{t}{\cn{gt}} \longrightarrow \Cellb{\qsend{p}{c}{m}^t}{i}{c_1}\qcell{t}{\cn{gt}}}
+       {\Cellb{\parl{\qsend{p}{c}{m}.P}{Q}}{i}{c_1}\qcell{t}{\cn{gt}} 
+         \longrightarrow \Cellb{\pard{\qsend{p}{c}{m}.P}{Q}}{i}{c_1}\qcell{t}{\cn{gt}}}
 
    \inferrule[MT]{}
        {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
@@ -437,6 +481,62 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 }
 \caption{Extended inter-destination communication syntax and semantics. $\beta$ can be omitted when being $\emptyset$. $\alpha^t$ is an action such that $\alpha$ has the form $p.c.m$. $\qsend{p}{c}{m}^t\equiv \qsend{p}{c}{m}^t.0$.}
   \label{fig:q-pi-semantics3}
+\end{figure}
+
+\begin{figure}[t]
+{\small
+$\textcolor{blue}{\text{Extended Syntax:}}\\$
+  \[\begin{array}{llcl} 
+      \texttt{Time Predicate Function} & f & \in & \Ts \times \Ts \to \cn{bool} \\[0.2em]
+      \texttt{Relation} & R & ::= & \overline{(c,c,p)}  \\[0.2em]
+      \textcolor{red}{\texttt{Configuration Third Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
+\textcolor{red}{\overline{\varphi}\qcell{\beta}{\cn{comm}}\qcell{R}{\cn{rel}}\qcell{t}{\cn{gt}} }
+    \end{array}
+  \]
+
+$\textcolor{blue}{\text{Semantics:}}\\$
+  \begin{mathpar}
+\mprset{flushleft}
+   \inferrule[GC1]{}
+       {\pcell{\pard{\alpha^t.P}{...}}{\cn{S}\;i}{c_1}\pcell{ Q}{\cn{S}\;j}{c_2}\qcell{\emptyset}{\cn{comm}}
+    \longrightarrow \pcell{\pard{P}{...}}{i}{c_1}\pcell{\parl{\alpha^t.0}{Q}}{j}{c_2}\qcell{c_1\to c_2}{\cn{comm}}
+     }
+
+   \inferrule[Cohere1]{}
+       {\pcell{\parl{\alpha(p)^t.P}{Q}}{i}{c_2}
+        \qcell{\pard{(c_1,c_2,p')}{...}}{\cn{rel}}
+     \qcell{c_1\to c_2}{\cn{comm}}\qcell{t'}{\cn{gt}}
+    \\\qquad\longrightarrow 
+       \pcell{\pard{\alpha(p\cn*{p'})^t.P}{Q}}{i}{c_2}
+        \qcell{\pard{(c_1,c_2,p')}{...}}{\cn{rel}}
+     \qcell{\emptyset}{\cn{comm}}\qcell{t'\cn{+}}{\cn{gt}}
+     }
+     \quad{\cn{when}\;\;f(t,t')}
+
+   \inferrule[Break1]{}
+       {\pcell{\parl{\alpha(p)^t.P}{Q}}{i}{c_2}
+     \qcell{c_1\to c_2}{\cn{comm}}\qcell{t'}{\cn{gt}}
+    \longrightarrow 
+       \pcell{Q}{i}{c_2}
+     \qcell{\emptyset}{\cn{comm}}\qcell{t'\cn{+}}{\cn{gt}}
+     }
+     \quad{\cn{when}\;\;\neg f(t,t')}
+
+   \inferrule[CT]{}
+       {\pcell{\pard{\alpha.P}{...}}{i}{c_1}\qcell{t}{\cn{gt}} \longrightarrow 
+             \pcell{\pard{\alpha^t.P}{...}}{i}{c_1}\qcell{t}{\cn{gt}}}
+
+\textcolor{blue}{
+  \inferrule[PC]{\overline{P}\xrightarrow{\alpha^t} \overline{Q} }
+      { \pcell{\overline{P}}{n}{c}\qcell{t'}{\cn{gt}}
+           \xrightarrow{\alpha^t}
+         \pcell{\overline{Q}}{n}{c}\qcell{t'\cn{+}}{\cn{gt}}}
+}
+
+  \end{mathpar}
+}
+\caption{\liyi{Alternative} Extended inter-destination communication syntax and semantics. $\beta$ can be omitted when being $\emptyset$. $\alpha^t$ is an action such that $\alpha$ has the form $p.c.m$. $\qsend{p}{c}{m}^t\equiv \qsend{p}{c}{m}^t.0$.}
+  \label{fig:q-pi-semanticsal3}
 \end{figure}
 
 \begin{figure}[t]
