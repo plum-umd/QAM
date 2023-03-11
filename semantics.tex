@@ -5,8 +5,10 @@
   \[\begin{array}{llcl} 
       \texttt{Variable} & x,y \\
       \texttt{Probability} & p &\in &\Rs\\
-      \texttt{Message} & m &\in& \mathbb{M}\\
-    \texttt{Channel} & c &\in& \Ls\\
+      \texttt{Quantum Message} & m &\in& \mathbb{M}\\
+      \texttt{Classical Message} & m_l,m_r &\in& \mathbb{M}_{l\mid r}\\
+    \texttt{Quantum Channel} & c &\in& \Ls\\
+    \texttt{Classical Channel} & \overline{c} &\in& \Ls\\
     \texttt{Time Stamp} & t &\in& \mathbb{T}\\
     \texttt{Timed Label} & \alpha^t &::=& \qsend{p}{c}{m}^{t}\\
     \texttt{Label} & \iota &::=& c.m \mid p.c.m \mid \alpha^t \mid \emptyset\\
@@ -51,24 +53,43 @@ Given a QAM system $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initi
 {\small
 $\textcolor{blue}{\text{Syntax:}}\\$
   \[\begin{array}{llcl} 
-    \texttt{Singleton Action} & A & ::= & \alpha^t \mid \qrev{c}{x}\\
-      \texttt{Process} & P,Q & ::= & 0 \mid A.P \mid \parl{P}{Q} \mid \parp{P}{Q}\mid \comp{P} \\
+      \texttt{Process} & P,Q & ::= & 0 \mid \down{c}{P}\mid \send{m}{x}{P} \mid \rev {x}{P} \mid \csend{\overline{c}}{m_{l\mid r}}{P}\mid\crev{\overline{c}}{x}{P} \\[0.2em]
+    &&\mid& \parp{P}{Q}\mid \comp{P} \mid \mer{m_l}{x}{m_r}{P}\mid\parll{P}{c}{R} \mid \parl{P}{R} \\[1em]
+    \texttt{Multi-Process} & R & ::= & \scell{\overline{P}} \mid \pscell{P}{\overline{Q}}\\[0.2em]
       \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P}}
     \end{array}
   \]
 
 $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
-\mprset{flushleft}
+   \inferrule[Self]{}
+       {\down{c}{\send{m}{P}} \longrightarrow \parll{\send{m}{P}}{c}{\scell{\emptyset}}}
 
    \inferrule[Cohere]{}
-       {\parl{P}{Q} \longrightarrow \pard{P}{Q}}
+       { \pard{\parll{P}{c}{\scell{...}}}{\down{c}{Q}} \longrightarrow \parll{P}{c}{\scell{\pard{Q}{...}}}}
 
    \inferrule[Decohere]{}
-       {\pard{P}{Q} \longrightarrow \parl{P}{Q}}
+       {\parll{P}{c}{\scell{\pard{Q}{...}}} \longrightarrow \pard{\parll{P}{c}{\scell{...}}}{Q} }
 
-   \inferrule[Break]{}
-       {\pard{P}{Q} \longrightarrow Q}
+   \inferrule[ToCom]{}
+       { \scell{\pard{\rev{x}{Q}}{...}} \longrightarrow \pscell{\rev{x}{Q}}{...}}
+
+   \inferrule[Measure]{}
+       {\parll{P}{c}{R} \xrightarrow{c} \parl{P[\overline{c}/c]}{R[\overline{c}/c]}}
+
+   \inferrule[ID]{}
+       {\pard{0}{P} \longrightarrow P}
+
+   \inferrule[QCom]{}
+       {\parl{\send{m}{x}{P}}{\pscell{\rev{y}{P'}}{\overline{Q}}}
+               \xrightarrow{m} \pard{\pard{P[m_l/x]}{P'[m_r/y]}}{\overline{Q}}}
+
+  \inferrule[Com]{}
+      { \pard{\csend{\overline{c}}{m_l}{P}}{\crev{c}{x}{Q}}
+           \xrightarrow{m_l} \pard{P}{Q[m_l/x]}}
+
+  \inferrule[Recover]{}
+      { \mer{m_l}{x}{m_r}{P} \xrightarrow{m_l\wr m_r} P[m/x]}
 
   \inferrule[CL]{}
       {\parp{P}{Q} \longrightarrow P}
@@ -76,15 +97,8 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \inferrule[CR]{}
       {\parp{P}{Q} \longrightarrow Q}
 
-   \inferrule[ID]{}
-       {\pard{0}{P} \longrightarrow P}
-
-  \inferrule[Com]{}
-      { \pard{\qsend{p}{c}{m}^t.Q}{ \qrev{c}{x}.P}
-           \xrightarrow{(p.c.m)^t} \pard{Q}{P[m/x]}}
-
    \inferrule[MT]{}
-       {\comp{P} \longrightarrow \parl{P}{\comp{P}}}
+       {\comp{P} \longrightarrow \pard{P}{\comp{P}}}
       
    \inferrule[NT]{}
        {\comp{P} \longrightarrow 0}
@@ -539,33 +553,38 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \label{fig:q-pi-semanticsal3}
 \end{figure}
 
-\begin{figure}[t]
-{\small
+
+\begin{figure}[h]
 \begin{center}
-\begin{tikzpicture}[node distance={1cm}, thick, main/.style = {draw, circle}] 
-\node[main] (1) {\cn{Ann}}; 
-\node[main] (2) [right of=1] {$r_1$};
-\node[main] (3) [right of=2] {$r_4$};
-\node[main] (4) [right of=3] {\cn{Bob}};
-\node[main] (5) [above right=0.5cm and 1.5cm of 1] {$r_2$};
-\node[main] (6) [right of=5] {$r_3$};
-\node[main] (7) [below of=1] {\cn{Cat}};
-\node[main] (8) [below of=3] {\cn{Dan}};
-\draw[-] (1) --  (2);
-\draw[-] (2) --  (3);
-\draw[-] (3) --  (4);
-\draw[-] (1) --  (5);
-\draw[-] (5) --  (6);
-\draw[-] (6) --  (3);
-\draw[-] (7) --  (2);
-\draw[-] (2) --  (8);
-\end{tikzpicture}
+ \begin{subfigure}[b]{0.4\textwidth}
+     \centering
+    \begin{tikzpicture}[node distance={2cm}, thick, main/.style = {draw, circle}] 
+    \node[main] (1) {\cn{Cat}}; 
+    \node[main] (2) [right of=1] {$r_1$};
+    \node[main] (3) [right of=2] {\cn{Dan}};
+    \draw[->] (1) -- node[midway, above] {0.5} (2); 
+    \draw[->] (2) -- node[midway, above] {0.5} (3);  
+    \end{tikzpicture}
+    \caption{Cat too Dan}
+    \label{fig:y equals x}
+\end{subfigure}
+\hfill
+ \begin{subfigure}[b]{0.4\textwidth}
+     \centering
+    \begin{tikzpicture}[node distance={2cm}, thick, main/.style = {draw, circle}] 
+    \node[main] (5) [below of=2] {\cn{Ann}};
+    \node[main] (6) [right of=5] {\cn{Bob}};
+    \draw[->] (5) -- node[midway, below] {0.5} (6);
+    % \draw[dashed] (2) -- (5);
+    \end{tikzpicture}
+    \caption{Cat to Dan \& Ann to Bob}
+    \label{fig:y equals x}
+\end{subfigure}
+
 \end{center}
-}
-\caption{Example Path Connectivity \liyi{Le: this looks bad. I think a better diagram is to have only \cn{Cat} and \cn{Dan} through a directed graph, with success rate marking. }}
+\caption{Example Path Connectivity }
   \label{fig:examplepath}
 \end{figure}
-
 As in \Cref{sec:qamsyntax1}, QAM permits a quantum protocol semantics through the manipulation of configurations and rules describing the communicating, granting, and cleaning steps for framing quantum network communications.
 Here, we extend the configuration and rules in \Cref{fig:q-pi-semantics2} to define two important properties appearing in almost all quantum network protocols: connectivity and time.
 The former refers to that quantum messages are always transmitted based on a connectivity graph, i.e., two cells can communicate if they have an edge in the graph and each edge has a certain success rate of message transmission. One example connectivity is in \Cref{fig:examplepath}.
