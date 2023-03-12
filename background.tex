@@ -12,46 +12,96 @@ Sometimes a multi-qubit state cannot be expressed as the tensor of individual st
 Entangled states lead to exponential blowup: A general $n$-qubit state must be described with a $2^n$-length vector, rather than $n$ vectors of length two.
 
 \begin{figure}[t]
-            {
-          \begin{minipage}[b]{.48\textwidth}
+{\centering
+\hspace*{-1cm}
+          \begin{minipage}[b]{.22\textwidth}
+            {\qquad
+              \footnotesize
+              \Qcircuit @C=0.5em @R=0.5em {
+                \lstick{\ket{0}} & \gate{H} & \ctrl{1} & \qw &\qw & & \dots & \\
+                \lstick{\ket{0}} & \qw & \targ & \ctrl{1} & \qw & &  \dots &  \\
+                \lstick{\ket{0}} & \qw & \qw   & \targ & \qw & &  \dots &  \\
+                & \vdots &   &  &  & & & \\
+                & \vdots &  & \dots & & & \ctrl{1} & \qw  \\
+                \lstick{\ket{0}} & \qw & \qw & \qw &\qw &\qw & \targ & \qw
+              }
+            }
+\caption{GHZ}
+\label{fig:circuit-example}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{.37\textwidth}
                  \includegraphics[width=1\textwidth]{tele_circuit.png}
-            \caption{Quantum Teleportation Circuit}
+            \caption{Teleportation Circuit}
             \label{fig:background-circuit-examplea}
-          \end{minipage}
-         %
-          \begin{minipage}[b]{.50\textwidth}
+ \end{minipage}
+\hfill
+\begin{minipage}[b]{.44\textwidth}
                  \includegraphics[width=1\textwidth]{teleportation.png}
-            \caption{Quantum Teleportation Communication Diagram}
+            \caption{Teleportation Diagram}
             \label{fig:background-circuit-exampleb}
           \end{minipage}
+}
+\end{figure}
+
+\begin{figure}[t]
+            {
+
          }
   \label{fig:background-circuit-example}
 \end{figure}
 
-\noindent\textbf{\textit{Quantum Computations and Measurement.}} High-level quantum programming languages are usually designed to follow the \emph{QRAM model}~\cite{Knill1996}, where quantum computers are used as co-processors to classical computers. The classical computer generates descriptions of circuits to send to the quantum computer and then processes the measurement results.
-Computation on a quantum value state consists of a series of \emph{quantum operations}, each of which acts on a subset of qubits in the value state. In the standard presentation, quantum computations are expressed as \emph{circuits}, as shown in \Cref{fig:background-circuit-examplea}, which constructs a circuit for quantum teleportation algorithm \cite{PhysRevLett.70.1895}, which sends a quantum message $\varphi$ from Alice to Bob, as shown in \Cref{fig:background-circuit-exampleb}.
-In these circuits, each horizontal wire represents a qubit and boxes on these wires indicate quantum operations, or \emph{gates}. The circuit for $\texttt{bel1000}$ in \Cref{fig:background-circuit-examplea} uses two qubits and applies two gates: a \emph{Hadamard} (\coqe{H}) and \emph{controlled-not} (\coqe{CNOT}) gate to preprare a Bell pair above.
-\ignore{
-Applying a gate to a state \emph{evolves} the state. The traditional semantics of doing so is expressed by multiplying the state vector by the gate's corresponding matrix representation; single-qubit gates are 2-by-2 matrices, and two-qubit gates are 4-by-4 matrices. A gate's matrix must be \emph{unitary}, ensuring that it preserves the unitarity invariant of quantum states' amplitudes. An entire circuit can be expressed as a matrix by composing its constituent gates.
+\noindent\textbf{\textit{Quantum Computations and the First Quantum Abstraction.}} High-level quantum programming languages are usually designed to follow the \emph{QRAM model}~\cite{Knill1996}, where quantum computers are used as co-processors to classical computers. The classical computer generates descriptions of circuits to send to the quantum computer and then processes the measurement results.
+Computation on a quantum value state consists of a series of \emph{quantum operations}, each of which acts on a subset of qubits in the value state. 
+In the standard presentation, quantum computations are expressed as \emph{circuits}, as shown in \Cref{fig:circuit-example},
+which takes a qubit array and constructs a circuit that prepares the Greenberger-Horne-Zeilinger (GHZ) state \cite{Greenberger1989}, which is an $n$-qubit entangled quantum state of the form
+{
+\begin{center}
+$
+    \ket{\text{GHZ}^n} = \frac{1}{\sqrt{2}}(\ket{0}^{\otimes n}+\ket{1}^{\otimes n}).
+$
+\end{center}
 }
+In these circuits, each horizontal wire represents a qubit and boxes on these wires indicate quantum operations, or \emph{gates}. 
+Applying a gate to a state \emph{evolves} the state. The traditional semantics of doing so is expressed by multiplying the state vector by the gate's corresponding matrix representation; single-qubit gates are 2-by-2 matrices, and two-qubit gates are 4-by-4 matrices. A gate's matrix must be \emph{unitary}, ensuring that it preserves the unitarity invariant of quantum states' amplitudes. An entire circuit can be expressed as a matrix by composing its constituent gates.
+The GHZ circuit applies a \emph{Hadamard} (\coqe{H}) to turn the first qubit into superposition. The very next \emph{controlled-not} (\coqe{CNOT}) gate application entangles the second qubit with the superposition qubit; thus, creates a Bell pair.
+Each of the next series of \emph{controlled-not} (\coqe{CNOT}) gate applications transitively moves one qubit to join the entanglement cluster and finally creates the $\ket{\text{GHZ}^n}$ state above. Essentially, a $\ket{\text{GHZ}^n}$ state is a generalized version of Bell pairs.
 
-A \emph{measurement} operation extracts classical information from a quantum state, typically when a computation completes. Measurement collapses the state to a basis states with a probability related to the state's amplitudes. For example, measuring $\frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$ in the computational basis will collapse the state to $\ket{0}$ with probability $\frac{1}{2}$ and likewise for $\ket{1}$, returning classical value 0 or 1, respectively. In all the programs discussed in this paper, we leave the final measurement operation implicit.
+A \emph{measurement} operation extracts classical information from a quantum state, typically when a computation completes. Measurement collapses the state to a basis states with a probability related to the state's amplitudes. For example, measuring $\frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$ in the computational basis will collapse the state to $\ket{0}$ with probability $\frac{1}{2}$ and likewise for $\ket{1}$, returning classical value $0$ or $1$, respectively.
+The circuit representations are typically expressed as the \coqe{meas} gates in \Cref{fig:background-circuit-examplea} and the $\mathpzc{M}$ gates in \Cref{fig:background-circuit-exampleb}.
+
+The above examples indicate that most current quantum programming languages tend to focus on the circuit level physical details of quantum computation behaviors rather than providing high level abstractions \cite{VOQC}.
+For abstracting away circuit details but keeping the essence of quantum behaviors,
+one really needs to focus on the utilities of different small quantum algorithms, such as GHZ,
+because quantum computations for solving a task are typically constructed based on a limited set of small algorithms.
+For quantum network communications, the essence of GHZ provides a quantum channel to connect different parties.
+If we view the $n$ different qubits in GHZ as $n$ different parties,
+measuring any qubit resulting in a bit, either $0$ or $1$, makes other parties consensually produce the same bit.
+Thus, the GHZ circuit can be thought abstractly as a channel to agree on all parties.
+We will see two more small algorithm abstractions below.
 
 \noindent\textbf{\textit{Quantum Network based on Teleportation.}}
-Almost all quantum network protocols are originated from the quantum teleportation algorithm \cite{PhysRevLett.70.1895}.
-The circuit diagram in \Cref{fig:background-circuit-exampleb} describes a quantum teleportation circuit for communicating one qubit message between Alice and Bob.
-In this algorithm, Alice sends a qubit message $\varphi$ to Bob via an entangled group $\phi^{+}$ consisting of two qubits.
-Before sending the $\varphi$ qubit, Alice and Bob holds one qubit in the entangled qubit group $\phi^{+}$.
-In the beginning, Alice entangles $\varphi$ with her holding $\phi^{+}$ qubit by using a CNOT gate following by a Hadamard gate.
-Thus, after the two gate application, $\varphi$ joins the entangled group $\phi^{+}$.
-Alice then measures her two holding qubits. This event produces two bits resulting from the measurement.
-The measurement also has another conseuqnece since the three qubits are entangled;
-that is, the remaining quantum information of the Alice's two qubits is pushed to store in Bob's remaining qubit.
-Once Alice sends the two bits to Bob, he is able to reconstruct $\varphi$ through a proper treatment of his own qubit,
-shown on the left of \Cref{fig:background-circuit-exampleb}.
-In this paper, we will try to model the quantum teleportation concept
-by abstracting away the details of the gates and measurement devices,
-which represent a low-level circuit implementation of the quantum teleportation algorithm.
+Quantum teleportation \cite{PhysRevLett.70.1895,Rigolin_2005} is an algorithm to communicate a quantum message, a single qubit or multiple qubits, between two parties.
+Almost all quantum network protocols are originated from the algorithm.
+The circuit diagram in \Cref{fig:background-circuit-exampleb} describes a quantum teleportation circuit for communicating a qubit message between Alice and Bob.
+In the circuit in \Cref{fig:background-circuit-examplea},
+Alice holds a quantum qubit message, represented as the first qubit line, and a $\ket{0}$ qubit;
+while Bob holds the third $\ket{0}$ qubit.
+The application \coqe{bel1000} creates a quantum channel (Bell pair) between Alice's second qubit and Bob's qubit.
+
+The \coqe{alice} application in \Cref{fig:background-circuit-examplea} does two tasks: 1) it pushes Alice's qubit message $\varphi$ to attach to the quantum channel between Alice and Bob; and 2) Alice then measures her two qubits, which destroys the entangled three qubits and results in two classical bits held by Alice and one classical bit held by Bob.
+The \coqe{bob} application also has two tasks: 1) it uses the bold classical message channel to send Alice's two classical bits to Bob; and 2) Bob receives the two classical bits and uses a proper devices, the \coqe{X} and \coqe{Z} gates, to recover the message $\varphi$, stored in Bob's qubit.
+
+Regardless the circuit details, the quantum teleportation procedure can be summarized as five steps:
+1) we create a quantum channel between Alice and Bob;
+2) we push Alice's quantum message to the quantum channel;
+3) Alice measures and destroys her two qubits, so Alice has two classical remains while Bob has one;
+4) Alice sends Bob two classical bits;
+and 5) Bob recovers the quantum message based on the three classical bits.
+
+The multiple qubit version of quantum teleportation \cite{Rigolin_2005} is proportional to the single qubit version
+and has the same procedure.
+Since every quantum network protocol utilizes the algorithm, we model these five steps as five operations in QAM.
 
 \liyi{Le: not very clear. need to add some pictures and explain in details how swaps work.}
 \noindent\textbf{\textit{Extended Quantum Network Communication By Quantum Routing.}}
