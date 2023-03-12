@@ -13,8 +13,8 @@ Entangled states lead to exponential blowup: A general $n$-qubit state must be d
 
 \begin{figure}[t]
 {\centering
-\hspace*{-1cm}
-          \begin{minipage}[b]{.22\textwidth}
+\hspace*{-1em}
+          \begin{minipage}[b]{.20\textwidth}
             {\qquad
               \footnotesize
               \Qcircuit @C=0.5em @R=0.5em {
@@ -30,25 +30,18 @@ Entangled states lead to exponential blowup: A general $n$-qubit state must be d
 \label{fig:circuit-example}
 \end{minipage}
 \hfill
-\begin{minipage}[b]{.37\textwidth}
+\begin{minipage}[b]{.40\textwidth}
                  \includegraphics[width=1\textwidth]{tele_circuit.png}
             \caption{Teleportation Circuit}
             \label{fig:background-circuit-examplea}
  \end{minipage}
 \hfill
-\begin{minipage}[b]{.44\textwidth}
-                 \includegraphics[width=1\textwidth]{teleportation.png}
-            \caption{Teleportation Diagram}
+\begin{minipage}[b]{.39\textwidth}
+                 \includegraphics[width=1\textwidth]{swaps.png}
+            \caption{Quantum Routing}
             \label{fig:background-circuit-exampleb}
           \end{minipage}
 }
-\end{figure}
-
-\begin{figure}[t]
-            {
-
-         }
-  \label{fig:background-circuit-example}
 \end{figure}
 
 \noindent\textbf{\textit{Quantum Computations and the First Quantum Abstraction.}} High-level quantum programming languages are usually designed to follow the \emph{QRAM model}~\cite{Knill1996}, where quantum computers are used as co-processors to classical computers. The classical computer generates descriptions of circuits to send to the quantum computer and then processes the measurement results.
@@ -68,7 +61,7 @@ The GHZ circuit applies a \emph{Hadamard} (\coqe{H}) to turn the first qubit int
 Each of the next series of \emph{controlled-not} (\coqe{CNOT}) gate applications transitively moves one qubit to join the entanglement cluster and finally creates the $\ket{\text{GHZ}^n}$ state above. Essentially, a $\ket{\text{GHZ}^n}$ state is a generalized version of Bell pairs.
 
 A \emph{measurement} operation extracts classical information from a quantum state, typically when a computation completes. Measurement collapses the state to a basis states with a probability related to the state's amplitudes. For example, measuring $\frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$ in the computational basis will collapse the state to $\ket{0}$ with probability $\frac{1}{2}$ and likewise for $\ket{1}$, returning classical value $0$ or $1$, respectively.
-The circuit representations are typically expressed as the \coqe{meas} gates in \Cref{fig:background-circuit-examplea} and the $\mathpzc{M}$ gates in \Cref{fig:background-circuit-exampleb}.
+The circuit representations are typically expressed as the \coqe{meas} gates in \Cref{fig:background-circuit-examplea}.
 
 The above examples indicate that most current quantum programming languages tend to focus on the circuit level physical details of quantum computation behaviors rather than providing high level abstractions \cite{VOQC}.
 For abstracting away circuit details but keeping the essence of quantum behaviors,
@@ -80,10 +73,10 @@ measuring any qubit resulting in a bit, either $0$ or $1$, makes other parties c
 Thus, the GHZ circuit can be thought abstractly as a channel to agree on all parties.
 We will see two more small algorithm abstractions below.
 
-\noindent\textbf{\textit{Quantum Network based on Teleportation.}}
+\noindent\textbf{\textit{Quantum Teleportation For Network Communications and Abstraction.}}
 Quantum teleportation \cite{PhysRevLett.70.1895,Rigolin_2005} is an algorithm to communicate a quantum message, a single qubit or multiple qubits, between two parties.
 Almost all quantum network protocols are originated from the algorithm.
-The circuit diagram in \Cref{fig:background-circuit-exampleb} describes a quantum teleportation circuit for communicating a qubit message between Alice and Bob.
+The circuit diagram in \Cref{fig:background-circuit-examplea} describes a quantum teleportation circuit for communicating a qubit message between Alice and Bob.
 In the circuit in \Cref{fig:background-circuit-examplea},
 Alice holds a quantum qubit message, represented as the first qubit line, and a $\ket{0}$ qubit;
 while Bob holds the third $\ket{0}$ qubit.
@@ -103,16 +96,19 @@ The multiple qubit version of quantum teleportation \cite{Rigolin_2005} is propo
 and has the same procedure.
 Since every quantum network protocol utilizes the algorithm, we model these five steps as five operations in QAM.
 
-\liyi{Le: not very clear. need to add some pictures and explain in details how swaps work.}
-\noindent\textbf{\textit{Extended Quantum Network Communication By Quantum Routing.}}
+\noindent\textbf{\textit{Hybrid Quantum Classical Network with Quantum Routing.}}
+There are two observations from quantum teleportation. First, the network protocol describes a hybrid quantum classical network because it combines quantum and classical channels to hand a quantum message from Alice to Bob. Handing here refers to the fact that once Bob receives the quantum message, Alice's copy is destroyed. Second, A long distance quantum channel can be built through the GHZ algorithm, since a Bell pair is essentially $2$-qubit GHZ.
+
+Unfortunately, it is impossible to practically build a quantum channel through the $n$-party (more than $2$) GHZ algorithm across different machines \cite{Illiano_2022}, even though it is theatrically possible.
+A typical quantum channel establishment is done through three steps: 1) a classical network communication process is applied to find a path from the source to the target of a message communication, such as Alice and Bob in \Cref{fig:background-circuit-exampleb}, respectively; 2) any two of nodes in the path are established a quantum channel by a Bell pair, such as the pair of Alice and the repeater, as well as the pair of the repeater and Bob in \Cref{fig:background-circuit-exampleb}; 3) a swap operation is applied to the two pairs and a quantum channel is then built from the source to the target, as the Alice and Bob pair in \Cref{fig:background-circuit-exampleb}(d).
+
 Quantum teleportation describes the circuit details of communicating quantum messages through two parties.
 For a long distance communication, the quantum routing concept is involved.
 A typical and near term possible technique to send quantum information through long distance is \textit{entanglement swap},
 which relies on intermediate quantum repeaters between the two parties. Suppose Alice and Bob stay in two separate places and there is a quantum repeater, $r_1$ between them, they can create a long-distance entanglement in two steps. First, Alice and Bob each create an entanglement state with $r_1$; then $r_1$ performs a Bell state measurement locally. After measurement, the two original entanglements are destroyed and therefore, a new entanglement pair is created between Alice and Bob. 
 
-Through the entanglement swaps, quantum messages can be sent through long-distance, with a consumption of qubit resources and reduction of success rate of transmitting the messages, because each entanglement pair destruction and creation requires qubit resources and has a certain percentage of failure. 
-Since almost all quantum network protocols utilize the quantum teleportation and quantum routing as the guidance to send quantum messages, in QAM, we model quantum teleportation as the step to receive a message, and quantum routing as the step to transmit a message through a long distance by consuming some qubit resources and reducing some success rate.
-% \liyi{later.}
+In this paper, we first establish a system to describe quantum teleportation with the GHZ quantum channel building algorithm;
+we then upgrade the system to include the quantum routing algorithm, as well as establishing an evaluation system to allow users to build quantum network protocols and evaluate their performance.
 
 \liyi{Le: need better description. Please help find the CHEM paper and modify. }
 \noindent\textbf{\textit{Chemical Abstract Machine.}} Chemical abstract machine \cite{BERRY1992217} models multi-party communication behaviors as chemical reactions, where processes live in molecule membrane structures, named \textit{cells} in QAM, and they can react by the reaction rules defining how molecule membranes can connect together and processes living inside a membrane can also communicate through the heating and cooling rules, 
