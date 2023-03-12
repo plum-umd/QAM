@@ -37,7 +37,7 @@ Entangled states lead to exponential blowup: A general $n$-qubit state must be d
  \end{minipage}
 \hfill
 \begin{minipage}[b]{.39\textwidth}
-                 \includegraphics[width=1\textwidth]{swaps.png}
+                 \includegraphics[width=1\textwidth]{entanglement_swap.png}
             \caption{Quantum Routing}
             \label{fig:background-circuit-exampleb}
           \end{minipage}
@@ -100,12 +100,7 @@ Since every quantum network protocol utilizes the algorithm, we model these five
 There are two observations from quantum teleportation. First, the network protocol describes a hybrid quantum classical network because it combines quantum and classical channels to hand a quantum message from Alice to Bob. Handing here refers to the fact that once Bob receives the quantum message, Alice's copy is destroyed. Second, A long distance quantum channel can be built through the GHZ algorithm, since a Bell pair is essentially $2$-qubit GHZ.
 
 Unfortunately, it is impossible to practically build a quantum channel through the $n$-party (more than $2$) GHZ algorithm across different machines \cite{Illiano_2022}, even though it is theatrically possible.
-A typical quantum channel establishment is done through three steps: 1) a classical network communication process is applied to find a path from the source to the target of a message communication, such as Alice and Bob in \Cref{fig:background-circuit-exampleb}, respectively; 2) any two of nodes in the path are established a quantum channel by a Bell pair, such as the pair of Alice and the repeater, as well as the pair of the repeater and Bob in \Cref{fig:background-circuit-exampleb}; 3) a swap operation is applied to the two pairs and a quantum channel is then built from the source to the target, as the Alice and Bob pair in \Cref{fig:background-circuit-exampleb}(d).
-
-Quantum teleportation describes the circuit details of communicating quantum messages through two parties.
-For a long distance communication, the quantum routing concept is involved.
-A typical and near term possible technique to send quantum information through long distance is \textit{entanglement swap},
-which relies on intermediate quantum repeaters between the two parties. Suppose Alice and Bob stay in two separate places and there is a quantum repeater, $r_1$ between them, they can create a long-distance entanglement in two steps. First, Alice and Bob each create an entanglement state with $r_1$; then $r_1$ performs a Bell state measurement locally. After measurement, the two original entanglements are destroyed and therefore, a new entanglement pair is created between Alice and Bob. 
+A typical quantum channel establishment is done through three steps: 1) a classical network communication process is applied to find a path from the source to the target of a message communication, such as Alice and Bob in \Cref{fig:background-circuit-exampleb}, respectively; 2) any two of nodes in the path are established a quantum channel by a Bell pair, such as the pair of Alice and the router, as well as the pair of the router and Bob in \Cref{fig:background-circuit-exampleb}; 3) a swap operation is applied to the two pairs and a quantum channel is then built from the source to the target, as the Alice and Bob pair after the swap application in \Cref{fig:background-circuit-exampleb}.
 
 In this paper, we first establish a system to describe quantum teleportation with the GHZ quantum channel building algorithm;
 we then upgrade the system to include the quantum routing algorithm, as well as establishing an evaluation system to allow users to build quantum network protocols and evaluate their performance.
