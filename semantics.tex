@@ -57,8 +57,8 @@ Given a QAM system $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initi
 $\textcolor{blue}{\text{Syntax:}}\\$
   \[\begin{array}{llcl} 
       \texttt{Process} & P,Q & ::= & 0 \mid \down{c}{P}\mid \send{m}{x}{P} \mid \rev {x}{P} \mid \csend{\overline{c}}{m_{l\mid r}}{P}\mid\crev{\overline{c}}{x}{P} \\[0.2em]
-    &&\mid& \parp{P}{Q}\mid \comp{P} \mid\parll{P}{c}{R} \mid \parl{P}{R} \mid \mer{m_l}{x}{m_r}{P}\\[1em]
-    \texttt{Multi-Process} & R & ::= & \scell{\overline{P}} \mid \pscell{P}{\overline{Q}}\\[0.2em]
+    &&\mid& R \mid \parp{P}{Q}\mid \comp{P} \mid \mer{m_l}{x}{m_r}{P}\\[1em]
+    \texttt{Multi-Process} & R & ::= & \scell{\overline{P}} \mid \pscell{\overline{P}}{c}\\[0.2em]
       \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P}}
     \end{array}
   \]
@@ -66,28 +66,23 @@ $\textcolor{blue}{\text{Syntax:}}\\$
 $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
    \inferrule[Self]{}
-       {\down{c}{\send{m}{x}{P}} \longrightarrow \parll{\send{m}{x}{P}}{c}{\scell{\emptyset}}}
+       {\down{c}{P} \longrightarrow \pscell{P}{c}}
 
    \inferrule[Cohere]{}
-       { \pard{\parll{P}{c}{\scell{...}}}{\down{c}{Q}} \longrightarrow \parll{P}{c}{\scell{\pard{Q}{...}}}}
+       { \pard{\pscell{\pard{P}{...}}{c}}{\down{c}{Q}} \longrightarrow \pscell{\pard{Q}{\pard{P}{...}}}{c}}
 
    \inferrule[Decohere]{}
-       {\scell{\pard{Q}{...}} \longrightarrow \pard{{\scell{...}}}{Q} }
+       {\pscell{\pard{Q}{...}}{c} \longrightarrow \pard{{\pscell{...}{c}}}{Q} }
 
    \inferrule[Clean]{}
-       {\pscell{Q}{\emptyset} \longrightarrow Q}
+       {\pscell{\emptyset}{c} \longrightarrow \emptyset}
 
-   \inferrule[ToCom]{}
-       { \scell{\pard{\rev{x}{Q}}{...}} \longrightarrow \pscell{\rev{x}{Q}}{...}}
 
    \inferrule[Measure]{}
-       {\parll{P}{c}{R} \xrightarrow{c} \parl{P[\overline{c}/c]}{R[\overline{c}/c]}}
-
-   \inferrule[ID]{}
-       {\pard{0}{P} \longrightarrow P}
+       {\pscell{\overline{P}}{c} \xrightarrow{c} \scell{\overline{P}[\overline{c}/c]}}
 
    \inferrule[QCom]{}
-       {\parl{\send{m}{x}{P}}{\pscell{\rev{y}{P'}}{\overline{Q}}}
+       {\scell{\pard{\send{m}{x}{P}}{\pard{\rev{y}{P'}}{\overline{Q}}}}
                \xrightarrow{m} \pard{\pard{P[m_l/x]}{P'[m_r/y]}}{\overline{Q}}}
 
   \inferrule[Com]{}
@@ -96,6 +91,9 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 
   \inferrule[Recover]{}
       { \mer{m_l}{x}{m_r}{P} \xrightarrow{m_l\wr m_r} P[m/x]}
+
+   \inferrule[ID]{}
+       {\pard{0}{P} \longrightarrow P}
 
   \inferrule[CL]{}
       {\parp{P}{Q} \longrightarrow P}
@@ -126,32 +124,20 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 \\[1em]
 \longrightarrow
 &
-\pard{\parll{\send{m}{x}{\csend{c}{x}{0}}}{c}{\scell{\emptyset}}}
+\pard{\pscell{\send{m}{x}{\csend{c}{x}{0}}}{c}}
 {\down{c}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}}
 &
 (\rulelab{Self})
 \\[1em]
 \longrightarrow
 &
-\parll{\send{m}{x}{\csend{c}{x}{0}}}{c}{\scell{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}}
+\pscell{\pard{\send{m}{x}{\csend{c}{x}{0}}}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}}{c}
 &
 (\rulelab{Cohere})
 \\[1em]
-\longrightarrow
-&
-\parll{\send{m}{x}{\csend{c}{x}{0}}}{c}{\pscell{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\emptyset}}
-&
-(\rulelab{ToCom})
-\\[1em]
-\longrightarrow
-&
-\parll{\send{m}{x}{\csend{c}{x}{0}}}{c}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}
-&
-(\rulelab{Clean})
-\\[1em]
 \xrightarrow{c}
 &
-\parl{\send{m}{x}{\csend{\overline{c}}{x}{0}}}{\rev{y}{\crev{\overline{c}}{u}{\mer{u}{v}{y}{0}}}}
+\scell{\pard{\send{m}{x}{\csend{\overline{c}}{x}{0}}}{\rev{y}{\crev{\overline{c}}{u}{\mer{u}{v}{y}{0}}}}}
 &
 (\rulelab{Measure})
 \\[1em]
@@ -172,11 +158,11 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 \pard{0}{0}
 &
 (\rulelab{Recover})
-\qquad
+\\[1em]
 \longrightarrow
-\;\;
+&
 0
-\;\;
+&
 (\rulelab{ID})
 \end{array}
 \]
@@ -188,7 +174,8 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 We first investigate the quantum communication between parties in a single location, which models quantum teleportation and GHZ in \Cref{sec:background}.
 
 The syntax is enlightened by different process algebras, such as CHEM, $\Pi$-calculus, and CSP,
-as we instantiate QAM configurations as a multiset of processes $\overline{P}$, referring to the red part in \Cref{fig:q-pi-semantics1}.
+as we instantiate QAM configurations as a multiset of processes $\overline{P}$ representing processes being paralleled,
+as the red part in \Cref{fig:q-pi-semantics1}.
 A single process can be a unit one $0$; $\down{c}{P}$ intends to join a quantum channel then perform $P$.
 $\send{m}{x}{P}$ destroys a quantum message $m$ and keeps a classical portion $m_l$,
 while $\rev{x}{P}$ receives another portion $m_r$ from a quantum message destruction.
@@ -196,7 +183,7 @@ $\csend{\overline{c}}{m_{l\mid r}}{P}$ and $\crev{\overline{c}}{x}{P}$
 communicate a classical message through a classical channel $\overline{c}$.
 Replication process $\comp{P}$ refers to that $P$ can repeatedly happen zero or multiple times
 and $\parp{P}{Q}$ is a choice operation.
-Parallel process $\parll{P}{c}{R}$ refers to that a single process $P$ and membrane $R$, representing multi-parties, are communicating through a quantum channel $c$, while $\parl{P}{R}$ means that the quantum channel between $P$ and $R$ is about to lose and the two parts is to perform a quantum message destruction.
+A membrane of multi-processes $\pscell{\overline{P}}{c}$ represents the multiple processes $\overline{P}$ are sharing a quantum channel named $c$, while membrane $\scell{\overline{P}}$ means that the channel is about to lose and a quantum message destruction is happening between two parties.
 These two processes model the \coqe{alice} application in \Cref{fig:background-circuit-examplea},
 which in fact happen at the same time. Here, we model them as two consecutive steps.
 $\mer{m_l}{x}{m_r}{P}$ recovers a quantum message $m$ and recognizes it as variable $x$ in $P$, by merging two classical portions $m_l$ and $m_r$.
@@ -204,72 +191,102 @@ $\mer{m_l}{x}{m_r}{P}$ recovers a quantum message $m$ and recognizes it as varia
 On the top of \Cref{fig:tele-example}, a multiset of two processes show the quantum teleportation implementation in QAM,
 where the left process (Alice) sends a quantum message to the right (Bob).
 We first apply rule \rulelab{Self} in \Cref{fig:q-pi-semantics1}
-to allow Alice herself showing the willingness of creating a quantum channel named $c$,
+to allow Alice herself showing the willingness of creating a quantum channel membrane named $c$,
 while the \rulelab{Cohere} rule application joins Bob to the quantum channel by moving Bob to the membrane.
 The \rulelab{Self} and \rulelab{Decohere} applications reflect the quantum channel establishment step, as \coqe{bel1000} in \Cref{fig:background-circuit-examplea}.
 At this point, it is possible that Bob can lose the quantum channel through the \rulelab{Decohere} rule application nondeterministically.
 If that happens, Bob cannot gain back his channel,
 referring to the fact that once a party's quantum channel is lost, its qubit resource is also lost.
+Rule \rulelab{Clean} removes the empty membrane from a system.
 
-We then apply rule \rulelab{ToCom} to allow Bob showing the willingness of receiving a quantum message $m$.
-The \rulelab{Clean} application removes the empty membrane associated with Bob.
-The \rulelab{Measure} and \rulelab{QCom} applications destroy the quantum channel and the message $m$; so that Alice holds a classical portion of the message $m_l$, while Bob holds another piece $m_r$.
+We then apply the \rulelab{Measure} and \rulelab{QCom} applications in \Cref{fig:tele-example} to destroy the quantum channel and the message $m$; so that Alice holds a classical portion of the message $m_l$, while Bob holds another piece $m_r$, which model the \coqe{alice} application in \Cref{fig:background-circuit-examplea}, to destroy a quantum message $m$.
 In quantum teleportation, these two rule applications happen at the exact same time,
 but we model the procedure as first to destroy the quantum channel $c$ through rule \rulelab{Measure},
 and then destroy message $m$ through rule \rulelab{QCom}. 
-The above four rule applications model the \coqe{alice} application in \Cref{fig:background-circuit-examplea}, to destroy a quantum message $m$.
 
-The last two rule applications, \rulelab{Com} and \rulelab{Recover}, model the \coqe{bob} application in  \Cref{fig:background-circuit-examplea}, allowing Bob to recover the message $m$.
+The next two rule applications, \rulelab{Com} and \rulelab{Recover}, model the \coqe{bob} application in  \Cref{fig:background-circuit-examplea}, allowing Bob to recover the message $m$.
 Rule \rulelab{Com} delivers the classical message remains $m_l$ that Alice holds to Bob, which is a traditional $\Pi$-calculus message communication rule, while rule \rulelab{Recover} takes Alice and Bob's classical portions and reproduce the quantum message $m$.
 Finally, we can apply rule \rulelab{ID} to rewrite the multiset to a unit process.
 Rules \rulelab{CL} and \rulelab{CR} in \Cref{fig:q-pi-semantics1} are the semantics for choice operation that nondeterministically choose a process as continuation, while rules \rulelab{MT} and \rulelab{NT} are the semantics for the replication process.
 These four rules are inherent from $\Pi$-calculus.
 
-\subsection{Inter-Destination Communication: Frames} \label{sec:qamsyntax1}
+\subsection{Distinct Location Communication} \label{sec:qamsyntax1}
 
 \begin{figure}[t]
-
 {\small
-$\textcolor{blue}{\text{Additional Syntax:}}\\$
+$\textcolor{blue}{\text{Syntax:}}\\$
   \[\begin{array}{llcl} 
-      \texttt{Communication Location Flag} & \beta & ::= & \emptyset \mid c \mid c \rightarrow c\\[0.2em]
-      \texttt{Process Cell} & \varphi & ::= & \pcell{\overline{P}}{n}{c}\\[0.2em]
-      \textcolor{red}{\texttt{Configuration Second Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & 
-\textcolor{red}{\overline{\varphi}\pcell{\alpha^t}{\beta}{\cn{comm}} \qcell{\cn{bool}}{\cn{pred}}}
+      \texttt{Action} & A & ::= & \downa{c}\,\mid \senda{m}{x} \mid \reva{x} \mid \csenda{\overline{c}}{m_{l\mid r}}\mid\creva{\overline{c}}{x}\mid \mera{m_l}{x}{m_r} \\[0.2em]
+
+      \texttt{Single Process} & P,Q & ::= & 0 \mid A P \mid \parp{P}{Q}\mid \comp{P} \mid P_{c_1}^{c} \mid P_{c_1}\\[0.2em]
+
+    \texttt{Membrane Process with Channel} & P_{c_1}^c & ::= & \scell{P}_{c_1}^c \\[0.2em]
+
+    \texttt{Membrane Process} & P_{c_1} & ::= & \scell{P}_{c_1} \\[0.2em]
+
+    \texttt{Parallel Process} & R & ::= & P \mid \parl{P}{Q} \mid \parll{P}{c}{Q} \mid \parll{P}{c}{\parl{P'}{Q}} \\[0.2em]
+
+    \texttt{Relation Pairs} & S & ::= & \overline{c_1 \to c_2} \\[0.2em]
+
+      \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{R}}
     \end{array}
   \]
 
 $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
-\mprset{flushleft}
-   \inferrule[GC]{}
-       {\pcell{\pard{\alpha^t.P}{...}}{\cn{S}\;i}{c_1}\pcell{ ...}{\cn{S}\;j}{c_2}
-        \qcell{\emptyset}{\cn{comm}}
-        \longrightarrow \pcell{\pard{P}{...}}{i}{c_1}\pcell{\pard{\alpha^t.0}{...}}{j}{c_2}
-               \pcell{\alpha^t}{c_1\rightarrow c_2}{\cn{comm}}}
-               
-   \inferrule[Grant]{}
-       {\qcell{\cn{F}}{\cn{pred}} \longrightarrow \qcell{\cn{T}}{\cn{pred}}}
-  
-  \inferrule[PC]{\overline{P}\xrightarrow{\alpha^t} \overline{Q} }
-      { \pcell{\overline{P}}{n}{c}\qcell{\emptyset}{\cn{comm}}
-           \longrightarrow
-         \pcell{\overline{Q}}{n}{c}\pcell{\alpha^t}{c}{\cn{comm}}}
+   \inferrule[Shift]{}
+       { \scell{A P}_{c} \longrightarrow A \scell{P}_{c}}
 
-  \inferrule[FC]{}
-      { \pcell{\alpha^t}{c_1\rightarrow c_2}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}
-           \longrightarrow \qcell{\emptyset}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}} } 
- 
-  \inferrule[AC]{}
-      { \pcell{\alpha^t}{c}{\cn{comm}}\qcell{\cn{T}}{\cn{pred}}
-           \xrightarrow{\alpha}  \qcell{\emptyset}{\cn{comm}}\qcell{\cn{F}}{\cn{pred}} } 
+   \inferrule[Self]{}
+       {\down{c}{P_{c_1}} \longrightarrow P^{c}_{c_1}}
 
+   \inferrule[Cohere1]{c_1\to c_2 \in S}
+       { \pard{P^{c}_{c_1}}{Q^{c}_{c_2}} \xrightarrow{c_1\to c_2} \parll{P_{c_1}}{c}{Q_{c_2}}}
+
+   \inferrule[Cohere2]{c_2\to c_3 \in S}
+       { \pard{\parll{P_{c_1}}{c}{Q^{c}_{c_2}}}{P_{c_3}^c} \xrightarrow{c_1 \to c_3} \parll{P_{c_1}}{c}{\parl{Q_{c_2}}{P_{c_3}}}}
+
+   \inferrule[Swap]{}
+       { \parll{P}{c}{\parl{P'}{Q}} \longrightarrow \pard{\parll{P}{c}{Q}}{P'[\overline{c}/c]}  }
+
+   \inferrule[Decohere]{}
+       {\parll{P}{c}{Q} \longrightarrow \pard{P}{Q} }
+
+   \inferrule[Measure]{}
+       {\parll{P}{c}{Q} \longrightarrow \parl{P[\overline{c}/c]}{Q[\overline{c}/c]}}
+
+   \inferrule[QCom]{}
+       {\parl{\send{m}{x}{P}}{\rev{y}{P'}}
+               \xrightarrow{m} \pard{P[m_l/x]}{P'[m_r/y]}}
+
+  \inferrule[Com]{}
+      { \pard{\csend{\overline{c}}{m_l}{P}}{\crev{c}{x}{Q}}
+           \longrightarrow \pard{P}{Q[m_l/x]}}
+
+  \inferrule[Recover]{}
+      { \mer{m_l}{x}{m_r}{P} \xrightarrow{m_l\wr m_r} P[m/x]}
+
+   \inferrule[ID]{}
+       {\pard{0}{P} \longrightarrow P}
+
+  \inferrule[CL]{}
+      {\parp{P}{Q} \longrightarrow P}
+
+  \inferrule[CR]{}
+      {\parp{P}{Q} \longrightarrow Q}
+
+   \inferrule[MT]{}
+       {\comp{P} \longrightarrow \pard{P}{\comp{P}}}
+      
+   \inferrule[NT]{}
+       {\comp{P} \longrightarrow 0}
   \end{mathpar}
 }
-\caption{Inter-destination communication syntax and semantics. $\beta$ can be omitted when being $\emptyset$. $\alpha^t$ is an action such that $\alpha$ has the form $p.c.m$. $\qsend{p}{c}{m}^t\equiv \qsend{p}{c}{m}^t.0$. $\cn{T}$/$\cn{F}$: true or false values.}
+\caption{Distinct location communication syntax and semantics.}
   \label{fig:q-pi-semantics2}
 \end{figure}
 
+\ignore{
 \begin{figure}[t]
 
 {\small
@@ -300,70 +317,124 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 \caption{\liyi{Alternative:} Inter-destination communication syntax and semantics. $\beta$ can be omitted when being $\emptyset$. $\alpha^t$ is an action such that $\alpha$ has the form $p.c.m$. $\qsend{p}{c}{m}^t\equiv \qsend{p}{c}{m}^t.0$. $\cn{T}$/$\cn{F}$: true or false values.}
   \label{fig:q-pi-semanticsal2}
 \end{figure}
+}
 
 \begin{figure}[t]
 {\footnotesize
 \[
+\begin{array}{l}
+\begin{array}{l}
+Cat\triangleq\down{c}{\send{m}{x}{\csend{c}{x}{0}}}
+\qquad
+Dan\triangleq\down{c}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}
+\qquad
+r_1\triangleq \parp{\down{c}r_1}{0}
+\end{array}\\
 \begin{array}{lll}
 &
-\pcellb{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
-\pcellb{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcellb{\emptyset}{\cn{comm}}
-\qcellb{\texttt{F}}{\cn{pred}}
+\pard{\pard{\qcellb{Cat}{\cn{Cat}}}
+{\qcellb{Dan}{\cn{Dan}}}}
+{\qcellb{r_1}{r_1}}
 &
 \\[0.3em]
 \longrightarrow
 &
-\pcellb{0}{9}{\cn{Cat}}
-\pcellb{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\pcellb{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
-\qcellb{\texttt{F}}{\cn{pred}}
+\pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
+{\qcellb{r_1}{r_1}}}
+{\qcellb{Dan}{\cn{Dan}}}
 &
-(\rulelab{GC})
+(\rulelab{Shift})
 \\[0.3em]
 \longrightarrow
 &
-\pcellb{0}{9}{\cn{Cat}}
-\pcellb{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\pcellb{(1.c.m)^0}{\cn{Cat}\rightarrow\cn{Dan}}{\cn{comm}}
-\qcellb{\texttt{T}}{\cn{pred}}
+\pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
+{\qcellb{\down{c}r_1}{r_1}}}
+{\qcellb{Dan}{\cn{Dan}}}
 &
-(\rulelab{Grant})
+(\rulelab{CL})
 \\[0.3em]
 \longrightarrow
 &
-\pcellb{0}{9}{\cn{Cat}}
-\pcellb{\pard{\qsend{1}{c}{m}^0.0}{\qrev{c}{x}.0}}{9}{\cn{Dan}} 
-\qcellb{\emptyset}{\cn{comm}}
-\qcellb{\texttt{F}}{\cn{pred}}
+\pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
+{\down{c}\qcellb{r_1}{r_1}}}
+{\qcellb{Dan}{\cn{Dan}}}
 &
-(\rulelab{FC})
+(\rulelab{Shift})
+\\[0.3em]
+\longrightarrow...\longrightarrow
+&
+\pard{\pard{\pcellb{\send{m}{x}{\csend{c}{x}{0}}}{c}{\cn{Cat}}}
+{\pcellb{r_1}{c}{r_1}}}
+{\qcellb{Dan}{\cn{Dan}}}
+&
+(\text{two}\;\rulelab{Self})
+\\[0.3em]
+\xrightarrow{\cn{Cat}\to r_1}
+&
+\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
+{\qcellb{r_1}{r_1}}}
+{\qcellb{Dan}{\cn{Dan}}}
+&
+(\rulelab{Cohere1})
 \\[0.3em]
 \longrightarrow
 &
-\pcellb{0}{9}{\cn{Cat}}
-\pcellb{0}{9}{\cn{Dan}} 
-\pcellb{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
-\qcellb{\texttt{F}}{\cn{pred}}
+\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
+{\qcellb{\down{c}r_1}{r_1}}}
+{\qcellb{Dan}{\cn{Dan}}}
 &
-(\rulelab{Com},\rulelab{PC})
+(\rulelab{CL})
+\\[0.3em]
+\longrightarrow...\longrightarrow
+&
+\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
+{\down{c}\qcellb{r_1}{r_1}}}
+{\down{c}\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}
+&
+(\text{two}\;\rulelab{Shift})
+\\[0.3em]
+\longrightarrow...\longrightarrow
+&
+\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
+{\pcellb{r_1}{c}{r_1}}}
+{\pcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{c}{\cn{Dan}}}
+&
+(\text{two}\;\rulelab{Self})
+\\[0.3em]
+\xrightarrow{\cn{Cat}\to \cn{Dan}}
+&
+\parl{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
+{\qcellb{r_1}{r_1}}}
+{\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}
+&
+(\rulelab{Cohere2})
 \\[0.3em]
 \longrightarrow
 &
-\pcellb{0}{9}{\cn{Cat}}
-\pcellb{0}{9}{\cn{Dan}} 
-\pcellb{(1.c.m)^0}{\cn{Dan}}{\cn{comm}}
-\qcellb{\texttt{T}}{\cn{pred}}
+\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
+{\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}}
+{\qcellb{r_1}{r_1}}
 &
-(\rulelab{Grant})
+(\rulelab{Swap})
 \\[0.3em]
-\xrightarrow{1.c.m}&
-\pcellb{0}{9}{\cn{Cat}}
-\pcellb{0}{9}{\cn{Dan}} 
-\qcellb{\emptyset}{\cn{comm}}
-\qcellb{\texttt{F}}{\cn{pred}}
+\longrightarrow
 &
-(\rulelab{AC})
+\pard{\parl{\qcellb{\send{m}{x}{\csend{\overline{c}}{x}{0}}}{\cn{Cat}}}
+{\qcellb{\rev{y}{\crev{\overline{c}}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}}
+{\qcellb{r_1}{r_1}}
+&
+(\rulelab{Measure})
+\\[0.3em]
+\xrightarrow{m}
+&
+\pard{\pard{\qcellb{\csend{\overline{c}}{m_l}{0}}{\cn{Cat}}}
+{\qcellb{\crev{\overline{c}}{u}{\mer{u}{v}{m_r}{0}}}{\cn{Dan}}}}
+{\qcellb{r_1}{r_1}}
+&
+(\rulelab{QCom})
+\\[0.3em]
+\longrightarrow...
+\end{array}
 \end{array}
 \]
 }
@@ -371,59 +442,39 @@ $\textcolor{blue}{\text{Semantics:}}\\$
   \label{fig:q-pi-example}
 \end{figure}
 
-To model inter-destination communication, i.e., message transformations across different locations,
-the QAM system is inspired by the abstract machine concept that models communication as sequencing steps of
-interactions with different abstract environment components.
-Here, we instantiate the QAM configuration to a multiset of cells in \Cref{fig:q-pi-semantics2},
-as we utilize a membrane (cell) in chemical abstract machine to model a distinct component in a network protocol.
-Processes in different destination lives in a process cell $\pcell{\overline{P}}{n}{c}$, where $\overline{P}$ is a process multiset for communication, $n$ is a linear order indicating the qubit resource in the location, and $c$ is the location name.
-The other cells (\cn{comm} and \cn{pred}) store environment information, which represent the QAM ways to define side conditions, since rule syntax does not allow side condition definitions, explained shortly below. 
-\cn{comm} cell ($\pcell{\alpha}{\beta}{\cn{comm}}$) contains a flag $\beta$ defining the location the label $\alpha$ happens: $c$ refer to that the transition happens at $c$ and $c_1\rightarrow c_2$ means that the transition happens at conveying messages from $c_1$ to $c_2$.
+Most network communication is performed in distinct locations,
+where the channel establishment based on the GHZ algorithm become impractical, when connecting parties residing on more than $3$ locations. As we mentioned in \Cref{sec:background}, a typical quantum routing algorithm relies on the swap concept to build a long distance quantum channel. Here, we upgraded the QAM syntax and semantics in \Cref{fig:q-pi-semantics1} to the system in \Cref{fig:q-pi-semantics2}, by removing GHZ channel building rules and implementing quantum swaps.
 
-The configuration instantiation to a cell multiset in \Cref{fig:q-pi-semantics2} provides a frame for semantic rule definitions
-and allow rule definitions to mention only the necessary parts regardless the other interactions.
-For example, rule \rulelab{Grant} mentions only cell \cn{pred} and it means that we can always turn cell \cn{pred}'s value \cn{T} regardless the other cells. Additionally, the configuration extension from the one in \Cref{fig:q-pi-semantics1} to \Cref{fig:q-pi-semantics2} does not invalidate the rules in the former, as they are still valid for intra-process communications.
-In this sense, the configuration setup, based on the extension of previous configuration, permits gradual semantic development for quantum network protocols with only minimal changes in the rule definitions.
+Syntactically, we divide processes into single and parallel processes, and surround a single process in a membrane $\scell{P}_{c_1}$ that represents a location named $c_1$ executing a process $P$. A membrane $\scell{P}_{c_1}^c$ can be also associated with a quantum channel $c$, meaning that the process is ready to communicate on $c$, which is different from the ones in the system in \Cref{fig:q-pi-semantics1} where a membrane contains a group of processes sharing the same quantum channel.
 
-To definite protocol communication nondeterminism in QAM, every communication transition is divided into three basic steps: \textit{communicating}, \textit{granting}, and \textit{cleaning}. 
-A communicating step performs the actual transition and moves the result label to the \cn{comm} cell waiting for granting.
-In \Cref{fig:q-pi-semantics2}, rules \rulelab{GC} and \rulelab{PC} performs a communicating step.
-The former conveys a message sending action from locations $c_1$ to $c_2$ and moves the label $(p.c.m)^t$ to the \cn{comm} cell with the $c_1\rightarrow c_2$ flag referring to that the action conveys between the two locations.
-The latter performs an intra-process communication in the $c$ cell with the label $\alpha^t$ ($\alpha$ has form $p.c.m$) and moves the label to the \cn{comm} cell with the $c$ flag.
-A granting step validates a communicating step through possibly additional predicate judgment applying on the \cn{comm} cell labels, with the result storing in the \cn{pred} cell. For the simplest case, we define rule \rulelab{Grant} to grant every communicating step.
-A cleaning step initializes the \cn{comm} and \cn{pred} cells for next communication transitions to perform.
-Rules \rulelab{FC} and \rulelab{AC} are cleaning rules corresponding to rules \rulelab{GC} and \rulelab{PC}, respectively.
-The former purges the two cells after a \rulelab{GC} rule is performed,
-while the latter purges the two cells after a message is delivered by applying rule \rulelab{PC} and it also moves the delivered message label $\alpha$ to the transition arrow as $\xrightarrow{\alpha}$, making the communication external for further analysis, discussed in \Cref{sec:refinement}.  
+A parallel process could be a two party process, $\parll{P}{c}{Q}$ and $\parl{P}{Q}$.
+The former means processes $P$ and $Q$ are sharing a quantum channel $c$, while the latter one means that the channel is destroyed and the two processes are waiting for a quantum message destruction.
+There is also a three party parallel process $\parll{P}{c}{\parl{P'}{Q}}$, referring to that the processes the two pairs, $P$ and $P'$ as well as $P'$ and $Q$, are sharing a quantum channel $c$, respectively, same as the situation before the swapping in \Cref{fig:background-circuit-exampleb}. The other single processes and actions are similar to the ones appearing in \Cref{fig:q-pi-semantics1}.
 
-Evaluating an initial configuration
-{
-$\pcell{\qsend{1}{c}{m}^0.0}{10}{\cn{Cat}}
-\pcell{\qrev{c}{x}.0}{10}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}$
-}
-results in the transitions steps in \Cref{fig:q-pi-example}.
-The initial configuration instantiates the parameters in the configuration pattern in \Cref{fig:q-pi-semantics2}.
-Specifically, we initialize the process cells $\overline{\varphi}$ as two distinct elements: \cn{Cat} and \cn{Dan},
-with \cn{Cat} containing a sending process and \cn{Dan} containing a receiver process; 
-\cn{comm} is initialized as $\emptyset$ and \cn{pred} has value \cn{F}.
-In the beginning \cn{Cat} and \cn{Dan} have $10$ pieces of qubit resources \footnote{A piece of qubit resource is user definable and it might not be exactly as one qubit.}.
-We first apply rule \rulelab{GC} on the initial configuration
-that conveys the sending operation from \cn{Cat} to \cn{Dan},
-with the following two rule applications (\rulelab{Grant} and \rulelab{FC}) to grant and purge the \rulelab{GC} step.
-During the \rulelab{GC} application, \cn{Cat} and \cn{Dan} lose a piece of resource that is enough to send out the quantum message $m$. 
-The next step applies rule \rulelab{PC} that delivers a message the label $(1.c.m)^0$;
-such step requires the application of an extra rule \rulelab{Com} to communicates the sender and receiver in the \cn{Dan} cell.
-Then, the two following applications (\rulelab{Grant} and \rulelab{AC}) to grant and purge this step.
+\Cref{fig:q-pi-example} shows a multiset of three processes that sends a quantum message from \cn{Cat} to \cn{Dan} via a router $r_1$,
+with the three process definitions on the top. $r_1$ is a recursive process definition. In these transition steps, we omit the function call steps for $Cat$, $r_1$, and $Dan$ in each membranes.
+We first apply rule \rulelab{Shift}, in \Cref{fig:q-pi-semantics2}, to move the channel operation out of \cn{Cat}'s membrane, and we call function $r_1$ and choose its left branch $\down{c}r_1$ through the \rulelab{CL} application.
+Obviously, membrane $r_1$ is now suitable for another \rulelab{Shift} application.
+We then apply two \rulelab{Self} applications to change the \cn{Cat} and $r_1$ membranes to include the channel $c$,
+meaning that the two membranes are now ready to communicate.
 
-The final configuration results in $\pcell{0}{9}{\cn{Cat}}
-\pcell{0}{9}{\cn{Dan}} 
-\qcell{\emptyset}{\cn{comm}}
-\qcell{\texttt{F}}{\cn{pred}}$
-having process cells being all unit processes $0$ as well as cells \cn{comm} and \cn{pred} are purged.
-Such configuration is a satisfied terminated state. However, configuration can transition to a stuck state, i.e., an error state that is not a satisfied final state.
-We define a satisfied terminated and stuck configurations below.
+After applying rule \rulelab{Cohere1}, membranes \cn{Cat} and $r_1$ share a quantum channel $c$.
+In the new system in \Cref{fig:q-pi-semantics2}, sharing quantum channels happens between two or three processes, represented by the different parallel operations. The two party parallel between \cn{Cat} and $r_1$ represents that a Bell pair is prepared through the two qubit resources $c$ in each of the membranes before the application.
+
+After similar intermediate steps, we apply rule \rulelab{Cohere2} to make a three party parallel operation.
+As we mentioned above, the three party operation means that the adjacent processes share a quantum channel, referring to that \cn{Cat} and $r_1$ as well as $r_1$ and \cn{Dan} share two pairs of channel $c$, but \cn{Cat} and \cn{Dan} do not share a channel.
+To connect \cn{Cat} and \cn{Dan}, we apply rule \rulelab{Swap} to swap the position of $r_1$ and \cn{Dan}, so that \cn{Cat} directly connects to \cn{Dan} via channel $c$, but $r_1$'s channel is downgraded to a classical channel $\overline{c}$ \footnote{$r_1$ is a function that creates a new channel $c$ every time it is called.}.
+We believe that this behavior faithfully reflects the state after the swapping in \Cref{fig:background-circuit-exampleb},
+because even though there is still a quantum channel connecting the two qubit resources inside membrane $r_1$,
+it is impossible to be reused in constructing any other quantum channels
+and can be viewed as a retired quantum channel that is waiting to be destroyed. 
+
+After the \rulelab{Swap} application, we then apply rule \rulelab{Measure} to destroy the quantum channel $c$ and \rulelab{QCom} to destroy the quantum message $m$; both are similar to the ones in \Cref{fig:tele-example}.
+We remove the transition label in the \rulelab{Measure} rule in \Cref{fig:q-pi-semantics2}
+because a more important transition label in the system in \Cref{fig:q-pi-semantics2} is the path information indicating the message transmission directions, such as the edges $\cn{Cat}\to r_1$ and ${\cn{Cat}\to \cn{Dan}}$ (handled by rules \rulelab{Cohere1} and \rulelab{Cohere2}),
+while the system in \Cref{fig:q-pi-semantics1} needs the label in rule \rulelab{Measure} to show the name of a quantum channel created from a GHZ application.
+
+\ignore{
 
 \begin{definition}\label{def:stuck}\rm[Terminated and Stuck Configurations]
 A configuration $C$ is a terminated state if no rule is possible to apply to $C$ and:
@@ -434,8 +485,6 @@ A configuration $C$ is a terminated state if no rule is possible to apply to $C$
 $C$ is stuck if no rule is possible to apply to it and the above conditions are not satisfied.
 \end{definition}
 
-
-\ignore{
 As an example of the QAM syntax, the above configuration defines the initial program state for sending a message $c.m$ from $\cn{Cat}$ to $\cn{Dan}$ via the router $r_1$, as part of the communication in \Cref{fig:q-pi-example}. Initially, the relation cell stores the connectivity between \cn{Cat}, \cn{Dan}, and $r_1$, with the success rates. 
 The global time is initialized as $0$ in the \cn{gt} cell, and the predicate cell has a fixed value $\texttt{false}$.
 The message ($\qsend{1}{c}{m}$) sent from \cn{Cat} has an initial probability value $1$.
