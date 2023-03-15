@@ -4,11 +4,14 @@
 {\small
   \[\begin{array}{llcl} 
       \texttt{Variable} & x,y \\
-      \texttt{Probability} & p &\in &\Rs\\
-      \texttt{Quantum Message} & m &\in& \mathbb{M}\\
-      \texttt{Classical Message} & m_l,m_r &\in& \mathbb{M}_{l\mid r}\\
+      \texttt{Message Names} & m &\in& \mathbb{M}\\
     \texttt{Quantum Channel} & c &\in& \Ls\\
-    \texttt{Classical Channel} & \overline{c} &\in& \Ls\\
+      \texttt{Named Quantum Message} & q &::=& m\mid \up{q}\\
+      \texttt{Classical Message} & \wideparen{q}\\
+      \texttt{Message} & \mathpzc{q} &::=& q \mid \circ \mid \wideparen{q} \\
+      \texttt{Message with Top} & \kappa &::=& \mathpzc{q} \mid \top \\
+    \texttt{Quantum Channel} & c &\in& \Ls\\
+    \texttt{Classical Channel} & \wideparen{c} &\in& \Ls\\
     \texttt{Time Stamp} & t &\in& \mathbb{T}\\
 \ignore{
     \texttt{Timed Label} & \alpha^t &::=& \qsend{p}{c}{m}^{t}\\
@@ -53,44 +56,67 @@ Given a QAM system $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initi
 
 
 \begin{figure}[t]
-{\small
+{\footnotesize
 $\textcolor{blue}{\text{Syntax:}}\\$
   \[\begin{array}{llcl} 
-      \texttt{Process} & P,Q & ::= & 0 \mid \down{c}{P}\mid \send{m}{x}{P} \mid \rev {x}{P} \mid \csend{\overline{c}}{m_{l\mid r}}{P}\mid\crev{\overline{c}}{x}{P} \\[0.2em]
-    &&\mid& R \mid \parp{P}{Q}\mid \comp{P} \mid \mer{m_l}{x}{m_r}{P}\\[1em]
-    \texttt{Multi-Process} & R & ::= & \scell{\overline{P}} \mid \pscell{\overline{P}}{c}\\[0.2em]
+      \texttt{Channel Package} & \wideparen{\kappa} & ::= & c(\kappa) \\[0.2em]
+      \texttt{Action} & A & ::= & \downa{c}\,\mid \encode{\mathpzc{q}} \mid \encode{\wideparen{c}(x)} \mid \decode{x} \mid \csenda{\wideparen{c}}{\wideparen{m}}\mid\creva{\wideparen{c}}{x} \\[0.2em]
+
+      \texttt{Process} & P,Q & ::= & 0 \mid AP\mid \parp{P}{Q}\mid \comp{P} \mid \pscell{\overline{P}}{\wideparen{\kappa}} \\[0.2em]
       \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P}}
     \end{array}
   \]
-
 $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
+
    \inferrule[Self]{}
-       {\down{c}{P} \longrightarrow \pscell{P}{c}}
+       { \down{c}{P} \longrightarrow \pscell{P}{c}}
 
    \inferrule[Cohere]{}
-       { \pard{\pscell{\pard{P}{...}}{c}}{\down{c}{Q}} \longrightarrow \pscell{\pard{Q}{\pard{P}{...}}}{c}}
+       { \pard{\pscell{...}{c}}{\down{c}{P}} \longrightarrow \pscell{\pard{P}{...}}{c}}
 
    \inferrule[Decohere]{}
-       {\pscell{\pard{Q}{...}}{c} \longrightarrow \pard{{\pscell{...}{c}}}{Q} }
+       {\pscell{\pard{P}{...}}{\wideparen{\kappa}} \longrightarrow \pard{\pscell{...}{\wideparen{\kappa}}}{P} }
 
    \inferrule[Clean]{}
-       {\pscell{\emptyset}{c} \longrightarrow \emptyset}
+       {\pscell{\emptyset}{\wideparen{\kappa}} \longrightarrow \emptyset }
 
+   \inferrule[Encode]{}
+       {\pscell{\pard{\encode{\mathpzc{q}}P}{...}}{c(\kappa)} \xrightarrow{c.\mathpzc{q}} \pscell{\pard{P}{...}}{c(\mathpzc{q}\,\sqcap\kappa)} }
 
-   \inferrule[Measure]{}
-       {\pscell{\overline{P}}{c} \xrightarrow{c} \scell{\overline{P}[\overline{c}/c]}}
+   \inferrule[Move]{}
+       {\pscell{\pard{P}{...}}{\wideparen{\kappa}} 
+             \longrightarrow P\pscell{{...}}{\wideparen{\kappa}} }
 
-   \inferrule[QCom]{}
-       {\scell{\pard{\send{m}{x}{P}}{\pard{\rev{y}{P'}}{\overline{Q}}}}
-               \xrightarrow{m} \pard{\pard{P[m_l/x]}{P'[m_r/y]}}{\overline{Q}}}
+   \inferrule[Back]{}
+       {P\pscell{{...}}{\wideparen{\kappa}}
+             \longrightarrow \pscell{\pard{P}{...}}{\wideparen{\kappa}}  }
+
+  \inferrule[QCom]{}
+      { \pard{\csend{\wideparen{c}}{\wideparen{q}}{P}}{\encode{\overline{c}(x)}{Q}}
+           \xrightarrow{\wideparen{c}.\kappa} \pard{P}{\encode{\overline{q}}Q}}
 
   \inferrule[Com]{}
-      { \pard{\csend{\overline{c}}{m_l}{P}}{\crev{c}{x}{Q}}
-           \longrightarrow \pard{P}{Q[m_l/x]}}
+      { \pard{\csend{\wideparen{c}}{\wideparen{q}}{P}}{\crev{\wideparen{c}}{x}{Q}}
+           \xrightarrow{\wideparen{c}.\wideparen{q}} \pard{P}{Q[\wideparen{q}/x]}}
 
-  \inferrule[Recover]{}
-      { \mer{m_l}{x}{m_r}{P} \xrightarrow{m_l\wr m_r} P[m/x]}
+   \inferrule[Decode0]{}
+       {\pscell{\pard{\decode{x}P}{\overline{Q}}}{c} \xrightarrow{c.\circ} {\pard{P[\circ/x]}{\overline{Q}}} }
+
+   \inferrule[DLock1]{}{\decode{x}P \longrightarrow \decode{x}(P)}
+
+   \inferrule[DLock2]{}{\pard{\decode{x}(\overline{P})}{\decode{x}{Q}} \longrightarrow \decode{x}(\pard{\overline{P}}{Q})}
+
+   \inferrule[DecodeC]{}
+       {\pscell{\decode{x}(\overline{P})}{c(\wideparen{q})} \xrightarrow{c.\wideparen{q}} {\overline{P}[\wideparen{q}/x]} }
+
+   \inferrule[DecodeQ]{}
+       {\pscell{\pard{\pard{\decode{x}P}{Q}}{\overline{P}}}{c(q)}
+                \xrightarrow{c.q} \pard{\pard{P[\wideparen{q}/x]}{\pscell{Q}}{c(\up{q})}}{\overline{P}} }
+
+   \inferrule[DecodeM]{\cn{fresh}\;m}
+       {\pscell{\pard{\pard{\decode{x}P}{Q}}{\overline{P}}}{c(\top)}
+                \xrightarrow{c.m} \pard{\pard{P[\wideparen{m}/x]}{\pscell{Q}{c(\up{m})}}}{\overline{P}} }
 
    \inferrule[ID]{}
        {\pard{0}{P} \longrightarrow P}
@@ -108,67 +134,150 @@ $\textcolor{blue}{\text{Semantics:}}\\$
        {\comp{P} \longrightarrow 0}
   \end{mathpar}
 }
+{
+\begin{center}
+$ 
+\begin{array}{l}
+c(\circ)\equiv c
+\quad
+\circ \sqcap \mathpzc{q} \equiv \mathpzc{q}
+\quad
+\mathpzc{q} \sqcap \mathpzc{q'} \equiv \top\;\cn{when}\;\mathpzc{q} \neq \mathpzc{q'} \wedge \mathpzc{q'}\neq \circ
+\quad
+\wideparen{q}\; \sqcap \up{q} \equiv q
+\quad
+\mathpzc{q} \sqcap \mathpzc{q} \equiv \circ
+\quad
+\mathpzc{q} \sqcap \top = \top
+\end{array}
+$
+\end{center}
+}
 \caption{Single-party communication syntax and semantics}
   \label{fig:q-pi-semantics1}
 \end{figure}
 
 \begin{figure}[t]
-{\small
+{\hspace*{-1em}
+\begin{subfigure}[t]{0.57\textwidth}
+{\footnotesize
 \[
-\begin{array}{lll}
-&
-\pard{\down{c}{\send{m}{x}{\csend{c}{x}{0}}}}{
-\down{c}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}
+\begin{array}{l}
+\pard{\down{c}{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}}{
+\down{c}{\crev{\wideparen{c}}{u}{\encode{u}0}}
 }
-&
 \\[1em]
+\begin{array}{ll}
+(\rulelab{Self})\;
 \longrightarrow
 &
-\pard{\pscell{\send{m}{x}{\csend{c}{x}{0}}}{c}}
-{\down{c}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}}
-&
-(\rulelab{Self})
+\pard{\pscell{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{c}}
+{\down{c}{\crev{\wideparen{c}}{u}{\encode{u}0}}}
+
 \\[1em]
+(\rulelab{Cohere})\;
 \longrightarrow
 &
-\pscell{\pard{\send{m}{x}{\csend{c}{x}{0}}}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}}{c}
-&
-(\rulelab{Cohere})
+\pscell{\pard{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{\crev{\wideparen{c}}{u}{\encode{u}0}}}{c}
 \\[1em]
-\xrightarrow{c}
+(\rulelab{Encode})\;
+\xrightarrow{c.m}
 &
-\scell{\pard{\send{m}{x}{\csend{\overline{c}}{x}{0}}}{\rev{y}{\crev{\overline{c}}{u}{\mer{u}{v}{y}{0}}}}}
-&
-(\rulelab{Measure})
+\pscell{\pard{{\decode{x}{\csend{\wideparen{c}}{x}{0}}}}{\crev{\wideparen{c}}{u}{\encode{u}0}}}{c(m)}
 \\[1em]
-\xrightarrow{m}
+(\rulelab{DecodeQ})\;
+\xrightarrow{c.m}
 &
-\pard{\csend{\overline{c}}{m_l}{0}}{\crev{\overline{c}}{u}{\mer{u}{v}{m_r}{0}}}
-&
-(\rulelab{QCom})
+\pard{\csend{\wideparen{c}}{\wideparen{m}}{0}}
+{\pscell{{\crev{\wideparen{c}}{u}{\encode{u}0}}}{c(\up{m})}}
 \\[1em]
+(\rulelab{Move})\;
 \longrightarrow
 &
-\pard{0}{\mer{m_l}{v}{m_r}{0}}
-&
-(\rulelab{Com})
+\pard{\csend{\wideparen{c}}{\wideparen{m}}{0}}
+{{\crev{\wideparen{c}}{u}{\encode{u}0}}\pscell{\emptyset}{c(\up{m})}}
 \\[1em]
-\xrightarrow{m_l\wr m_r}
+(\rulelab{Com})\;
+\xrightarrow{\wideparen{c}.\wideparen{m}}
 &
-\pard{0}{0}
-&
-(\rulelab{Recover})
+\pard{0}
+{{{\encode{\wideparen{m}}0}}\pscell{\emptyset}{c(\up{m})}}
 \\[1em]
+(\rulelab{Back})\;
 \longrightarrow
 &
-0
+\pard{0}
+{\pscell{{{\encode{\wideparen{m}}0}}}{c(\up{m})}}
+\\[1em]
+(\rulelab{Encode})\;
+\xrightarrow{c.m}
 &
-(\rulelab{ID})
+\pard{0}
+{\pscell{{{0}}}{c(m)}}
+\\[1em]
+\longrightarrow...
+\end{array}
 \end{array}
 \]
 }
-\caption{Quantum Teleportation transitions based on the model in \Cref{fig:q-pi-semantics1}.}
+\caption{Quantum Teleportation}
   \label{fig:tele-example}
+\end{subfigure}
+%
+\begin{subfigure}[t]{0.38\textwidth}
+{\footnotesize
+\[
+\begin{array}{l}
+\pard{\down{c}{\encode{\wideparen{m}}\decode{x}{0}}}{
+\down{c}{\decode{x}{0}}
+}
+\\[1em]
+\begin{array}{ll}
+(\rulelab{Self})\;
+\longrightarrow
+&
+\pard{\pscell{\encode{\wideparen{m}}\decode{x}{0}}{c}}{
+\down{c}{\decode{x}{0}}
+}
+\\[1em]
+(\rulelab{Cohere})\;
+\longrightarrow
+&
+\pscell{\pard{\encode{\wideparen{m}}\decode{x}{0}}{\decode{x}{0}}}{c}
+\\[1em]
+(\rulelab{Encode})\;
+\xrightarrow{c.\wideparen{m}}
+&
+\pscell{\pard{\decode{x}{0}}{\decode{x}{0}}}{c(\wideparen{m})}
+\\[1em]
+(\rulelab{DLock1})\;
+\longrightarrow
+&
+\pscell{\pard{\decode{x}{(0)}}{\decode{x}{0}}}{c(\wideparen{m})}
+\\[1em]
+(\rulelab{DLock2})\;
+\longrightarrow
+&
+\pscell{\decode{x}{(\pard{0}{0})}}{c(\wideparen{m})}
+\\[1em]
+(\rulelab{DecodeC})\;
+\xrightarrow{c.\wideparen{m}}
+&
+\pard{{0}}{{0}}
+\\[1em]
+(\rulelab{ID})\;
+\longrightarrow
+&
+0
+\end{array}
+\end{array}
+\]
+}
+\caption{Super Dense Coding}
+  \label{fig:super-example}
+\end{subfigure}
+}
+\caption{Examples of \Cref{fig:q-pi-semantics1}}
 \end{figure}
 
 We first investigate the quantum communication between parties in a single location, which models quantum teleportation and GHZ in \Cref{sec:background}.
@@ -176,17 +285,25 @@ We first investigate the quantum communication between parties in a single locat
 The syntax is enlightened by different process algebras, such as CHEM, $\Pi$-calculus, and CSP,
 as we instantiate QAM configurations as a multiset of processes $\overline{P}$ representing processes being paralleled,
 as the red part in \Cref{fig:q-pi-semantics1}.
-A single process can be a unit one $0$; $\down{c}{P}$ intends to join a quantum channel then perform $P$.
-$\send{m}{x}{P}$ destroys a quantum message $m$ and keeps a classical portion $m_l$,
-while $\rev{x}{P}$ receives another portion $m_r$ from a quantum message destruction.
-$\csend{\overline{c}}{m_{l\mid r}}{P}$ and $\crev{\overline{c}}{x}{P}$
-communicate a classical message through a classical channel $\overline{c}$.
-Replication process $\comp{P}$ refers to that $P$ can repeatedly happen zero or multiple times
+Each process performs a sequence of actions, which can be
+a channel generation action $\downa{c}$ meaning that a quantum channel is created;
+an encoding action $\encode{\mathpzc{q}}$ encodes a message $\mathpzc{q}$, quantum or classical, to a quantum channel;
+$\encode{\wideparen{c}(x)}$ is also an encoding action but waiting for a message named $x$ in a classical channel $\wideparen{c}$;
+A decoding action $\decode{x}$ decodes the message attached in a quantum channel and names it as $x$;
+and a classical sending and receiving actions
+$\csenda{\wideparen{c}}{\wideparen{m}}$ and $\creva{\wideparen{c}}{x}$, similar to the ones in $\Pi$-calculus.
+One thing worth nothing is that every quantum channel $c$ has a classical counterpart $\wideparen{c}$,
+which conveys classical messages to different locations or merges these messages to a quantum message.
+
+A single process can be a unit one $0$; $AP$ finishes action $A$ then continues $P$;
+replication process $\comp{P}$ refers to that $P$ can repeatedly happen zero or multiple times
 and $\parp{P}{Q}$ is a choice operation.
-A membrane of multi-processes $\pscell{\overline{P}}{c}$ represents the multiple processes $\overline{P}$ are sharing a quantum channel named $c$, while membrane $\scell{\overline{P}}$ means that the channel is about to lose and a quantum message destruction is happening between two parties.
-These two processes model the \coqe{alice} application in \Cref{fig:background-circuit-examplea},
-which in fact happen at the same time. Here, we model them as two consecutive steps.
-$\mer{m_l}{x}{m_r}{P}$ recovers a quantum message $m$ and recognizes it as variable $x$ in $P$, by merging two classical portions $m_l$ and $m_r$.
+A membrane of multi-processes $\pscell{\overline{P}}{\wideparen{k}}$ represents the multiple processes $\overline{P}$ are sharing a quantum channel named $\wideparen{k}$.
+
+A quantum channel can be understood as a house.
+The simplest format is a pure channel $c$ referring to no message occupies the channel $c(\circ)$ (abbreviated as $c$), so it is ready to receive some messages;
+$c(q)$ or $c(\wideparen{q})$ means a quantum or classical message occupies the channel $c$, respectively;
+while $c(\top)$ means that $c$ contains an unknown message $\top$.
 
 On the top of \Cref{fig:tele-example}, a multiset of two processes show the quantum teleportation implementation in QAM,
 where the left process (Alice) sends a quantum message to the right (Bob).
@@ -199,14 +316,30 @@ If that happens, Bob cannot gain back his channel,
 referring to the fact that once a party's quantum channel is lost, its qubit resource is also lost.
 Rule \rulelab{Clean} removes the empty membrane from a system.
 
-We then apply the \rulelab{Measure} and \rulelab{QCom} applications in \Cref{fig:tele-example} to destroy the quantum channel and the message $m$; so that Alice holds a classical portion of the message $m_l$, while Bob holds another piece $m_r$, which model the \coqe{alice} application in \Cref{fig:background-circuit-examplea}, to destroy a quantum message $m$.
-In quantum teleportation, these two rule applications happen at the exact same time,
-but we model the procedure as first to destroy the quantum channel $c$ through rule \rulelab{Measure},
-and then destroy message $m$ through rule \rulelab{QCom}. 
+We then apply rule \rulelab{Encode} to push the quantum message $m$ to the channel $c$.
+Giving a existing quantum channel $c(\kappa)$ and a new coming message $\mathpzc{q}$,
+rule \rulelab{Encode} utilizes function $\sqcap$
+to compute the meet of $\mathpzc{q}$ and $\kappa$, as the result of the message pushing.
+We design the message and the $\sqcap$ function based on the real-world observations of quantum network communications,
+which only have limited kinds of messages. First, there is an initial unit message $\circ$ representing a quantum message being just created without encoding any information, such as a series of $\ket{0}$ qubits.
+Second, if we encode a message $\mathpzc{q}$, quantum or classical, with a pure channel that has message $\circ$, the state results in $c(\mathpzc{q})$,
+but if we push the same message twice, the behavior erases the message and the state becomes $c(\circ)$.
+Third, a general quantum message $m$ is usually transmitted and analyzed through an algorithm that utilize quantum teleportation as a subroutine to convey the message, which means that it can be viewed as a division of two parts: a classical message $\wideparen{m}$ and a quantum remain $\up{m}$, and the two parts can be merged back through the encoding operation back to message $m$.
+This behavior is captured by the equation rule $\wideparen{q}\; \sqcap \up{q} \equiv q$ in \Cref{fig:q-pi-semantics1},
+where we encode a classical message $\wideparen{q}$ with an existing quantum channel $c(\up{q})$ that has the quantum remain $\up{q}$;
+in such case, the encoding results in $c(q)$.
+Fourth, the other cases are rarely used in the current quantum protocols, and we view them as some unknown state captured by $\top$ and we develop the decoding rule \rulelab{DecodeM} to capture such behavior. In such case, there will be a new fresh message generated in the system.
 
-The next two rule applications, \rulelab{Com} and \rulelab{Recover}, model the \coqe{bob} application in  \Cref{fig:background-circuit-examplea}, allowing Bob to recover the message $m$.
-Rule \rulelab{Com} delivers the classical message remains $m_l$ that Alice holds to Bob, which is a traditional $\Pi$-calculus message communication rule, while rule \rulelab{Recover} takes Alice and Bob's classical portions and reproduce the quantum message $m$.
-Finally, we can apply rule \rulelab{ID} to rewrite the multiset to a unit process.
+We then apply rule \rulelab{DecodeQ} to destory the channel $c(m)$, so that Alice holds a classical portion of the message $\wideparen{m}$, while Bob holds the quantum remain $\up{m}$. The above two rule applications model the \coqe{alice} application in \Cref{fig:background-circuit-examplea}, to destroy a quantum message $m$.
+
+The rest rule applications in \Cref{fig:tele-example}, especially \rulelab{Com} and \rulelab{Encode}, model the \coqe{bob} application in  \Cref{fig:background-circuit-examplea}, allowing Bob to recover the message $m$.
+Rule \rulelab{Com} delivers the classical message $\wideparen{m}$ that Alice holds to Bob, which is a traditional $\Pi$-calculus message communication rule, while rule \rulelab{Encode} pushes $\wideparen{m}$ to the channel $c(\up{m})$, so the final state of the channel becomes $c(m)$, holding the message $m$.
+
+\Cref{fig:super-example} provides an example transitions for modeling the super dense coding algorithm,
+the key idea is that a classical message $\wideparen{m}$ can be attached to an initial quantum channel $c$, and the rule \rulelab{DecodeC} application mimics the measurement step in the algorithm to produce the classical message $\wideparen{m}$ out of the quantum channel.
+In QAM, we utilize the decoding action to measure a quantum channel and produce different results.
+In fact, the circuit implementations of the decoding operations for channels containing quantum message $c(m)$ and classical message $c(\wideparen{m})$ are different, but the functionalities are the same, which is why we have different rules (\rulelab{DecodeQ} and \rulelab{DecodeC}) for them.
+
 Rules \rulelab{CL} and \rulelab{CR} in \Cref{fig:q-pi-semantics1} are the semantics for choice operation that nondeterministically choose a process as continuation, while rules \rulelab{MT} and \rulelab{NT} are the semantics for the replication process.
 These four rules are inherent from $\Pi$-calculus.
 
@@ -216,55 +349,75 @@ These four rules are inherent from $\Pi$-calculus.
 {\small
 $\textcolor{blue}{\text{Syntax:}}\\$
   \[\begin{array}{llcl} 
-      \texttt{Action} & A & ::= & \downa{c}\,\mid \senda{m}{x} \mid \reva{x} \mid \csenda{\overline{c}}{m_{l\mid r}}\mid\creva{\overline{c}}{x}\mid \mera{m_l}{x}{m_r} \\[0.2em]
+      \texttt{Channel Package} & \wideparen{\kappa} & ::= & c(\kappa) \\[0.2em]
+      \texttt{Action} & A & ::= & \downa{c}\,\mid \encode{\mathpzc{q}} \mid \encode{\wideparen{c}(x)} \mid \decode{x} \mid \csenda{\wideparen{c}}{\wideparen{m}}\mid\creva{\wideparen{c}}{x} \\[0.2em]
 
-      \texttt{Single Process} & P,Q & ::= & 0 \mid A P \mid \parp{P}{Q}\mid \comp{P} \mid P_{c_1}^{c} \mid P_{c_1}\\[0.2em]
-
-    \texttt{Membrane Process with Channel} & P_{c_1}^c & ::= & \scell{P}_{c_1}^c \\[0.2em]
-
-    \texttt{Membrane Process} & P_{c_1} & ::= & \scell{P}_{c_1} \\[0.2em]
-
-    \texttt{Parallel Process} & R & ::= & P \mid \parl{P}{Q} \mid \parll{P}{c}{Q} \mid \parll{P}{c}{\parl{P'}{Q}} \\[0.2em]
-
-    \texttt{Relation Pairs} & S & ::= & \overline{c_1 \to c_2} \\[0.2em]
-
-      \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{R}}
+      \texttt{Process} & P,Q & ::= & 0 \mid AP\mid \parp{P}{Q}\mid \comp{P}
+              \mid \pscell{\overline{P}}{\wideparen{\kappa}?}_{\textcolor{red}{\overline{c}}} \\[0.2em]
+      \textcolor{red}{\texttt{Membrane Process Abbr.}} & \textcolor{red}{P^{\wideparen{\kappa}?}_{\overline{c}}} &
+                 \textcolor{red}{::=} & \textcolor{red}{\pscell{\overline{P}}{\wideparen{\kappa}?}_{\overline{c}}}\\[0.2em]
+    \textcolor{red}{\texttt{Relation Pairs}} & \textcolor{red}{S} 
+        & \textcolor{red}{::=} & \textcolor{red}{\overline{c_1 \to c_2}} \\[0.2em]
+      \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P^{\wideparen{\kappa}?}_{\overline{c}}}}
     \end{array}
   \]
 
 $\textcolor{blue}{\text{Semantics:}}\\$
   \begin{mathpar}
-   \inferrule[Shift]{}
-       { \scell{A P}_{c} \longrightarrow A \scell{P}_{c}}
-
    \inferrule[Self]{}
-       {\down{c}{P_{c_1}} \longrightarrow P^{c}_{c_1}}
+       {\scell{\down{c}{P}}_{c_1} \longrightarrow \pscell{P}{c}_{c_1}}
 
-   \inferrule[Cohere1]{c_1\to c_2 \in S}
-       { \pard{P^{c}_{c_1}}{Q^{c}_{c_2}} \xrightarrow{c_1\to c_2} \parll{P_{c_1}}{c}{Q_{c_2}}}
-
-   \inferrule[Cohere2]{c_2\to c_3 \in S}
-       { \pard{\parll{P_{c_1}}{c}{Q^{c}_{c_2}}}{P_{c_3}^c} \xrightarrow{c_1 \to c_3} \parll{P_{c_1}}{c}{\parl{Q_{c_2}}{P_{c_3}}}}
-
-   \inferrule[Swap]{}
-       { \parll{P}{c}{\parl{P'}{Q}} \longrightarrow \pard{\parll{P}{c}{Q}}{P'[\overline{c}/c]}  }
+   \inferrule[Cohere1]{|\overline{c}|\le 1\\c_1\to c_2 \in S}
+       { \pard{\pscell{...}{c}_{\overline{c},c_1}}{P^c_{c_2}} \longrightarrow
+           \pscell{\pard{...}{P}}{c}_{\overline{c},c_1,c_2}}
 
    \inferrule[Decohere]{}
-       {\parll{P}{c}{Q} \longrightarrow \pard{P}{Q} }
+       {\pscell{\pard{P}{...}}{\wideparen{\kappa}}_{c_1,\overline{c}} \longrightarrow 
+           \pard{\pscell{...}{\wideparen{\kappa}}_{\overline{c}}}{P_{c_1}} }
 
-   \inferrule[Measure]{}
-       {\parll{P}{c}{Q} \longrightarrow \parl{P[\overline{c}/c]}{Q[\overline{c}/c]}}
+   \inferrule[Comm]{}
+       { \pscell{P,Q}{\wideparen{\kappa}}_{c_1,c_2} \longrightarrow \pscell{Q,P}{\wideparen{\kappa}}_{c_2,c_1}}
 
-   \inferrule[QCom]{}
-       {\parl{\send{m}{x}{P}}{\rev{y}{P'}}
-               \xrightarrow{m} \pard{P[m_l/x]}{P'[m_r/y]}}
+   \inferrule[Swap]{}
+       { \pscell{\pard{\pard{P}{P'}}{Q}}{c}_{c_1,c_2,c_3}
+           \longrightarrow  \pard{\pscell{\pard{P}{Q}}{c}_{c_1,c_3}}{P'} }
+
+   \inferrule[Clean1]{}
+       {\pscell{\emptyset}{\wideparen{\kappa}}_{\overline{c}} \longrightarrow \emptyset }
+
+   \inferrule[Encode]{}
+       {\pscell{\pard{\encode{\mathpzc{q}}P}{...}}{c(\kappa)}_{\overline{c}} \xrightarrow{c.\mathpzc{q}} \pscell{\pard{P}{...}}{c(\mathpzc{q}\,\sqcap\kappa)}_{\overline{c}} }
+
+   \inferrule[Move]{}
+       {\pscell{\pard{P}{...}}{\wideparen{\kappa}}_{\overline{c}} 
+             \longrightarrow P\pscell{{...}}{\wideparen{\kappa}}_{\overline{c}} }
+
+   \inferrule[Back]{}
+       {P\pscell{{...}}{\wideparen{\kappa}}_{\overline{c}}
+             \longrightarrow \pscell{\pard{P}{...}}{\wideparen{\kappa}}_{\overline{c}}  }
+
+  \inferrule[QCom]{}
+      { \pard{\csend{\wideparen{c}}{\wideparen{q}}{P}}{\encode{\wideparen{c}(x)}{Q}}
+           \xrightarrow{\wideparen{c}.\kappa} \pard{P}{\encode{\wideparen{q}}Q}}
 
   \inferrule[Com]{}
-      { \pard{\csend{\overline{c}}{m_l}{P}}{\crev{c}{x}{Q}}
-           \longrightarrow \pard{P}{Q[m_l/x]}}
+      { \pard{\csend{\wideparen{c}}{\wideparen{q}}{P}}{\crev{\wideparen{c}}{x}{Q}}
+           \xrightarrow{\wideparen{c}.\wideparen{q}} \pard{P}{Q[\wideparen{q}/x]}}
 
-  \inferrule[Recover]{}
-      { \mer{m_l}{x}{m_r}{P} \xrightarrow{m_l\wr m_r} P[m/x]}
+   \inferrule[Decode0]{}
+       {\pscell{\pard{\decode{x}P}{Q}}{c}_{c_1,c_2} \xrightarrow{c.\circ} {\pard{\scell{P[\circ/x]}_{c_1}}{\scell{Q}_{c_2}}} }
+
+   \inferrule[DecodeC1]{}
+       {\pscell{\pard{\decode{x}P}{\decode{x}Q}}{c(\wideparen{q})}_{c_1,c_2} \xrightarrow{c.\wideparen{q}}
+              \pard{\scell{P[\wideparen{q}/x]}_{c_1}}{\scell{Q[\wideparen{q}/x]}_{c_2}} }
+
+   \inferrule[DecodeQ1]{}
+       {\pscell{{\pard{\decode{x}P}{Q}}}{c(q)}_{c_1,c_2}
+                \xrightarrow{c.q} {\pard{\scell{P[\overline{q}/x]}_{c_1}}{\pscell{Q}}{c(\up{q})}_{c_2}} }
+
+   \inferrule[DecodeM1]{\cn{fresh}\;m}
+       {\pscell{{\pard{\decode{x}P}{Q}}}{c(\top)}_{c_1,c_2}
+                \xrightarrow{c.m} \pard{\scell{P[\overline{m}/x]}_{c_1}}{\pscell{Q}{c(\up{m})}_{c_2}} }
 
    \inferrule[ID]{}
        {\pard{0}{P} \longrightarrow P}
@@ -336,7 +489,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{Dan}{\cn{Dan}}}}
 {\qcellb{r_1}{r_1}}
 &
-\\[0.3em]
+\\[0.5em]
 \longrightarrow
 &
 \pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
@@ -344,7 +497,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{Dan}{\cn{Dan}}}
 &
 (\rulelab{Shift})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow
 &
 \pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
@@ -352,7 +505,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{Dan}{\cn{Dan}}}
 &
 (\rulelab{CL})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow
 &
 \pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
@@ -360,7 +513,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{Dan}{\cn{Dan}}}
 &
 (\rulelab{Shift})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow...\longrightarrow
 &
 \pard{\pard{\pcellb{\send{m}{x}{\csend{c}{x}{0}}}{c}{\cn{Cat}}}
@@ -368,7 +521,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{Dan}{\cn{Dan}}}
 &
 (\text{two}\;\rulelab{Self})
-\\[0.3em]
+\\[0.5em]
 \xrightarrow{\cn{Cat}\to r_1}
 &
 \pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
@@ -376,7 +529,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{Dan}{\cn{Dan}}}
 &
 (\rulelab{Cohere1})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow
 &
 \pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
@@ -384,7 +537,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{Dan}{\cn{Dan}}}
 &
 (\rulelab{CL})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow...\longrightarrow
 &
 \pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
@@ -392,7 +545,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\down{c}\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}
 &
 (\text{two}\;\rulelab{Shift})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow...\longrightarrow
 &
 \pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
@@ -400,15 +553,15 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\pcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{c}{\cn{Dan}}}
 &
 (\text{two}\;\rulelab{Self})
-\\[0.3em]
+\\[0.5em]
 \xrightarrow{\cn{Cat}\to \cn{Dan}}
 &
-\parl{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
-{\qcellb{r_1}{r_1}}}
+\parll{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
+{\qcellb{r_1}{r_1}}}{c}
 {\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}
 &
 (\rulelab{Cohere2})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow
 &
 \pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
@@ -416,7 +569,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{r_1}{r_1}}
 &
 (\rulelab{Swap})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow
 &
 \pard{\parl{\qcellb{\send{m}{x}{\csend{\overline{c}}{x}{0}}}{\cn{Cat}}}
@@ -424,7 +577,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{r_1}{r_1}}
 &
 (\rulelab{Measure})
-\\[0.3em]
+\\[0.5em]
 \xrightarrow{m}
 &
 \pard{\pard{\qcellb{\csend{\overline{c}}{m_l}{0}}{\cn{Cat}}}
@@ -432,7 +585,7 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 {\qcellb{r_1}{r_1}}
 &
 (\rulelab{QCom})
-\\[0.3em]
+\\[0.5em]
 \longrightarrow...
 \end{array}
 \end{array}
