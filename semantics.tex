@@ -82,7 +82,7 @@ $\textcolor{blue}{\text{Semantics:}}\\$
        {\pscell{\emptyset}{\wideparen{\kappa}} \longrightarrow \emptyset }
 
    \inferrule[Encode]{}
-       {\pscell{\pard{\encode{\mathpzc{q}}P}{...}}{c(\kappa)} \xrightarrow{c.\mathpzc{q}} \pscell{\pard{P}{...}}{c(\mathpzc{q}\,\sqcap\kappa)} }
+       {\pscell{\pard{\encode{\mathpzc{q}}P}{...}}{c(\kappa)} \longrightarrow \pscell{\pard{P}{...}}{c(\mathpzc{q}\,\sqcap\kappa)} }
 
    \inferrule[Move]{}
        {\pscell{\pard{P}{...}}{\wideparen{\kappa}} 
@@ -181,7 +181,7 @@ $
 \pscell{\pard{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{\crev{\wideparen{c}}{u}{\encode{u}0}}}{c}
 \\[1em]
 (\rulelab{Encode})\;
-\xrightarrow{c.m}
+\longrightarrow
 &
 \pscell{\pard{{\decode{x}{\csend{\wideparen{c}}{x}{0}}}}{\crev{\wideparen{c}}{u}{\encode{u}0}}}{c(m)}
 \\[1em]
@@ -210,7 +210,7 @@ $
 {\pscell{{{\encode{\wideparen{m}}0}}}{c(\up{m})}}
 \\[1em]
 (\rulelab{Encode})\;
-\xrightarrow{c.m}
+\longrightarrow
 &
 \pard{0}
 {\pscell{{{0}}}{c(m)}}
@@ -246,7 +246,7 @@ $
 \pscell{\pard{\encode{\wideparen{m}}\decode{x}{0}}{\decode{x}{0}}}{c}
 \\[1em]
 (\rulelab{Encode})\;
-\xrightarrow{c.\wideparen{m}}
+\longrightarrow
 &
 \pscell{\pard{\decode{x}{0}}{\decode{x}{0}}}{c(\wideparen{m})}
 \\[1em]
@@ -368,25 +368,25 @@ $\textcolor{blue}{\text{Semantics:}}\\$
        {\scell{\down{c}{P}}_{c_1} \longrightarrow \pscell{P}{c}_{c_1}}
 
    \inferrule[Cohere1]{|\overline{c}|\le 1\\c_1\to c_2 \in S}
-       { \pard{\pscell{...}{c}_{\overline{c},c_1}}{P^c_{c_2}} \longrightarrow
+       { \pard{\pscell{...}{c}_{\overline{c},c_1}}{P^c_{c_2}} \xrightarrow{c_1\to c_2}
            \pscell{\pard{...}{P}}{c}_{\overline{c},c_1,c_2}}
 
    \inferrule[Decohere]{}
        {\pscell{\pard{P}{...}}{\wideparen{\kappa}}_{c_1,\overline{c}} \longrightarrow 
-           \pard{\pscell{...}{\wideparen{\kappa}}_{\overline{c}}}{P_{c_1}} }
+           \pard{\pscell{...}{\wideparen{\kappa}}_{\overline{c}}}{\scell{P}_{c_1}} }
 
    \inferrule[Comm]{}
        { \pscell{P,Q}{\wideparen{\kappa}}_{c_1,c_2} \longrightarrow \pscell{Q,P}{\wideparen{\kappa}}_{c_2,c_1}}
 
    \inferrule[Swap]{}
-       { \pscell{\pard{\pard{P}{P'}}{Q}}{c}_{c_1,c_2,c_3}
-           \longrightarrow  \pard{\pscell{\pard{P}{Q}}{c}_{c_1,c_3}}{P'} }
+       { \pscell{\pard{\pard{P}{\down{c}P'}}{Q}}{c}_{c_1,c_2,c_3}
+           \longrightarrow  \pard{\pscell{\pard{P}{Q}}{c}_{c_1,c_3}}{\scell{P'}_{c_2}} }
 
-   \inferrule[Clean1]{}
+   \inferrule[Clean]{}
        {\pscell{\emptyset}{\wideparen{\kappa}}_{\overline{c}} \longrightarrow \emptyset }
 
    \inferrule[Encode]{}
-       {\pscell{\pard{\encode{\mathpzc{q}}P}{...}}{c(\kappa)}_{\overline{c}} \xrightarrow{c.\mathpzc{q}} \pscell{\pard{P}{...}}{c(\mathpzc{q}\,\sqcap\kappa)}_{\overline{c}} }
+       {\pscell{\pard{\encode{\mathpzc{q}}P}{...}}{c(\kappa)}_{\overline{c}} \longrightarrow \pscell{\pard{P}{...}}{c(\mathpzc{q}\,\sqcap\kappa)}_{\overline{c}} }
 
    \inferrule[Move]{}
        {\pscell{\pard{P}{...}}{\wideparen{\kappa}}_{\overline{c}} 
@@ -404,7 +404,7 @@ $\textcolor{blue}{\text{Semantics:}}\\$
       { \pard{\csend{\wideparen{c}}{\wideparen{q}}{P}}{\crev{\wideparen{c}}{x}{Q}}
            \xrightarrow{\wideparen{c}.\wideparen{q}} \pard{P}{Q[\wideparen{q}/x]}}
 
-   \inferrule[Decode0]{}
+   \inferrule[Decode01]{}
        {\pscell{\pard{\decode{x}P}{Q}}{c}_{c_1,c_2} \xrightarrow{c.\circ} {\pard{\scell{P[\circ/x]}_{c_1}}{\scell{Q}_{c_2}}} }
 
    \inferrule[DecodeC1]{}
@@ -420,7 +420,7 @@ $\textcolor{blue}{\text{Semantics:}}\\$
                 \xrightarrow{c.m} \pard{\scell{P[\overline{m}/x]}_{c_1}}{\pscell{Q}{c(\up{m})}_{c_2}} }
 
    \inferrule[ID]{}
-       {\pard{0}{P} \longrightarrow P}
+       {\pard{\scell{0}_c}{P} \longrightarrow P}
 
   \inferrule[CL]{}
       {\parp{P}{Q} \longrightarrow P}
@@ -477,9 +477,9 @@ $\textcolor{blue}{\text{Semantics:}}\\$
 \[
 \begin{array}{l}
 \begin{array}{l}
-Cat\triangleq\down{c}{\send{m}{x}{\csend{c}{x}{0}}}
+Cat\triangleq\down{c}{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}
 \qquad
-Dan\triangleq\down{c}{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}
+Dan\triangleq\down{c}{\crev{\wideparen{c}}{u}{\encode{u}0}}
 \qquad
 r_1\triangleq \parp{\down{c}r_1}{0}
 \end{array}\\
@@ -492,15 +492,15 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 \\[0.5em]
 \longrightarrow
 &
-\pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
+\pard{\pard{\pscell{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{c}_{\cn{Cat}}}
 {\qcellb{r_1}{r_1}}}
 {\qcellb{Dan}{\cn{Dan}}}
 &
-(\rulelab{Shift})
+(\rulelab{Self})
 \\[0.5em]
 \longrightarrow
 &
-\pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
+\pard{\pard{\pscell{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{c}_{\cn{Cat}}}
 {\qcellb{\down{c}r_1}{r_1}}}
 {\qcellb{Dan}{\cn{Dan}}}
 &
@@ -508,83 +508,95 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 \\[0.5em]
 \longrightarrow
 &
-\pard{\pard{\down{c}\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}
-{\down{c}\qcellb{r_1}{r_1}}}
+\pard{\pard{\pscell{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{c}_{\cn{Cat}}}
+{\pscell{r_1}{c}_{r_1}}}
 {\qcellb{Dan}{\cn{Dan}}}
 &
-(\rulelab{Shift})
-\\[0.5em]
-\longrightarrow...\longrightarrow
-&
-\pard{\pard{\pcellb{\send{m}{x}{\csend{c}{x}{0}}}{c}{\cn{Cat}}}
-{\pcellb{r_1}{c}{r_1}}}
-{\qcellb{Dan}{\cn{Dan}}}
-&
-(\text{two}\;\rulelab{Self})
+(\rulelab{Self})
 \\[0.5em]
 \xrightarrow{\cn{Cat}\to r_1}
 &
-\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
-{\qcellb{r_1}{r_1}}}
+\pard{\pscell{\pard{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{r_1}}{c}_{\cn{Cat},r_1}}
 {\qcellb{Dan}{\cn{Dan}}}
 &
 (\rulelab{Cohere1})
 \\[0.5em]
 \longrightarrow
 &
-\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
-{\qcellb{\down{c}r_1}{r_1}}}
-{\qcellb{Dan}{\cn{Dan}}}
+\pard{\pscell{\pard{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{r_1}}{c}_{\cn{Cat},r_1}}
+{\pscell{\crev{\wideparen{c}}{u}{\encode{u}0}}{c}_{\cn{Dan}}}
 &
-(\rulelab{CL})
+(\rulelab{Self})
 \\[0.5em]
-\longrightarrow...\longrightarrow
+\xrightarrow{r_1\to \cn{Dan}}
 &
-\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
-{\down{c}\qcellb{r_1}{r_1}}}
-{\down{c}\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}
+\pscell{\pard{\pard{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{r_1}}
+   {\crev{\wideparen{c}}{u}{\encode{u}0}}}{c}_{\cn{Cat},r_1,\cn{Dan}}
 &
-(\text{two}\;\rulelab{Shift})
-\\[0.5em]
-\longrightarrow...\longrightarrow
-&
-\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
-{\pcellb{r_1}{c}{r_1}}}
-{\pcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{c}{\cn{Dan}}}
-&
-(\text{two}\;\rulelab{Self})
-\\[0.5em]
-\xrightarrow{\cn{Cat}\to \cn{Dan}}
-&
-\parll{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
-{\qcellb{r_1}{r_1}}}{c}
-{\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}
-&
-(\rulelab{Cohere2})
+(\rulelab{Cohere1})
 \\[0.5em]
 \longrightarrow
 &
-\pard{\parll{\qcellb{\send{m}{x}{\csend{c}{x}{0}}}{\cn{Cat}}}{c}
-{\qcellb{\rev{y}{\crev{c}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}}
-{\qcellb{r_1}{r_1}}
+\pscell{\pard{\pard{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}{\down{c}r_1}}
+   {\crev{\wideparen{c}}{u}{\encode{u}0}}}{c}_{\cn{Cat},r_1,\cn{Dan}}
+&
+(\rulelab{CL})
+\\[0.5em]
+\longrightarrow
+&
+\pard{\pscell{\pard{\encode{m}\decode{x}{\csend{\wideparen{c}}{x}{0}}}
+   {\crev{\wideparen{c}}{u}{\encode{u}0}}}{c}_{\cn{Cat},\cn{Dan}}}
+{\scell{r_1}_{r_1}}
 &
 (\rulelab{Swap})
 \\[0.5em]
 \longrightarrow
 &
-\pard{\parl{\qcellb{\send{m}{x}{\csend{\overline{c}}{x}{0}}}{\cn{Cat}}}
-{\qcellb{\rev{y}{\crev{\overline{c}}{u}{\mer{u}{v}{y}{0}}}}{\cn{Dan}}}}
-{\qcellb{r_1}{r_1}}
+\pard{\pscell{\pard{\decode{x}{\csend{\wideparen{c}}{x}{0}}}
+   {\crev{\wideparen{c}}{u}{\encode{u}0}}}{c(m)}_{\cn{Cat},\cn{Dan}}}
+{\scell{r_1}_{r_1}}
 &
-(\rulelab{Measure})
+(\rulelab{Encode})
 \\[0.5em]
-\xrightarrow{m}
+\xrightarrow{c.m}
 &
-\pard{\pard{\qcellb{\csend{\overline{c}}{m_l}{0}}{\cn{Cat}}}
-{\qcellb{\crev{\overline{c}}{u}{\mer{u}{v}{m_r}{0}}}{\cn{Dan}}}}
-{\qcellb{r_1}{r_1}}
+\pard{\pard{\scell{{\csend{\wideparen{c}}{\overline{m}}{0}}}_{\cn{Cat}}}
+     {\pscell{\crev{\wideparen{c}}{u}{\encode{u}0}}{c(\up{m})}_{\cn{Dan}}}}
+  {\scell{r_1}_{r_1}}
 &
-(\rulelab{QCom})
+(\rulelab{DecodeQ1})
+\\[0.5em]
+\longrightarrow
+&
+\pard{\pard{\csend{\wideparen{c}}{\overline{m}}{0}\scell{\emptyset}_{\cn{Cat}}}
+     {\crev{\wideparen{c}}{u}{\encode{u}0}\pscell{\emptyset}{c(\up{m})}_{\cn{Dan}}}}
+  {\scell{r_1}_{r_1}}
+&
+(\text{two}\;\rulelab{Move})
+\\[0.5em]
+\xrightarrow{\wideparen{c}.\wideparen{m}}
+&
+\pard{\pard{0\scell{\emptyset}_{\cn{Cat}}}
+     {{\encode{\overline{m}}0}\pscell{\emptyset}{c(\up{m})}_{\cn{Dan}}}}
+  {\scell{r_1}_{r_1}}
+&
+(\rulelab{Com})
+\\[0.5em]
+\longrightarrow
+&
+\pard{\pard{\scell{0}_{\cn{Cat}}}
+     {\pscell{{\encode{\overline{m}}0}}{c(\up{m})}_{\cn{Dan}}}}
+  {\scell{r_1}_{r_1}}
+&
+(\text{two}\;\rulelab{Back})
+\\[0.5em]
+\longrightarrow
+&
+\pard{\pard{\scell{0}_{\cn{Cat}}}
+     {\pscell{{0}}{c(m)}_{\cn{Dan}}}}
+  {\scell{r_1}_{r_1}}
+&
+(\rulelab{Encode})
 \\[0.5em]
 \longrightarrow...
 \end{array}
@@ -598,36 +610,35 @@ r_1\triangleq \parp{\down{c}r_1}{0}
 Most network communication is performed in distinct locations,
 where the channel establishment based on the GHZ algorithm become impractical, when connecting parties residing on more than $3$ locations. As we mentioned in \Cref{sec:background}, a typical quantum routing algorithm relies on the swap concept to build a long distance quantum channel. Here, we upgraded the QAM syntax and semantics in \Cref{fig:q-pi-semantics1} to the system in \Cref{fig:q-pi-semantics2}, by removing GHZ channel building rules and implementing quantum swaps.
 
-Syntactically, we divide processes into single and parallel processes, and surround a single process in a membrane $\scell{P}_{c_1}$ that represents a location named $c_1$ executing a process $P$. A membrane $\scell{P}_{c_1}^c$ can be also associated with a quantum channel $c$, meaning that the process is ready to communicate on $c$, which is different from the ones in the system in \Cref{fig:q-pi-semantics1} where a membrane contains a group of processes sharing the same quantum channel.
+We restrict the syntax in \Cref{fig:q-pi-semantics2} based on the system in \Cref{fig:q-pi-semantics1}.
+We require every single location process to be surrounded by a membrane structure with a location name $c$, representing a process happening in a location $c$.
+On the top level, we have a memtiset of membranes representing communications happening in distinct locations.
+Membrane can be abbreviated as $P^{\wideparen{\kappa}?}_{\overline{c}}$, meaning that a process can happen in several locations labeled by the location list $\overline{c}$, and $\wideparen{\kappa}$ is a possible channel associated with the membrane.
+Inside each membrane, we can have an ordered list of process, whose cardinality is less than $3$.
+The process list in a membrane and the location list associated with the membrane are one-to-one corresponded.
+For example, if we have the membrane
+$\scell{P,P',Q}_{c_1,c_2,c_3}$,
+$c_1$, $c_2$, and $c_3$ are the locations holding the process $P$, $P'$, and $Q$, respectively.
+In this system, each evaluation is associated with a relation set $S$, containing the location connectivity.
+The other processes and actions are similar to the ones appearing in \Cref{fig:q-pi-semantics1}.
 
-A parallel process could be a two party process, $\parll{P}{c}{Q}$ and $\parl{P}{Q}$.
-The former means processes $P$ and $Q$ are sharing a quantum channel $c$, while the latter one means that the channel is destroyed and the two processes are waiting for a quantum message destruction.
-There is also a three party parallel process $\parll{P}{c}{\parl{P'}{Q}}$, referring to that the processes the two pairs, $P$ and $P'$ as well as $P'$ and $Q$, are sharing a quantum channel $c$, respectively, same as the situation before the swapping in \Cref{fig:background-circuit-exampleb}. The other single processes and actions are similar to the ones appearing in \Cref{fig:q-pi-semantics1}.
+The semantics in \Cref{fig:q-pi-semantics2} are mostly similar to the one in \Cref{fig:q-pi-semantics1}, except that we associate location information with membranes. For all those rules that only differ from the ones in \Cref{fig:q-pi-semantics1} with the membrane structure and location information, we keep the rule names to be the same.
 
-\Cref{fig:q-pi-example} shows a multiset of three processes that sends a quantum message from \cn{Cat} to \cn{Dan} via a router $r_1$,
+We now explain some semantic rules through an example in \Cref{fig:q-pi-example},
+which shows a multiset of three processes that sends a quantum message from \cn{Cat} to \cn{Dan} via a router $r_1$,
 with the three process definitions on the top. $r_1$ is a recursive process definition. In these transition steps, we omit the function call steps for $Cat$, $r_1$, and $Dan$ in each membranes.
-We first apply rule \rulelab{Shift}, in \Cref{fig:q-pi-semantics2}, to move the channel operation out of \cn{Cat}'s membrane, and we call function $r_1$ and choose its left branch $\down{c}r_1$ through the \rulelab{CL} application.
-Obviously, membrane $r_1$ is now suitable for another \rulelab{Shift} application.
-We then apply two \rulelab{Self} applications to change the \cn{Cat} and $r_1$ membranes to include the channel $c$,
-meaning that the two membranes are now ready to communicate.
+The first three rule applications (two \rulelab{Self} and one \rulelab{CL}) establish the willingness of communications between membranes \cn{Cat} and $r_1$.
+We then apply rule \rulelab{Conhere1}, which models the Bell pair establishment in \Cref{sec:background},
+that connects \cn{Cat} and $r_1$ in the same membrane, meaning that they are now sharing the same channel $c$.
+During the process, the membrane's location list is now $\cn{Cat},r_1$ and an explicit label $\cn{Cat} to r_1$ is attached to the transition.
 
-After applying rule \rulelab{Cohere1}, membranes \cn{Cat} and $r_1$ share a quantum channel $c$.
-In the new system in \Cref{fig:q-pi-semantics2}, sharing quantum channels happens between two or three processes, represented by the different parallel operations. The two party parallel between \cn{Cat} and $r_1$ represents that a Bell pair is prepared through the two qubit resources $c$ in each of the membranes before the application.
+After another \rulelab{Self} application, we can then apply \rulelab{Cohere1} again to move \cn{Dan} to the $\cn{Cat},r_1$ membrane,
+so the membrane becomes a three-party one, with the location list $\cn{Cat},r_1,\cn{Dan}$.
+Even though \cn{Cat} and \cn{Dan} are in the same membrane but they cannot communicate with each other because all rules in \Cref{fig:q-pi-semantics2} are applied on processes across different membranes or between adjacent membranes, but \cn{Cat} and \cn{Dan} are separated by $r_1$. 
+To remove $r_1$ from the membrane, we apply rule \rulelab{Swap} to move $r_1$ outside the membrane by losing an additional quantum channel $\down{c}$ in $r_1$.
+Then, \cn{Cat} and \cn{Dan} are the only two parties in the membrane $\cn{Cat},\cn{Dan}$, so that we can apply similar encoding and decoding rules as in \Cref{fig:tele-example}.
+One thing worth noting is that the consecutive \rulelab{Cohere1} and \rulelab{Swap} application exactly model the swapping procedure in \Cref{sec:background}; that is, by losing two qubit resources, one in \rulelab{Cohere1} application and the other in \rulelab{Swap} application, we first entangle \cn{Dan} and $r_1$ and then swap out $r_1$ so that $\cn{Cat}$ and $\cn{Dan}$ are directly connected.
 
-After similar intermediate steps, we apply rule \rulelab{Cohere2} to make a three party parallel operation.
-As we mentioned above, the three party operation means that the adjacent processes share a quantum channel, referring to that \cn{Cat} and $r_1$ as well as $r_1$ and \cn{Dan} share two pairs of channel $c$, but \cn{Cat} and \cn{Dan} do not share a channel.
-To connect \cn{Cat} and \cn{Dan}, we apply rule \rulelab{Swap} to swap the position of $r_1$ and \cn{Dan}, so that \cn{Cat} directly connects to \cn{Dan} via channel $c$, but $r_1$'s channel is downgraded to a classical channel $\overline{c}$ \footnote{$r_1$ is a function that creates a new channel $c$ every time it is called.}.
-We believe that this behavior faithfully reflects the state after the swapping in \Cref{fig:background-circuit-exampleb},
-because even though there is still a quantum channel connecting the two qubit resources inside membrane $r_1$,
-it is impossible to be reused in constructing any other quantum channels
-and can be viewed as a retired quantum channel that is waiting to be destroyed. 
-
-After the \rulelab{Swap} application, we then apply rule \rulelab{Measure} to destroy the quantum channel $c$ and \rulelab{QCom} to destroy the quantum message $m$; both are similar to the ones in \Cref{fig:tele-example}.
-We remove the transition label in the \rulelab{Measure} rule in \Cref{fig:q-pi-semantics2}
-because a more important transition label in the system in \Cref{fig:q-pi-semantics2} is the path information indicating the message transmission directions, such as the edges $\cn{Cat}\to r_1$ and ${\cn{Cat}\to \cn{Dan}}$ (handled by rules \rulelab{Cohere1} and \rulelab{Cohere2}),
-while the system in \Cref{fig:q-pi-semantics1} needs the label in rule \rulelab{Measure} to show the name of a quantum channel created from a GHZ application.
-In addition, rule \rulelab{Measure} and \rulelab{QCom} can be applied to the example in \Cref{fig:tele-example},
-because we assign membrane processes syntactically as a process in \Cref{fig:q-pi-semantics2}.
 
 \ignore{
 
