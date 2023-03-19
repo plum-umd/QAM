@@ -6,19 +6,24 @@
       \texttt{Variable} & x,y \\
       \texttt{Message Names} & m &\in& \mathbb{M}\\
     \texttt{Quantum Channel} & c &\in& \Ls\\
-      \texttt{Named Quantum Message} & q &::=& m\mid \up{q}\\
-      \texttt{Classical Message} & \wideparen{q}\\
-      \texttt{Message} & \mathpzc{q} &::=& q \mid \circ \mid \wideparen{q} \\
-      \texttt{Message with Top} & \kappa &::=& \mathpzc{q} \mid \top \\
+      \texttt{Named Quantum Message} & q &::=& m\mid \up{\kappa}\\
+      \texttt{Message} & \mathpzc{q} &::=& q \mid \wideparen{q} \mid \circ \\
+      \texttt{Channeled Message} & \kappa &::=& \mathpzc{q} \mid c(\kappa) \\
+      \texttt{Topped Message} & \eta &::=& \kappa \mid \top \mid c(\eta) \\
     \texttt{Quantum Channel} & c &\in& \Ls\\
     \texttt{Classical Channel} & \wideparen{c} &\in& \Ls\\
     \texttt{Time Stamp} & t &\in& \mathbb{T}\\
 \ignore{
     \texttt{Timed Label} & \alpha^t &::=& \qsend{p}{c}{m}^{t}\\
     \texttt{Label} & \iota &::=& c.m \mid p.c.m \mid \alpha^t \mid \emptyset\\
-}
-      \texttt{Configuration} & C & \\
-      \texttt{Rule} & \rules & ::= & C \xrightarrow{\alpha} C 
+} 
+
+
+      \texttt{Action} & A & ::= & \downa{c}\,\mid \,\upa{c}\mid \encode{c.\kappa} \mid \decode{c.x} \mid \chan{c.\kappa}\mid \msga{c}{x} \mid \csenda{\wideparen{c}}{\wideparen{m}}\mid\creva{\wideparen{c}}{x} \\[0.2em]
+
+      \texttt{Process} & P,Q & ::= & 0 \mid AP\mid \parp{P}{Q}\mid \comp{P} \\[0.2em]
+      \texttt{Top Process} & R & ::= &\pscell{\overline{P}}{\overline{c(\eta)}} \mid P\pscell{\overline{P}}{\overline{c(\eta)}} \\[0.2em]
+      \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{R}}
     \end{array}
   \]
 }
@@ -57,75 +62,96 @@ Given a QAM system $\Cs=(\Ms,\Ls,\Ts,\overline{\rules})$ and a ground term initi
 
 \begin{figure}[t]
 {\footnotesize
-$\textcolor{blue}{\text{Syntax:}}\\$
-  \[\begin{array}{llcl} 
-      \texttt{Channel Package} & \wideparen{\kappa} & ::= & c(\kappa) \\[0.2em]
-      \texttt{Action} & A & ::= & \downa{c}\,\mid \encode{\mathpzc{q}} \mid \encode{\wideparen{c}(x)} \mid \decode{x} \mid \csenda{\wideparen{c}}{\wideparen{m}}\mid\creva{\wideparen{c}}{x} \\[0.2em]
+$\textcolor{blue}{\text{Message Algebra:}}\\$
+\[
+\begin{array}{l}
+c(\eta) \equiv c.\eta
+\quad
+c(\circ)\equiv c
+\quad
+\circ \sqcap \eta \equiv \eta
+\quad
+\kappa \sqcap \kappa' \equiv \top\;\cn{when}\;\kappa \neq \kappa' \wedge \kappa'\neq \circ
+\quad
+\wideparen{\kappa}\; \sqcap \up{\kappa} \equiv \kappa
+\quad
+\kappa \sqcap \kappa \equiv \circ
+\quad
+\eta \sqcap \top = \top
+\end{array}
+\]
 
-      \texttt{Process} & P,Q & ::= & 0 \mid AP\mid \parp{P}{Q}\mid \comp{P} \mid \pscell{\overline{P}}{\wideparen{\kappa}} \\[0.2em]
-      \textcolor{red}{\texttt{Configuration First Pattern}} & \textcolor{red}{C} & \textcolor{red}{::=} & \textcolor{red}{\overline{P}}
-    \end{array}
-  \]
-$\textcolor{blue}{\text{Semantics:}}\\$
+$\textcolor{blue}{\text{Semantics:}}$
   \begin{mathpar}
 
-   \inferrule[Self]{}
-       { \down{c}{P} \longrightarrow \pscell{P}{c}}
+   \inferrule[Merge]{}
+       { \pard{\pscell{P}{\overline{c(\eta)}}}{\pscell{Q}{\overline{c(\eta)}}}
+             \longrightarrow \pscell{\pard{P}{Q}}{\overline{c(\eta)}}}
+\qquad
+   \inferrule[Purge]{c\not\in FV(\overline{P})}
+       { \pscell{P}{c(\kappa),\overline{c(\eta)}}
+             \longrightarrow \pscell{P}{\overline{c(\eta)}}}
+\qquad
+   \inferrule[Clean]{}
+       {\pscell{\emptyset}{\overline{c(\eta)}} \longrightarrow \emptyset }
+\qquad
+   \inferrule[ID1]{}
+       {\pard{0}{P} \longrightarrow P}
 
    \inferrule[Cohere]{}
-       { \pard{\pscell{...}{c}}{\down{c}{P}} \longrightarrow \pscell{\pard{P}{...}}{c}}
-
+       { \pscell{\pard{\down{c}{P}}{\down{c}{Q}}}{\overline{c(\eta)}}
+             \longrightarrow \pscell{\pard{P}{Q}}{c,\overline{c(\eta)}}}
+\qquad
    \inferrule[Decohere]{}
-       {\pscell{\pard{P}{...}}{\wideparen{\kappa}} \longrightarrow \pard{\pscell{...}{\wideparen{\kappa}}}{P} }
+       {\pscell{\pard{P}{...}}{\overline{c(\eta)}} \longrightarrow \pard{\pscell{...}{\overline{c(\eta)}}}{\scell{P}} }
+\qquad
+   \inferrule[ID]{}
+       {\pard{\scell{0}}{R} \longrightarrow R}
 
-   \inferrule[Clean]{}
-       {\pscell{\emptyset}{\wideparen{\kappa}} \longrightarrow \emptyset }
+   \inferrule[Join]{}
+       { \pard{\pscell{\pard{\upa{c}{P}}{Q}}{c,\overline{c(\eta)}}}
+                    {\pscell{\pard{\upa{c}{P'}}{Q'}}{c,\overline{c(\eta)}}}
+             \longrightarrow \pard{\pscell{\pard{Q}{Q'}}{c,\overline{c(\eta)}}}{\pscell{\pard{P}{P'}}{\overline{c(\eta)}}}}
+\qquad
+  \inferrule[CL]{}
+      {\parp{P}{Q} \longrightarrow P}
+\qquad
+  \inferrule[CR]{}
+      {\parp{P}{Q} \longrightarrow Q}
 
-   \inferrule[Encode]{}
-       {\pscell{\pard{\encode{\mathpzc{q}}P}{...}}{c(\kappa)} \longrightarrow \pscell{\pard{P}{...}}{c(\mathpzc{q}\,\sqcap\kappa)} }
+   \inferrule[Encode]{\cn{chan}(\kappa)\not\in \cn{chan}({c(\eta),\overline{c(\eta)}})}
+       {\pscell{\pard{\encode{c.\kappa}P}{Q}}{c(\eta),\overline{c(\eta)}} \longrightarrow \pscell{\pard{P}{Q}}{c(\kappa\sqcap\eta),\overline{c(\eta)}} }
 
-   \inferrule[Move]{}
+   \inferrule[Move]{c\not\in \cn{chan}({\overline{c(\eta)}})}
+       { \pscell{\pard{\chan{c.\kappa}P}{Q}}{\overline{c(\eta)}}
+             \longrightarrow \pscell{\pard{P}{Q}}{c(\kappa),\overline{c(\eta)}}}
+
+   \inferrule[Back]{}
+       { \pscell{\pard{\msga{c}{x}P}{Q}}{c(\kappa),\overline{c(\eta)}}
+             \longrightarrow \pscell{\pard{P[c.\kappa/x]}{Q}}{\overline{c(\eta)}}}
+\qquad
+  \inferrule[Com]{}
+      { \pard{\csend{\wideparen{c}}{\wideparen{q}}{R}}{\crev{\wideparen{c}}{x}{R'}}
+           \xrightarrow{\wideparen{c}.\wideparen{q}} \pard{R}{R'[\wideparen{q}/x]}}
+
+   \inferrule[DecodeC]{\kappa = \circ \vee \kappa = \wideparen{\kappa}}
+       {\pscell{\pard{c.\decode{x}P}{{\decode{c.x}Q}}}{c(\kappa),\overline{c(\eta)}} \xrightarrow{c.\kappa} \pscell{\pard{P[\kappa/x]}{{Q[\kappa/x]}}}{\overline{c(\eta)}} }
+
+   \inferrule[DLock]{}
        {\pscell{\pard{P}{...}}{\wideparen{\kappa}} 
              \longrightarrow P\pscell{{...}}{\wideparen{\kappa}} }
 
-   \inferrule[Back]{}
+   \inferrule[DDrop]{}
        {P\pscell{{...}}{\wideparen{\kappa}}
              \longrightarrow \pscell{\pard{P}{...}}{\wideparen{\kappa}}  }
 
-  \inferrule[QCom]{}
-      { \pard{\csend{\wideparen{c}}{\wideparen{q}}{P}}{\encode{\overline{c}(x)}{Q}}
-           \xrightarrow{\wideparen{c}.\kappa} \pard{P}{\encode{\overline{q}}Q}}
-
-  \inferrule[Com]{}
-      { \pard{\csend{\wideparen{c}}{\wideparen{q}}{P}}{\crev{\wideparen{c}}{x}{Q}}
-           \xrightarrow{\wideparen{c}.\wideparen{q}} \pard{P}{Q[\wideparen{q}/x]}}
-
-   \inferrule[Decode0]{}
-       {\pscell{\pard{\decode{x}P}{\overline{Q}}}{c} \xrightarrow{c.\circ} {\pard{P[\circ/x]}{\overline{Q}}} }
-
-   \inferrule[DLock1]{}{\decode{x}P \longrightarrow \decode{x}(P)}
-
-   \inferrule[DLock2]{}{\pard{\decode{x}(\overline{P})}{\decode{x}{Q}} \longrightarrow \decode{x}(\pard{\overline{P}}{Q})}
-
-   \inferrule[DecodeC]{}
-       {\pscell{\decode{x}(\overline{P})}{c(\wideparen{q})} \xrightarrow{c.\wideparen{q}} {\overline{P}[\wideparen{q}/x]} }
-
-   \inferrule[DecodeQ]{}
-       {\pscell{\pard{\pard{\decode{x}P}{Q}}{\overline{P}}}{c(q)}
-                \xrightarrow{c.q} \pard{\pard{P[\wideparen{q}/x]}{\pscell{Q}}{c(\up{q})}}{\overline{P}} }
+   \inferrule[DecodeQ]{\kappa \neq \circ \\ \kappa \neq \wideparen{\kappa}}
+       {\pscell{{\pard{\decode{c.x}P}{Q}}}{c(\kappa),\overline{c(\eta)}}
+                \xrightarrow{c.\kappa} \pard{\pscell{P[\kappa/x]}{\overline{c(\eta)}}}{\pscell{Q}}{c(\up{\kappa}),\overline{c(\eta)}} }
 
    \inferrule[DecodeM]{\cn{fresh}\;m}
-       {\pscell{\pard{\pard{\decode{x}P}{Q}}{\overline{P}}}{c(\top)}
-                \xrightarrow{c.m} \pard{\pard{P[\wideparen{m}/x]}{\pscell{Q}{c(\up{m})}}}{\overline{P}} }
-
-   \inferrule[ID]{}
-       {\pard{0}{P} \longrightarrow P}
-
-  \inferrule[CL]{}
-      {\parp{P}{Q} \longrightarrow P}
-
-  \inferrule[CR]{}
-      {\parp{P}{Q} \longrightarrow Q}
+       {\pscell{{\pard{\decode{c.x}P}{Q}}}{c(\top),\overline{c(\eta)}}
+                \xrightarrow{c.m} \pard{\pscell{P[m/x]}{\overline{c(\eta)}}}{\pscell{Q}}{c(\up{m}),\overline{c(\eta)}} }
 
    \inferrule[MT]{}
        {\comp{P} \longrightarrow \pard{P}{\comp{P}}}
@@ -134,26 +160,7 @@ $\textcolor{blue}{\text{Semantics:}}\\$
        {\comp{P} \longrightarrow 0}
   \end{mathpar}
 }
-{
-\begin{center}
-$ 
-\begin{array}{l}
-c(\circ)\equiv c
-\quad
-\circ \sqcap \mathpzc{q} \equiv \mathpzc{q}
-\quad
-\mathpzc{q} \sqcap \mathpzc{q'} \equiv \top\;\cn{when}\;\mathpzc{q} \neq \mathpzc{q'} \wedge \mathpzc{q'}\neq \circ
-\quad
-\wideparen{q}\; \sqcap \up{q} \equiv q
-\quad
-\mathpzc{q} \sqcap \mathpzc{q} \equiv \circ
-\quad
-\mathpzc{q} \sqcap \top = \top
-\end{array}
-$
-\end{center}
-}
-\caption{Single-party communication syntax and semantics}
+\caption{Single-party communication syntax and semantics. $\cn{chan}(\eta)$ produces the channel of a message, i.e., if $\eta=c(\eta')$, then $c$ is the channel; if $\eta=m$, then $\top$ is the channel.}
   \label{fig:q-pi-semantics1}
 \end{figure}
 
