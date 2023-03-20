@@ -11,9 +11,7 @@ We can join multiple qubits together to form a larger quantum state with the \em
 Sometimes a multi-qubit state cannot be expressed as the tensor of individual states; such states are called \emph{entangled}. One example is the state $\frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$, known as a \emph{Bell pair}.
 Entangled states lead to exponential blowup: A general $n$-qubit state must be described with a $2^n$-length vector, rather than $n$ vectors of length two.
 
-\begin{figure}[t]
-{\centering
-\hspace*{-1em}
+\ignore{
           \begin{minipage}[b]{.20\textwidth}
             {\qquad
               \footnotesize
@@ -29,18 +27,22 @@ Entangled states lead to exponential blowup: A general $n$-qubit state must be d
 \caption{GHZ}
 \label{fig:circuit-example}
 \end{minipage}
+}
+\begin{figure}[t]
+{\centering
+\hspace*{-1.2em}
 \hfill
-\begin{minipage}[b]{.40\textwidth}
+\begin{minipage}[b]{.54\textwidth}
                  \includegraphics[width=1\textwidth]{tele_circuit.png}
             \caption{Teleportation Circuit}
             \label{fig:background-circuit-examplea}
  \end{minipage}
-\hfill
-\begin{minipage}[b]{.39\textwidth}
-                 \includegraphics[width=1\textwidth]{entanglement_swap.png}
-            \caption{Quantum Routing}
+%
+\begin{minipage}[b]{.46\textwidth}
+                 \includegraphics[width=1\textwidth]{superdense.png}
+            \caption{Super Dense Coding Circuit}
             \label{fig:background-circuit-exampleb}
-          \end{minipage}
+ \end{minipage}
 }
 \end{figure}
 
